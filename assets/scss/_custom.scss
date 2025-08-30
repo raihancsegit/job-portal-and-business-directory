@@ -1,0 +1,215 @@
+.form-switch {
+    padding-left: 2em;
+    cursor: pointer;
+}
+
+.i-dropdown {
+    position: relative;
+    max-width: 100%;
+    display: inline-block;
+    min-width: 20px;
+    margin: 0px 5px;
+
+    &.style-2 {
+        button {
+            border: unset;
+            border-radius: 3px;
+            background-color: $card-bg;
+            padding: 5px 24px 5px 10px;
+            font-size: 13px;
+            &:hover {
+                background-color: transparent;
+            }
+        }
+        .dropdown-toggle {
+            &::after {
+                font-size: 10px;
+                top: 16px;
+                right: 8px;
+            }
+        }
+        .dropdown-menu {
+            background-color: $card-bg;
+        }
+        .dropdown-item {
+            font-size: 12px;
+            padding: 4px 10px;
+
+            i {
+                margin-right: 5px;
+                font-size: 15px;
+            }
+        }
+    }
+    button {
+        border: 1px solid $color-border;
+        border-radius: 3px;
+        background-color: $color-white;
+        padding: 6px 30px 6px 10px;
+        font-size: 14px;
+        &:hover {
+            background-color: $color-white;
+        }
+    }
+    .dropdown-menu {
+        padding: 0;
+        @include transition-4;
+        @include border;
+        border-radius: 3px;
+
+        &.show {
+            animation: appear 0.5s;
+
+            @keyframes appear {
+                0% {
+                    opacity: 0;
+                }
+                100% {
+                    opacity: 1;
+                }
+            }
+        }
+    }
+    .dropdown-item {
+        font-size: 13px;
+        padding: 4px 10px;
+        margin-bottom: 1px;
+    }
+    .dropdown-item:active {
+        background-color: $color-primary;
+    }
+}
+
+.dropdown-toggle {
+    &::after {
+        content: "\F282";
+        font-family: "Bootstrap-icons";
+        position: absolute;
+        top: 50%;
+        right: 0px;
+        transform: translateY(-50%) rotate(0deg);
+        display: inline-block;
+        margin-left: 0.255em;
+        vertical-align: 0.255em;
+        border-top: unset;
+        border-right: unset;
+        border-bottom: 0;
+        border-left: unset;
+        font-size: 15px;
+        @include transition-4;
+    }
+
+    &.show {
+        &::after {
+            transform: translateY(-50%) rotate(180deg);
+        }
+    }
+
+    &.style-2 {
+        &::after {
+            content: "\F5D3";
+            font-family: "Bootstrap-icons";
+        }
+    }
+}
+
+// Nice select
+.nice-select {
+    .list {
+        background-color: $site-bg;
+    }
+    &.niceSelect {
+        height: 46px;
+        line-height: 46px;
+        min-width: 150px;
+        width: 100%;
+        border-radius: 4px;
+        &.open {
+            .list {
+                width: 100%;
+            }
+        }
+    }
+}
+.nice-select .option:hover {
+    background-color: $card-bg;
+}
+
+tbody,
+td,
+tfoot,
+th,
+thead,
+tr {
+    border-color: inherit;
+    border-style: solid;
+    border-width: 0px;
+    border-bottom: 1px solid $color-border;
+}
+
+table.dataTable.no-footer {
+    border-bottom: 1px solid transparent;
+    margin-bottom: 40px;
+}
+
+.dataTables_length {
+    & label {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+}
+.dataTables_filter label {
+    gap: 10px;
+}
+.dataTables_wrapper .dataTables_filter input {
+    width: 100%;
+    min-width: 180px;
+    background-color: var(--site-bg);
+    height: 35px;
+    padding: 8px 12px 8px 12px;
+    border: unset;
+}
+.dataTables_wrapper .dataTables_length select {
+    border: 1px solid $color-border;
+    background-color: $site-bg !important;
+    color: inherit;
+    &:focus {
+        box-shadow: none;
+        border-color: var(--color-primary-light) !important;
+    }
+}
+.dataTables_paginate ul.pagination {
+    margin: 0 !important;
+    padding-top: 12px;
+    .page-item {
+        .page-link {
+            line-height: 1;
+            font-size: 14px;
+            padding: 4px 6px;
+            &:focus{
+               box-shadow: none; 
+            }
+        }
+    }
+      .active {
+        .page-link {
+            background-color: $color-primary !important;
+            border-color: $color-primary !important;
+        }
+    }
+    .disabled {
+        .page-link {
+            background-color: $site-bg !important;
+        }
+    }
+}
+.alert-dismissible .btn-close {
+    font-size: 14px;
+}
+
+.nice-select .option:hover,
+.nice-select .option.focus,
+.nice-select .option.selected.focus {
+    background-color: $card-bg;
+}

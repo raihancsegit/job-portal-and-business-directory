@@ -1,0 +1,27 @@
+/* 
+ * Overrides for the Blank React App Template
+ */
+
+/* 
+ * টার্গেট: যখন body ট্যাগে আমাদের 'full-width-app' ক্লাসটি থাকবে
+ * (এই ক্লাসটি আমরা page-template-blank.php ফাইলে যোগ করেছি)
+ */
+body.full-width-app {
+    /* থিমের দেওয়া যেকোনো max-width, padding, বা margin রিসেট করা */
+    max-width: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow-x: hidden; /* সাইড-স্ক্রল প্রতিরোধ করার জন্য */
+}
+
+/* 
+ * আমাদের React অ্যাপের রুট এলিমেন্টকে টার্গেট করা, 
+ * যাতে এটি সম্পূর্ণ প্রস্থ এবং উচ্চতা নেয়।
+ */
+body.full-width-app #root,
+body.full-width-app .form-section {
+    width: 100vw;  /* Viewport Width এর 100% */
+    min-height: 100vh; /* Viewport Height এর 100% */
+    padding: 0;
+    margin: 0;
+}
