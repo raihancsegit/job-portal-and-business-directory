@@ -14,6 +14,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
+
 // Load the main plugin class.
 require_once plugin_dir_path(__FILE__) . 'includes/class-main.php';
 

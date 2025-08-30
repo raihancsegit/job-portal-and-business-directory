@@ -1,15 +1,27 @@
 {
-  "src/assets/react.svg": {
-    "file": "assets/react-CHdo91hT.svg",
-    "src": "src/assets/react.svg"
+  "_index-BTP33w5r.js": {
+    "file": "assets/index-BTP33w5r.js",
+    "name": "index"
+  },
+  "admin/main.jsx": {
+    "file": "assets/admin-BLkMlu2J.js",
+    "name": "admin",
+    "src": "admin/main.jsx",
+    "isEntry": true,
+    "imports": [
+      "_index-BTP33w5r.js"
+    ],
+    "css": [
+      "assets/admin-jsJsBBcT.css"
+    ]
   },
   "src/main.jsx": {
-    "file": "assets/main-9UvQYo8l.js",
-    "name": "main",
+    "file": "assets/frontend-B9mGXBNv.js",
+    "name": "frontend",
     "src": "src/main.jsx",
     "isEntry": true,
-    "css": [
-      "assets/main-B5IzWNc6.css"
+    "imports": [
+      "_index-BTP33w5r.js"
     ]
   }
 }

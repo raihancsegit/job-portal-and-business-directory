@@ -1,0 +1,137 @@
+/* Main Layout */
+.jpbd-admin-wrap {
+    margin: 20px;
+}
+
+.jpbd-admin-layout {
+    display: flex;
+    margin-top: 20px;
+    gap: 20px;
+}
+
+/* Sidebar Styling */
+.jpbd-admin-sidebar {
+    width: 200px;
+    background-color: #f0f0f1;
+    padding: 15px;
+    border-radius: 4px;
+    border: 1px solid #c3c4c7;
+}
+
+.jpbd-sidebar-title {
+    font-size: 1.2em;
+    font-weight: 600;
+    margin-top: 0;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #ddd;
+}
+
+.jpbd-admin-sidebar ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.jpbd-admin-sidebar li a {
+    display: block;
+    padding: 8px 12px;
+    text-decoration: none;
+    color: #2c3338;
+    border-radius: 3px;
+    transition: background-color 0.2s;
+}
+
+.jpbd-admin-sidebar li a:hover {
+    background-color: #e0e0e1;
+}
+
+.jpbd-admin-sidebar li.active a {
+    background-color: #007cba;
+    color: #fff;
+}
+
+/* Content Area */
+.jpbd-admin-content {
+    flex-grow: 1;
+    background-color: #fff;
+    padding: 20px;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+}
+
+.jpbd-admin-content h2 {
+    margin-top: 0;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 10px;
+}
+
+.jpbd-settings-subtitle {
+    font-size: 1.1em;
+    font-weight: 600;
+    margin-top: 30px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 5px;
+}
+
+/* WordPress Form Styles */
+.form-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1em;
+}
+
+.form-table th, .form-table td {
+    padding: 10px;
+    border-bottom: 1px solid #f0f0f1;
+    vertical-align: top;
+    text-align: left;
+}
+
+.form-table th {
+    width: 200px;
+    font-weight: normal;
+}
+
+.regular-text {
+    width: 100%;
+    max-width: 400px;
+}
+
+/* Backgrounds Sub-navigation */
+.jpbd-subnav-wrapper {
+    margin-bottom: 20px;
+    border-bottom: 1px solid #c3c4c7;
+}
+
+.jpbd-subnav-tab {
+    padding: 10px 15px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: 14px;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px; /* Overlap the main border */
+}
+
+.jpbd-subnav-tab.active {
+    border-bottom: 2px solid #007cba;
+    font-weight: 600;
+    color: #007cba;
+}
+
+.jpbd-color-picker {
+    height: 30px;
+    width: 50px;
+    border: 1px solid #ddd;
+    padding: 2px;
+}
+
+/* Save Notice */
+.jpbd-notice-success {
+    border-left: 4px solid #46b450;
+    padding: 10px 12px;
+    background-color: #fff;
+    box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.1);
+    margin-bottom: 15px;
+}

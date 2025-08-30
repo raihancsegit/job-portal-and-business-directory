@@ -24,6 +24,32 @@ function jpbd_register_auth_routes()
         'permission_callback' => '__return_true',
     ]);
 
+    // 1. Initiate Google Login: এই রুটটি React থেকে কল করা হবে
+    register_rest_route('jpbd/v1', '/auth/google/initiate', [
+        'methods' => 'GET',
+        'callback' => 'jpbd_api_initiate_google_login',
+        'permission_callback' => '__return_true',
+    ]);
+
+    // 2. Handle Google Callback: গুগল এই রুটে ব্যবহারকারীকে ফেরত পাঠাবে
+    register_rest_route('jpbd/v1', '/auth/google/callback', [
+        'methods' => 'GET',
+        'callback' => 'jpbd_api_handle_google_callback',
+        'permission_callback' => '__return_true',
+    ]);
+
+    register_rest_route('jpbd/v1', '/auth/linkedin/initiate', [
+        'methods' => 'GET',
+        'callback' => 'jpbd_api_initiate_linkedin_login',
+        'permission_callback' => '__return_true',
+    ]);
+
+    register_rest_route('jpbd/v1', '/auth/linkedin/callback', [
+        'methods' => 'GET',
+        'callback' => 'jpbd_api_handle_linkedin_callback',
+        'permission_callback' => '__return_true',
+    ]);
+
     // ভবিষ্যতে এখানে /auth/forget-password ইত্যাদি যোগ হবে
 }
 add_action('rest_api_init', 'jpbd_register_auth_routes');
@@ -125,4 +151,185 @@ function jpbd_api_login_user(WP_REST_Request $request)
     // সফল লগইনের পর JWT প্লাগইন থেকে পাওয়া ডেটা রিটার্ন করা
     // ডেটার মধ্যে token, user_email, user_nicename, user_display_name থাকবে
     return new WP_REST_Response($data, 200);
+}
+
+function jpbd_api_initiate_google_login()
+{
+    // সেটিংস পেজ থেকে Client ID সেভ করা ডেটা থেকে আনতে হবে
+    // $client_id = get_option('jpbd_google_client_id');
+    $client_id = 'YOUR_GOOGLE_CLIENT_ID'; // আপাতত হার্ডকোড করা হলো
+
+    $redirect_uri = rest_url('jpbd/v1/auth/google/callback');
+    $scope = 'email profile';
+
+    // Google-এর অথেনটিকেশন URL তৈরি করা
+    $google_auth_url = 'https://accounts.google.com/o/oauth2/v2/auth?' . http_build_query([
+        'client_id' => $client_id,
+        'redirect_uri' => $redirect_uri,
+        'response_type' => 'code',
+        'scope' => $scope,
+        'access_type' => 'offline',
+        'prompt' => 'consent'
+    ]);
+
+    // React-কে এই URL-টি পাঠানো
+    return new WP_REST_Response(['auth_url' => $google_auth_url], 200);
+}
+
+function jpbd_api_handle_google_callback(WP_REST_Request $request)
+{
+    $code = $request->get_param('code');
+
+    if (empty($code)) {
+        // এরর হ্যান্ডেল করা এবং ব্যবহারকারীকে লগইন পেজে রিডাইরেক্ট করা
+        wp_redirect(site_url('/job-portal/login?error=google_auth_failed'));
+        exit;
+    }
+
+    // --- টোকেন এক্সচেঞ্জ (আগের উত্তরের মতো) ---
+    // $client_id = get_option('jpbd_google_client_id');
+    // $client_secret = get_option('jpbd_google_client_secret');
+    $client_id = 'YOUR_GOOGLE_CLIENT_ID';
+    $client_secret = 'YOUR_GOOGLE_CLIENT_SECRET';
+    $redirect_uri = rest_url('jpbd/v1/auth/google/callback');
+
+    // cURL বা wp_remote_post ব্যবহার করে গুগলের কাছে অ্যাক্সেস টোকেনের জন্য রিকোয়েস্ট পাঠানো
+    // ...
+
+    // অ্যাক্সেস টোকেন পাওয়ার পর, ব্যবহারকারীর প্রোফাইল ডেটা আনা
+    // ... (https://www.googleapis.com/oauth2/v1/userinfo?alt=json&access_token=...)
+
+    // --- ইউজার হ্যান্ডলিং ---
+    $email = $user_data['email'];
+    $user = get_user_by('email', $email);
+
+    if (!$user) {
+        // নতুন ইউজার তৈরি করা (job_seeker রোলে)
+        // ... (wp_create_user)
+    }
+
+    // --- ইউজারকে লগইন করানো এবং JWT টোকেন তৈরি ---
+    // ... (wp_set_current_user, wp_set_auth_cookie)
+    // অথবা WP-JWT-Auth প্লাগইন ব্যবহার করে টোকেন তৈরি করা
+
+    // --- ব্যবহারকারীকে ড্যাশবোর্ডে রিডাইরেক্ট করা ---
+    wp_redirect(site_url('/job-portal/dashboard'));
+    exit;
+}
+
+/**
+ * Initiates the LinkedIn login process by generating the auth URL.
+ */
+function jpbd_api_initiate_linkedin_login()
+{
+    // এই ডেটাগুলো আপনার বানানো সেটিংস পেজ থেকে আসবে
+    $client_id = 'YOUR_LINKEDIN_CLIENT_ID'; // LinkedIn থেকে পাওয়া Client ID
+
+    $redirect_uri = rest_url('jpbd/v1/auth/linkedin/callback');
+    $scope = 'openid profile email'; // নতুন ভার্সনে 'r_liteprofile r_emailaddress' এর পরিবর্তে এটি ব্যবহৃত হয়
+    $state = bin2hex(random_bytes(16)); // CSRF আক্রমণ প্রতিরোধের জন্য একটি র‍্যান্ডম স্টেট
+
+    // WordPress-এর সেশনে স্টেটটি সেভ করে রাখা
+    if (!session_id()) {
+        session_start();
+    }
+    $_SESSION['linkedin_oauth_state'] = $state;
+
+    $linkedin_auth_url = 'https://www.linkedin.com/oauth/v2/authorization?' . http_build_query([
+        'response_type' => 'code',
+        'client_id' => $client_id,
+        'redirect_uri' => $redirect_uri,
+        'state' => $state,
+        'scope' => $scope,
+    ]);
+
+    return new WP_REST_Response(['auth_url' => $linkedin_auth_url], 200);
+}
+
+
+/**
+ * Handles the callback from LinkedIn after user authentication.
+ */
+function jpbd_api_handle_linkedin_callback(WP_REST_Request $request)
+{
+    if (!session_id()) {
+        session_start();
+    }
+
+    $code = $request->get_param('code');
+    $state = $request->get_param('state');
+
+    // স্টেটের বৈধতা যাচাই করা
+    if (empty($state) || !isset($_SESSION['linkedin_oauth_state']) || $_SESSION['linkedin_oauth_state'] !== $state) {
+        wp_redirect(site_url('/job-portal/login?error=linkedin_state_mismatch'));
+        exit;
+    }
+
+    if (empty($code)) {
+        wp_redirect(site_url('/job-portal/login?error=linkedin_auth_failed'));
+        exit;
+    }
+
+    // --- টোকেন এক্সচেঞ্জ ---
+    $client_id = 'YOUR_LINKEDIN_CLIENT_ID';
+    $client_secret = 'YOUR_LINKEDIN_CLIENT_SECRET';
+    $redirect_uri = rest_url('jpbd/v1/auth/linkedin/callback');
+
+    $response = wp_remote_post('https://www.linkedin.com/oauth/v2/accessToken', [
+        'method' => 'POST',
+        'body' => [
+            'grant_type' => 'authorization_code',
+            'code' => $code,
+            'redirect_uri' => $redirect_uri,
+            'client_id' => $client_id,
+            'client_secret' => $client_secret,
+        ],
+    ]);
+
+    if (is_wp_error($response)) {
+        wp_redirect(site_url('/job-portal/login?error=linkedin_token_failed'));
+        exit;
+    }
+
+    $body = json_decode(wp_remote_retrieve_body($response), true);
+    $access_token = $body['access_token'];
+
+    // --- ব্যবহারকারীর প্রোফাইল ডেটা আনা ---
+    $user_info_response = wp_remote_get('https://api.linkedin.com/v2/userinfo', [
+        'headers' => [
+            'Authorization' => 'Bearer ' . $access_token,
+        ],
+    ]);
+
+    if (is_wp_error($user_info_response)) {
+        wp_redirect(site_url('/job-portal/login?error=linkedin_userinfo_failed'));
+        exit;
+    }
+
+    $user_data = json_decode(wp_remote_retrieve_body($user_info_response), true);
+    $email = $user_data['email'];
+    $full_name = $user_data['name'];
+
+    // --- ইউজার হ্যান্ডলিং এবং লগইন (Google-এর মতোই) ---
+    $user = get_user_by('email', $email);
+    if (!$user) {
+        $username = explode('@', $email)[0] . '_' . rand(100, 999);
+        $password = wp_generate_password();
+        $user_id = wp_create_user($username, $password, $email);
+
+        if (is_wp_error($user_id)) {
+            wp_redirect(site_url('/job-portal/login?error=user_creation_failed'));
+            exit;
+        }
+
+        wp_update_user(['ID' => $user_id, 'display_name' => $full_name, 'role' => 'job_seeker']);
+        $user = get_user_by('id', $user_id);
+    }
+
+    wp_set_current_user($user->ID, $user->user_login);
+    wp_set_auth_cookie($user->ID);
+
+    // --- ড্যাশবোর্ডে রিডাইরেক্ট ---
+    wp_redirect(site_url('/job-portal/dashboard'));
+    exit;
 }

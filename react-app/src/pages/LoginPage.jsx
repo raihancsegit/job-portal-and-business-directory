@@ -55,6 +55,28 @@ function LoginPage() {
         }
     };
 
+    const handleGoogleLogin = async () => {
+        try {
+            // 1. ব্যাকএন্ড থেকে গুগলের অথেনটিকেশন URL-টি আনা
+            const response = await axios.get(`${api_base_url}auth/google/initiate`);
+            const { auth_url } = response.data;
+            
+            // 2. ব্যবহারকারীকে ওই URL-এ রিডাইরেক্ট করা
+            window.location.href = auth_url;
+        } catch (error) {
+            console.error("Failed to initiate Google login", error);
+        }
+    };
+
+    const handleLinkedInLogin = async () => {
+        try {
+            const response = await axios.get(`${api_base_url}auth/linkedin/initiate`);
+            window.location.href = response.data.auth_url;
+        } catch (error) {
+            console.error("Failed to initiate LinkedIn login", error);
+        }
+    };
+
     return (
         <AuthLayout>
             <div className="row form-area g-0">
@@ -130,10 +152,10 @@ function LoginPage() {
                                 <span className="or-signin">Or sign in with</span>
                             </div>
                             <div className="d-flex flex-wrap gap-3 social-login-wrap">
-                                <div className="social-login">
+                                <div className="social-login" onClick={handleGoogleLogin}>
                                     <img src={`${assets_url}images/icons/google.png`} alt="" /><span>Google</span>
                                 </div>
-                                <div className="social-login">
+                                <div className="social-login" onClick={handleLinkedInLogin}>
                                     <img src={`${assets_url}images/icons/linkedin.png`} alt="" /><span>LinkedIn</span>
                                 </div>
                             </div>
