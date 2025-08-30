@@ -11,6 +11,15 @@
 
 if (!defined('ABSPATH')) exit;
 
+// Constants
+define('JPBD_URL', plugin_dir_url(__FILE__));
+define('JPBD_PATH', plugin_dir_path(__FILE__));
+
+// ====================================================================
+// Include API Files
+// ====================================================================
+require_once JPBD_PATH . 'includes/api/auth-routes.php';
+
 function jpbd_enqueue_react_app_assets()
 {
     if (is_singular() && has_shortcode(get_post()->post_content, 'job_portal_app')) {

@@ -297,6 +297,41 @@
   setupPasswordToggle('toggleSignupPassword', 'signupPassword');
   setupPasswordToggle('toggleSignupConfirmPassword', 'signupConfirmPassword');
 
+  const inputs = document.querySelectorAll(".otp-input");
+
+    inputs.forEach((input, index) => {
+      input.addEventListener("input", (e) => {
+        const value = e.target.value.replace(/[^0-9]/g, ""); 
+        e.target.value = value;
+
+        if (value && index < inputs.length - 1) {
+          inputs[index + 1].focus();
+        }
+      });
+
+      input.addEventListener("keydown", (e) => {
+        if (e.key === "Backspace" && !input.value && index > 0) {
+          inputs[index - 1].focus();
+        }
+      });
+
+      input.addEventListener("paste", (e) => {
+        e.preventDefault();
+        const pasteData = (e.clipboardData || window.clipboardData).getData("text").replace(/[^0-9]/g, "");
+        if (!pasteData) return;
+
+        const chars = pasteData.split("");
+        inputs.forEach((box, i) => {
+          box.value = chars[i] || "";
+        });
+
+        const lastIndex = Math.min(chars.length, inputs.length) - 1;
+        if (lastIndex >= 0) {
+          inputs[lastIndex].focus();
+        }
+      });
+    });
+
 
 
 

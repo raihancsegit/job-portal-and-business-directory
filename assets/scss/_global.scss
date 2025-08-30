@@ -5,13 +5,14 @@
 
   color-scheme: light;
   --color-primary: #C18544;
+  --color-primary-dark: #86562B;
   --color-primary-light: rgba(90, 15, 245, 0.2);
   --color-primary-text: #ffffff;
   --text-primary: #241907;
   --text-secondary: #777;
   --text-accent: #4D4536;
   --text-light: #acacac;
-  --color-border: #dddddd;
+  --color-border: #D0D0D0;
   --color-border-two: #d1d5db;
   --color-white: #fff;
   --color-gray-1: #eff2f7;
@@ -88,6 +89,7 @@
 // SASS ROOT VARIABLES
 $font-primary: var(--font-primary);
 $color-primary: var(--color-primary);
+$color-primary-dark: var(--color-primary-dark);
 $color-primary-light: var(--color-primary-light);
 $color-primary-text: var(--color-primary-text);
 $text-primary: var(--text-primary);
@@ -175,6 +177,10 @@ button,
 
 .text--primary{
   color: $color-primary !important;
+}
+
+.text--primary-dark{
+  color: $color-primary-dark !important;
 }
 
 .text--accent{
@@ -437,6 +443,13 @@ button {
     background-color: transparent;
   }
 
+    &.btn--outline {
+    border: 1px solid $color-border;
+    color: $text-primary;
+    background-color: transparent;
+  }
+
+
   &.btn--danger {
     border: 1px solid $color-danger;
     background-color: $color-danger;
@@ -470,6 +483,11 @@ button {
 
   &.btn--lg {
     padding: 12px 20px;
+    font-size: 15px;
+  }
+
+    &.btn--xl {
+    padding: 15px 20px;
     font-size: 15px;
   }
 }
