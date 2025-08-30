@@ -1,9 +1,45 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import AuthLayout from '../components/AuthLayout';
+import axios from 'axios';
+import { useAuth } from '../context/AuthContext';
 
 function LoginPage() {
-    const { assets_url } = window.jpbd_object;
+    const { assets_url, api_base_url, nonce } = window.jpbd_object;
+    const { login } = useAuth();
+    const navigate = useNavigate();
+
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
+
+    const handleLogin = async (e) => {
+        e.preventDefault();
+        setError('');
+        setLoading(true);
+
+        try {
+            const response = await axios.post(
+                `${api_base_url}auth/login`,
+                { email, password },
+                { headers: { 'X-WP-Nonce': nonce } }
+            );
+            
+            const { token, ...userData } = response.data;
+            login(userData, token);
+            navigate('/dashboard');
+
+        } catch (err) {
+            if (err.response && err.response.data && err.response.data.message) {
+                setError(err.response.data.message);
+            } else {
+                setError('Login failed. Please check your credentials.');
+            }
+        } finally {
+            setLoading(false);
+        }
+    };
 
     return (
         <AuthLayout>
@@ -31,21 +67,39 @@ function LoginPage() {
                         </div>
                     </div>
                 </div>
-
-                {/* Right Panel */}
+                
+                {/* Right Panel (সম্পূর্ণ কোড) */}
                 <div className="col-lg-6 order-lg-2 order-1 auth-right-panel">
                     <div className="blur-bg"></div>
                     <div className="blur-bg-2"></div>
                     <div className="auth-form-wrapper">
                         <h4 className="form-title">Login Your Account</h4>
-                        <form action="#">
+
+                        {error && <div className="alert alert-danger">{error}</div>}
+
+                        <form onSubmit={handleLogin}>
                             <div className="mb-3 input-wrapper">
                                 <i className="ri-user-3-fill"></i>
-                                <input type="email" className="form-control" placeholder="Email Address" />
+                                <input 
+                                    type="email" 
+                                    className="form-control" 
+                                    placeholder="Email Address" 
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    required
+                                />
                             </div>
                             <div className="mb-3 input-wrapper">
                                 <i className="ri-lock-password-fill"></i>
-                                <input type="password" id="password" className="form-control" placeholder="Password" />
+                                <input 
+                                    type="password" 
+                                    id="password"
+                                    className="form-control" 
+                                    placeholder="Password" 
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    required
+                                />
                                 <i id="togglePassword" className="ri-eye-fill toggle-eye"></i>
                             </div>
                             <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
@@ -55,7 +109,9 @@ function LoginPage() {
                                 </div>
                                 <a href="#" className="text--accent fw-semibold">Forget password?</a>
                             </div>
-                            <button type="submit" className="i-btn btn--primary btn--xl w-100 rounded-pill">LOGIN</button>
+                            <button type={loading ? 'button' : 'submit'} className="i-btn btn--primary btn--xl w-100 rounded-pill" disabled={loading}>
+                                {loading ? 'Logging in...' : 'LOGIN'}
+                            </button>
                             <div className="text-center">
                                 <span className="or-signin">Or sign in with</span>
                             </div>
@@ -68,7 +124,9 @@ function LoginPage() {
                                 </div>
                             </div>
                             <div className="have-account">
-                                <p className="text--accent fw-semibold">Don’t have an account? <Link className="text--primary" to="/signup">Signup</Link></p>
+                                <p className="text--accent fw-semibold">
+                                    Don’t have an account? <Link className="text--primary" to="/signup">Signup</Link>
+                                </p>
                             </div>
                         </form>
                     </div>

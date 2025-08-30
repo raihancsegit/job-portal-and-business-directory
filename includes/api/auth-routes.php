@@ -94,11 +94,35 @@ function jpbd_api_register_user(WP_REST_Request $request)
  */
 function jpbd_api_login_user(WP_REST_Request $request)
 {
-    // আমরা এখানে পরে আসল লগইন লজিক এবং JWT টোকেন জেনারেশন লিখব
-    // সিমুলেশন: সফল লগইন
-    return new WP_REST_Response([
-        'success' => true,
-        'message' => 'Login successful! (Sample response)',
-        'token'   => 'sample_jwt_token_for_testing_purposes',
-    ], 200);
+    $params = $request->get_json_params();
+    $email = isset($params['email']) ? $params['email'] : '';
+    $password = isset($params['password']) ? $params['password'] : '';
+
+    if (empty($email) || empty($password)) {
+        return new WP_Error('login_failed', 'Email and password are required.', ['status' => 400]);
+    }
+
+    // WP-JWT-Auth প্লাগইন থেকে দেওয়া API এন্ডপয়েন্ট কল করা
+    $login_request = new WP_REST_Request('POST', '/jwt-auth/v1/token');
+    $login_request->set_body_params([
+        'username' => $email,
+        'password' => $password,
+    ]);
+
+    $response = rest_do_request($login_request);
+    $data = rest_get_server()->response_to_data($response, false);
+
+    if ($response->is_error()) {
+        $error_code = $response->get_data()['code'];
+        $message = 'Invalid email or password.';
+        // JWT প্লাগইন বিভিন্ন এরর কোড দেয়, আমরা একটি সাধারণ মেসেজ দেখাব
+        if ($error_code === '[jwt_auth] invalid_email' || $error_code === '[jwt_auth] incorrect_password') {
+            return new WP_Error('login_failed', $message, ['status' => 403]);
+        }
+        return new WP_Error('login_failed', 'An unknown error occurred.', ['status' => 500]);
+    }
+
+    // সফল লগইনের পর JWT প্লাগইন থেকে পাওয়া ডেটা রিটার্ন করা
+    // ডেটার মধ্যে token, user_email, user_nicename, user_display_name থাকবে
+    return new WP_REST_Response($data, 200);
 }

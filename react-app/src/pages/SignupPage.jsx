@@ -1,25 +1,22 @@
-import React,{ useState } from 'react';
-import { Link ,useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import AuthLayout from '../components/AuthLayout';
 import axios from 'axios';
 
 function SignupPage() {
     const { assets_url, api_base_url, nonce } = window.jpbd_object;
-    const navigate = useNavigate(); // For redirecting after successful registration
+    const navigate = useNavigate();
 
-    // State for form inputs
     const [fullName, setFullName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
-
-    // State for loading and error messages
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [successMessage, setSuccessMessage] = useState('');
 
     const handleSignup = async (e) => {
-        e.preventDefault(); // Prevent default form submission
+        e.preventDefault();
         setError('');
         setSuccessMessage('');
 
@@ -40,20 +37,17 @@ function SignupPage() {
                 },
                 {
                     headers: {
-                        'X-WP-Nonce': nonce, // Security nonce
+                        'X-WP-Nonce': nonce,
                     },
                 }
             );
 
-            // Handle success
             setSuccessMessage(response.data.message);
-            // Optionally redirect to login page after a short delay
             setTimeout(() => {
                 navigate('/login');
             }, 2000);
 
         } catch (err) {
-            // Handle error
             if (err.response && err.response.data && err.response.data.message) {
                 setError(err.response.data.message);
             } else {
@@ -96,66 +90,65 @@ function SignupPage() {
                     <div className="blur-bg-2"></div>
                     <div className="auth-form-wrapper">
                         <h4 className="form-title">Create an account</h4>
-                          {/* Error and Success Messages */}
+
                         {error && <div className="alert alert-danger">{error}</div>}
                         {successMessage && <div className="alert alert-success">{successMessage}</div>}
+
                         <form onSubmit={handleSignup}>
                             <div className="mb-3 input-wrapper">
                                 <i className="ri-user-3-fill"></i>
-                                <input type="text" 
+                                <input
+                                    type="text"
                                     className="form-control"
-                                     placeholder="Full Name" 
-                                     value={fullName}
-                                     onChange={(e) => setFullName(e.target.value)}
-                                    required 
-                                    />
+                                    placeholder="Full Name"
+                                    value={fullName}
+                                    onChange={(e) => setFullName(e.target.value)}
+                                    required
+                                />
                             </div>
                             <div className="mb-3 input-wrapper">
                                 <i className="ri-mail-fill"></i>
-                                <input 
-                                    type="email" 
-                                    className="form-control" 
-                                    placeholder="Email Address" 
+                                <input
+                                    type="email"
+                                    className="form-control"
+                                    placeholder="Email Address"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
-                                    required 
+                                    required
                                 />
                             </div>
                             <div className="mb-3 input-wrapper">
                                 <i className="ri-lock-password-fill"></i>
-                                <input 
-                                 type="password" 
-                                 id="signupPassword" 
-                                 className="form-control" 
-                                 placeholder="Enter Password" 
-                                 required 
-                                 value={password}
-                                 onChange={(e) => setPassword(e.target.value)}
-                                 />
-                                <i id="toggleSignupPassword" className="ri-eye-fill toggle-eye"></i>
+                                <input
+                                    type="password"
+                                    className="form-control"
+                                    placeholder="Enter Password"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    required
+                                />
                             </div>
                             <div className="mb-3 input-wrapper">
                                 <i className="ri-lock-password-fill"></i>
-                                <input 
-                                    type="password" 
-                                    id="signupConfirmPassword" 
-                                    className="form-control" 
-                                    placeholder="Confirm Password" 
+                                <input
+                                    type="password"
+                                    className="form-control"
+                                    placeholder="Confirm Password"
                                     value={confirmPassword}
                                     onChange={(e) => setConfirmPassword(e.target.value)}
-                                    required 
-                                 />
-                                <i id="toggleSignupConfirmPassword" className="ri-eye-fill toggle-eye"></i>
+                                    required
+                                />
                             </div>
                             <div className="d-flex justify-content-start align-items-center mb-4">
                                 <div>
-                                    <input type="checkbox" className="form-check-input" id="remember" />
+                                    <input type="checkbox" className="form-check-input" id="remember" required/>
                                     <label htmlFor="remember" className="form-check-label text--accent">
                                         Agree with <a href="#" className="text--primary-dark fw-semibold">Terms and conditions?</a>
                                     </label>
                                 </div>
                             </div>
-                            <button type_="{_loading ? 'button' : 'submit'}" className="i-btn btn--primary btn--xl w-100 rounded-pill" disabled="{loading}">
+                            {/* এই বাটনটি ঠিক করা হয়েছে */}
+                            <button type={loading ? 'button' : 'submit'} className="i-btn btn--primary btn--xl w-100 rounded-pill" disabled={loading}>
                                 {loading ? 'Signing Up...' : 'Sign Up'}
                             </button>
                             <div className="text-center">
