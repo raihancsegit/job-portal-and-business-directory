@@ -14,6 +14,20 @@ function LoginPage() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
+    const togglePasswordVisibility = () => {
+        const passwordInput = document.getElementById('password');
+        const toggleIcon = document.getElementById('togglePassword');
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            toggleIcon.classList.remove('ri-eye-fill');
+            toggleIcon.classList.add('ri-eye-off-fill');
+        } else {
+            passwordInput.type = 'password';
+            toggleIcon.classList.remove('ri-eye-off-fill');
+            toggleIcon.classList.add('ri-eye-fill');
+        }
+    };
+
     const handleLogin = async (e) => {
         e.preventDefault();
         setError('');
@@ -100,7 +114,7 @@ function LoginPage() {
                                     onChange={(e) => setPassword(e.target.value)}
                                     required
                                 />
-                                <i id="togglePassword" className="ri-eye-fill toggle-eye"></i>
+                               <i id="togglePassword" className="ri-eye-fill toggle-eye" onClick={togglePasswordVisibility}></i>
                             </div>
                             <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
                                 <div className="form-check form-switch">

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState ,useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import AuthLayout from '../components/AuthLayout';
 import axios from 'axios';
@@ -14,6 +14,37 @@ function SignupPage() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [successMessage, setSuccessMessage] = useState('');
+
+    const passwordInputRef = useRef(null);
+    const toggleIconRef = useRef(null);
+    const confirmPasswordInputRef = useRef(null);
+    const confirmToggleIconRef = useRef(null);
+
+    const toggleSignupPasswordVisibility = () => {
+        // passwordInputRef.current হলো আসল DOM এলিমেন্ট
+        if (passwordInputRef.current.type === 'password') {
+            passwordInputRef.current.type = 'text';
+            toggleIconRef.current.classList.remove('ri-eye-fill');
+            toggleIconRef.current.classList.add('ri-eye-off-fill');
+        } else {
+            passwordInputRef.current.type = 'password';
+            toggleIconRef.current.classList.remove('ri-eye-off-fill');
+            toggleIconRef.current.classList.add('ri-eye-fill');
+        }
+    };
+
+    const toggleConfirmPasswordVisibility = () => {
+        if (confirmPasswordInputRef.current.type === 'password') {
+            confirmPasswordInputRef.current.type = 'text';
+            confirmToggleIconRef.current.classList.remove('ri-eye-fill');
+            confirmToggleIconRef.current.classList.add('ri-eye-off-fill');
+        } else {
+            confirmPasswordInputRef.current.type = 'password';
+            confirmToggleIconRef.current.classList.remove('ri-eye-off-fill');
+            confirmToggleIconRef.current.classList.add('ri-eye-fill');
+        }
+    };
+
 
     const handleSignup = async (e) => {
         e.preventDefault();
@@ -119,25 +150,41 @@ function SignupPage() {
                             </div>
                             <div className="mb-3 input-wrapper">
                                 <i className="ri-lock-password-fill"></i>
-                                <input
+                                 <input
                                     type="password"
+                                    id="signupPassword" // id রাখতে পারেন বা বাদও দিতে পারেন
+                                    ref={passwordInputRef} // ref যোগ করা হলো
                                     className="form-control"
                                     placeholder="Enter Password"
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                     required
                                 />
+                                <i 
+                                    id="toggleSignupPassword" 
+                                    ref={toggleIconRef} // ref যোগ করা হলো
+                                    className="ri-eye-fill toggle-eye" 
+                                    onClick={toggleSignupPasswordVisibility}
+                                ></i>
                             </div>
                             <div className="mb-3 input-wrapper">
                                 <i className="ri-lock-password-fill"></i>
-                                <input
+                                 <input
                                     type="password"
+                                    id="signupConfirmPassword"
+                                    ref={confirmPasswordInputRef} // ref যোগ করা হলো
                                     className="form-control"
                                     placeholder="Confirm Password"
                                     value={confirmPassword}
                                     onChange={(e) => setConfirmPassword(e.target.value)}
                                     required
                                 />
+                                <i 
+                                    id="toggleSignupConfirmPassword" 
+                                    ref={confirmToggleIconRef} // ref যোগ করা হলো
+                                    className="ri-eye-fill toggle-eye" 
+                                    onClick={toggleConfirmPasswordVisibility}
+                                ></i>
                             </div>
                             <div className="d-flex justify-content-start align-items-center mb-4">
                                 <div>
