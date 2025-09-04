@@ -2,25 +2,29 @@
 
 :root {
   --font-primary:  "Pretendard", sans-serif;
-
   color-scheme: light;
   --color-primary: #C18544;
+  --color-primary-light: #E4B65F;
   --color-primary-dark: #86562B;
-  --color-primary-light: rgba(90, 15, 245, 0.2);
   --color-primary-text: #ffffff;
   --text-primary: #241907;
   --text-secondary: #777;
+  --text-icon: #4A4C4C;
   --text-accent: #4D4536;
-  --text-light: #acacac;
+  --text-light: #F6F6F3;
+  --text-light-2: #FFF0D4;
   --color-border: #D0D0D0;
   --color-border-two: #d1d5db;
+  --color-border-three: rgba(74, 76, 76, 0.25);
+  --color-border-four: rgb(169, 170, 170,0.5);
   --color-white: #fff;
   --color-gray-1: #eff2f7;
   --color-dark: #152130;
-  --site-bg: #e0e0ff;
-  --card-bg: #fff;
+  --site-bg:#E2DFD8;
+  --card-bg: #f6f6f3;
   --topbar-bg: #fff;
   --sidebar-bg: #fff;
+  --bg-light: #EAE6E0;
 
   --color-success: rgb(10, 179, 156);
   --color-success-light: rgba(10, 179, 156, 0.15);
@@ -32,58 +36,29 @@
   --color-info-light: rgba(45, 140, 210, 0.15);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    color-scheme: dark;
-    --color-primary-text: #ffffff;
-    --text-primary: rgba(255, 255, 255, 0.8);
-    --text-secondary: rgba(255, 255, 255, 0.5);
-    --text-light: #acacac;
-    --color-border: #424e5a;
-    --color-white: #ffffff;
-    --color-gray-1: rgba(240, 243, 247, 0.15);
-    --color-dark: #152130;
-    --site-bg: rgb(27, 35, 53);
-    --card-bg: rgba(43,53,73);
-    --topbar-bg: rgba(43,53,73);
-
-    --sidebar-bg: #38414a;
-  }
-}
-
 [color-scheme="light"] {
   color-scheme: light;
+  --color-primary: #C18544;
+  --color-primary-light: #E4B65F;
+  --color-primary-dark: #86562B;
   --color-primary-text: #ffffff;
   --text-primary: #15192c;
   --text-secondary: #777;
-  --text-light: #acacac;
-  --color-border: #dddddd;
-  --color-border-two: #e3e3e3;
+  --text-icon: #4A4C4C;
+  --text-light: #F6F6F3;
+  --text-light-2: #FFF0D4;
+  --color-border: #D0D0D0;
+  --color-border-two: #d1d5db;
+ --color-border-three: rgba(74, 76, 76, 0.25);
+ --color-border-four: rgb(169, 170, 170,0.5);
   --color-white: #fff;
   --color-gray-1: #eff2f7;
   --color-dark: #152130;
-  --site-bg: #f3f3f9;
-  --card-bg: #fff;
+  --site-bg: #E2DFD8;
+  --card-bg: #F6F6F3;
   --topbar-bg: #fff;
   --sidebar-bg: #fff;
-}
-
-[color-scheme="dark"] {
-  color-scheme: dark;
-
-  --color-primary-text: #ffffff;
-  --text-primary: rgba(255, 255, 255, 0.8);
-  --text-secondary: rgba(255, 255, 255, 0.5);
-  --text-light: #acacac;
-  --color-border: #424e5a;
-  --color-white: #fff;
-  --color-gray-1: rgba(240, 243, 247, 0.15);
-  --color-dark: #152130;
-  --site-bg: rgb(27, 35, 53);
-  --card-bg: rgba(43,53,73);
-  --topbar-bg: rgba(43,53,73);
-
-  --sidebar-bg: #38414a;
+  --bg-light: #EAE6E0;
 }
 
 // SASS ROOT VARIABLES
@@ -94,10 +69,14 @@ $color-primary-light: var(--color-primary-light);
 $color-primary-text: var(--color-primary-text);
 $text-primary: var(--text-primary);
 $text-secondary: var(--text-secondary);
+$text-icon: var(--text-icon);
 $text-accent: var(--text-accent);
 $text-light: var(--text-light);
+$text-light-two: var(--text-light-2);
 $color-border: var(--color-border);
 $color-border-two: var(--color-border-two);
+$color-border-three: var(--color-border-three);
+$color-border-four: var(--color-border-four);
 $color-gray-1: var(--color-gray-1);
 $color-dark: var(--color-dark);
 $color-white: var(--color-white);
@@ -105,6 +84,7 @@ $site-bg: var(--site-bg);
 $card-bg: var(--card-bg);
 $topbar-bg: var(--topbar-bg);
 $sidebar-bg: var(--sidebar-bg);
+$bg-light: var(--bg-light);
 
 $color-success: var(--color-success);
 $color-success-light: var(--color-success-light);
@@ -173,6 +153,20 @@ button,
 }
 .cursor-pointer {
   cursor: pointer;
+}
+
+.fs-72{
+  font-size: 72px !important;
+  line-height: 1.2;
+}
+
+.fs-100{
+  font-size: 100px;
+  line-height: 1;
+}
+
+.min-h-176{
+  min-height: 176px !important; 
 }
 
 .text--primary{
@@ -247,7 +241,7 @@ button,
 }
 
 .i-badge {
-  border-radius: 3px;
+  border-radius: 30px;
   display: inline-block;
   padding: 6px 8px;
   font-size: 12px;
@@ -263,7 +257,24 @@ button,
     border-radius: 50px;
   }
 
+  &.big-badge{
+    height: 48px;
+    padding: 0px 16px;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 16px;
+  }
+
   @at-root {
+    .soft {
+      background-color: $bg-light;
+      color: $text-accent;
+      &:hover {
+        background-color: $color-primary;
+        color: $color-white;
+      }
+    }
     .success {
       background-color: $color-success-light;
       color: $color-success;
@@ -399,10 +410,26 @@ button,
 }
 .icon-btn-lg {
   @include square(40px, 4px);
+  min-width: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 20px;
+  border-radius: 50%;
+  border: 1px solid $color-border;
+  background-color: $card-bg;
+  @include transition-4;
+  i{
+    color: $text-icon;
+  }
+
+  &:hover{
+    background-color: $color-primary;
+
+    i{
+      color: $color-white;
+    }
+  }
 }
 
 // Buttons Css
@@ -423,7 +450,7 @@ button {
   -webkit-user-select: none;
   -moz-user-select: none;
   user-select: none;
-  border-radius: 3px;
+  border-radius: 30px;
   transition: 0.35s;
   line-height: 1;
 
@@ -435,6 +462,40 @@ button {
     background-color: $color-primary;
     border: 1px solid $color-primary;
     color: $color-primary-text;
+  }
+
+    &.btn--dark {
+    background-color: $text-primary;
+    border: 1px solid $text-primary;
+    color: $color-primary-text;
+    display: inline-flex;
+    align-items: center;
+    line-height: 1;
+
+    &:hover{
+      background-color: $color-primary-dark;
+      border: 1px solid $color-primary-dark;
+
+    }
+
+    span{
+      display: inline-block;
+      min-width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: $color-white;
+      margin-left: 8px;
+      transition: 0.42s ease;
+
+      i{
+        font-size: 16px;
+        color: $text-primary;
+        line-height: 1;
+      }
+    }
   }
 
   &.btn--primary-outline {
@@ -482,13 +543,19 @@ button {
   }
 
   &.btn--lg {
-    padding: 12px 20px;
-    font-size: 15px;
+    padding: 14px 20px;
+    font-size: 16px;
   }
 
     &.btn--xl {
-    padding: 15px 20px;
-    font-size: 15px;
+    padding: 10px 14px 10px 20px;
+    font-size: 17px;
+    height: 56px;
+
+    @include lg-down-device{
+      height: 42px;
+      font-size: 14px;
+    }
   }
 }
 
@@ -535,6 +602,9 @@ button {
     font-size: 34px;
     font-weight: 700;
     margin-bottom: 0px;
+    @include lg-down-device{
+      font-size: 28px;
+    }
   }
   P {
     margin-bottom: 0px;
@@ -566,8 +636,8 @@ button {
     width: 50px;
   }
   &-xl {
-    height: 60px;
-    width: 60px;
+    height: 64px;
+    width: 64px;
   }
   &-xxl {
     height: 75px;

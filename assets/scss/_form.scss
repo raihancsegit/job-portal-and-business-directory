@@ -6,6 +6,7 @@
     border-radius: 20px;
     padding: 35px 40px;
     z-index: 2;
+    box-shadow: 0px 0px 80px 0px rgba(0,0,0,0.1);
 
     @include xl-device {
         padding: 30px 30px;
@@ -20,6 +21,7 @@
 
     &.card-transparent{
         background-color: transparent;
+        box-shadow: unset;
 
         .input-wrapper{
             background-color: transparent;
@@ -116,6 +118,7 @@
     @include lg-down-device{
         height: auto;
         padding: 120px 20px 60px;
+        min-height: auto;
     }
 
 .blur-bg{
@@ -127,19 +130,19 @@
   top: 40%;
   transform: translateY(-50%);
   z-index: -1;
-  filter: blur(300px);
+  filter: blur(260px);
 }
 
 .blur-bg-2{
   background-color: $color-primary;
-  width: 290px;
-  height: 300px;
+  width: 250px;
+  height: 250px;
   position: absolute;
   left: -50px;
   top: -50px;
   transform: translateY(-50%);
   z-index: -1;
-  filter: blur(140px);
+  filter: blur(120px);
 }
 }
 
@@ -148,6 +151,11 @@
     max-width: 166px;
     margin: 0 auto 25px;
     animation: slowJump 2s ease-in-out infinite;
+    position: relative;
+
+    @include lg-down-device{
+        max-width: 120px;
+    }
 }
 
 @keyframes slowJump {
@@ -166,6 +174,18 @@
     z-index: 1;
     overflow: hidden;
 
+    .blur-bg-3{
+        background-color: $color-primary;
+        width: 270px;
+        height: 250px;
+        position: absolute;
+        right: 20px;
+        top: 20px;
+        transform: translateY(-50%);
+        z-index: -1;
+        filter: blur(200px);
+        }
+
     
     @include lg-down-device{
         min-height: 700px;
@@ -177,7 +197,7 @@
         width: 100%;
         height: 100%;
         background-color: $color-primary;
-        opacity: 0.25;
+        opacity: 0.26;
         position: absolute;
         inset: 0;
         z-index: -1;
@@ -205,8 +225,15 @@
             }
     }
 
-        &.otp-image{
-        max-width: 620px;
+    &.otp-image{
+        max-width: 520px;
+
+        @include fifteen-down-device {
+            max-width: 380px;
+        }
+    }
+    &.new-password-image{
+        max-width: 470px;
 
         @include fifteen-down-device {
             max-width: 380px;
@@ -498,6 +525,10 @@ select {
     display: block;
     font-size: 13px;
 }
+.form-select{
+    padding: .75rem 2.2rem .75rem 1rem !important;
+    border-radius: 30px;
+}
 
 .select2.select2-container {
     width: 100% !important;
@@ -543,6 +574,7 @@ select {
     border: 1px solid $color-border !important;
     border-radius: 40px;
     padding: 10px 12px;
+    background-color: $card-bg;
 
     &:focus {
         box-shadow: none;
@@ -689,6 +721,10 @@ select {
         max-width: 80px;
         display: flex;
         align-items: center;
+
+        @include lg-down-device{
+            max-width: 60px;
+        }
     }
 
     .header-right{
@@ -750,4 +786,18 @@ select {
     select:focus {
       outline: none;
     }
+}
+
+.separator{
+    display: block;
+    width: 100%;
+    height: 1px;
+    background-color: $color-border;
+}
+
+
+.form-block{
+    margin-bottom: 24px;
+    border-bottom: 1px solid $color-border;
+    padding-bottom: 24px;
 }

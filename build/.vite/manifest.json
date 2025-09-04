@@ -4,7 +4,7 @@
     "name": "index"
   },
   "admin/main.jsx": {
-    "file": "assets/admin-BLkMlu2J.js",
+    "file": "assets/admin-CXK7dW7x.js",
     "name": "admin",
     "src": "admin/main.jsx",
     "isEntry": true,
@@ -16,7 +16,7 @@
     ]
   },
   "src/main.jsx": {
-    "file": "assets/frontend-B9mGXBNv.js",
+    "file": "assets/frontend-CXNWWUIr.js",
     "name": "frontend",
     "src": "src/main.jsx",
     "isEntry": true,

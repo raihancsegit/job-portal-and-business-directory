@@ -143,7 +143,7 @@ function LoginPage() {
                                     <input type="checkbox" className="form-check-input mt-1" id="remember" />
                                     <label htmlFor="remember" className="form-check-label text--accent remember-label">Remember me</label>
                                 </div>
-                                <a href="#" className="text--accent fw-semibold">Forget password?</a>
+                                <Link to="/forgot-password" className="text--accent fw-semibold">Forget password?</Link>
                             </div>
                             <button type={loading ? 'button' : 'submit'} className="i-btn btn--primary btn--xl w-100 rounded-pill" disabled={loading}>
                                 {loading ? 'Logging in...' : 'LOGIN'}

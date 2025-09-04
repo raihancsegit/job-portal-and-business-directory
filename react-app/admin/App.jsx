@@ -179,93 +179,82 @@ const BackgroundSettings = ({ settings, setSettings, handleSave }) => {
 // মূল অ্যাডমিন পেজ কম্পোনেন্ট
 // মূল অ্যাডমিন পেজ কম্পোনেন্ট
 function SettingsPage() {
-  const [activeTab, setActiveTab] = useState('social_login');
-    // প্রাথমিক state হবে একটি খালি অবজেক্ট, null নয়। এটি Type Error প্রতিরোধ করবে।
-    const [settings, setSettings] = useState({}); 
+    const [activeTab, setActiveTab] = useState('social_login');
+    const [settings, setSettings] = useState(null); // প্রাথমিক state হবে null
     const [loading, setLoading] = useState(true);
     const [notice, setNotice] = useState({ message: '', type: '' });
 
-    // ======================================================
-    // API থেকে সেটিংস লোড করার জন্য useEffect
-    // ======================================================
-      useEffect(() => {
+    // PHP থেকে পাঠানো আমাদের নতুন এবং নির্ভরযোগ্য অবজেক্ট
+    const { api_url, nonce } = window.jpbd_admin_object || {};
+
+    useEffect(() => {
         const fetchSettings = async () => {
+            if (!nonce) {
+                console.error("Nonce is missing. Cannot fetch settings.");
+                setNotice({ message: 'Error: Security token is missing.', type: 'error' });
+                setLoading(false);
+                return;
+            }
+
             setLoading(true);
             try {
-                // WordPress অ্যাডমিন পেজে window.wpApiSettings অবজেক্টটি ডিফল্টভাবে থাকে
-                const nonce = window.wpApiSettings?.nonce || '';
-                
-                const response = await axios.get('/wp-json/jpbd/v1/settings', {
-                    headers: { 
-                        'X-WP-Nonce': nonce // Nonce টি হেডার হিসেবে পাঠানো হচ্ছে
-                    },
+                const response = await axios.get(`${api_url}settings`, {
+                    headers: { 'X-WP-Nonce': nonce }, // আমাদের নতুন Nonce ব্যবহার করা হচ্ছে
                 });
-                
                 setSettings(response.data);
             } catch (error) {
                 console.error("Failed to fetch settings:", error);
-                setNotice({ message: 'Error: Could not load settings. Check console for details.', type: 'error' });
+                setNotice({ message: 'Error: Could not load settings.', type: 'error' });
             } finally {
                 setLoading(false);
             }
         };
-
         fetchSettings();
     }, []);
-    // ======================================================
-    // API-তে সেটিংস সেভ করার জন্য handleSave ফাংশন
-    // ======================================================
+
     const handleSave = async (updatedSettings, successMessage) => {
+        if (!nonce) {
+            console.error("Nonce is missing. Cannot save settings.");
+            setNotice({ message: 'Error: Security token is missing.', type: 'error' });
+            return;
+        }
         setNotice({ message: 'Saving...', type: 'info' });
         try {
-            const nonce = window.wpApiSettings?.nonce || '';
-            
-            await axios.post('/wp-json/jpbd/v1/settings', updatedSettings, {
-                headers: { 'X-WP-Nonce': nonce },
+            await axios.post(`${api_url}settings`, updatedSettings, {
+                headers: { 'X-WP-Nonce': nonce }, // আমাদের নতুন Nonce ব্যবহার করা হচ্ছে
             });
-            
             setNotice({ message: successMessage, type: 'success' });
         } catch (error) {
             console.error("Failed to save settings:", error);
             setNotice({ message: 'Error: Could not save settings.', type: 'error' });
         }
-
-        // ৪ সেকেন্ড পর নোটিশটি মুছে যাবে
         setTimeout(() => setNotice({ message: '', type: '' }), 4000);
     };
 
-    // ডেটা লোড না হওয়া পর্যন্ত একটি লোডিং মেসেজ দেখানো
     if (loading) {
-        return (
-            <div className="wrap jpbd-admin-wrap">
-                <h1>Loading Settings...</h1>
-            </div>
-        );
+        return <div className="wrap"><h1>Loading Settings...</h1></div>;
     }
 
     return (
         <div className="wrap jpbd-admin-wrap">
             <h1>Job Portal & Business Directory</h1>
-
-            {/* ডাইনামিক নোটিশ মেসেজ */}
-             {notice.message && (
+            {notice.message && (
                 <div className={`notice is-dismissible notice-${notice.type}`}>
                     <p>{notice.message}</p>
                 </div>
             )}
-
-             <div className="jpbd-admin-layout">
+            <div className="jpbd-admin-layout">
                 <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
                 <div className="jpbd-admin-content">
-                    {/* settings অবজেক্টটি এখন আর null হতে পারে না, তাই কোনো ক্র্যাশ হবে না */}
-                    {activeTab === 'social_login' && (
+                    {/* settings লোড হওয়ার পরেই কম্পোনেন্ট রেন্ডার হবে */}
+                    {settings && activeTab === 'social_login' && (
                         <SocialLoginSettings 
                             settings={settings} 
                             setSettings={setSettings} 
                             handleSave={handleSave} 
                         />
                     )}
-                    {activeTab === 'backgrounds' && (
+                    {settings && activeTab === 'backgrounds' && (
                         <BackgroundSettings 
                             settings={settings} 
                             setSettings={setSettings} 

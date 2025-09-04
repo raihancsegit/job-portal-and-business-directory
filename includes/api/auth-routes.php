@@ -50,6 +50,27 @@ function jpbd_register_auth_routes()
         'permission_callback' => '__return_true',
     ]);
 
+    // ধাপ ১: পাসওয়ার্ড রিসেট রিকোয়েস্ট এবং OTP পাঠানো
+    register_rest_route('jpbd/v1', '/auth/request-reset', [
+        'methods' => 'POST',
+        'callback' => 'jpbd_api_request_password_reset',
+        'permission_callback' => '__return_true',
+    ]);
+
+    // ধাপ ২: OTP ভেরিফাই করা
+    register_rest_route('jpbd/v1', '/auth/verify-token', [
+        'methods' => 'POST',
+        'callback' => 'jpbd_api_verify_reset_token',
+        'permission_callback' => '__return_true',
+    ]);
+
+    // ধাপ ৩: নতুন পাসওয়ার্ড সেট করা
+    register_rest_route('jpbd/v1', '/auth/reset-password', [
+        'methods' => 'POST',
+        'callback' => 'jpbd_api_set_new_password',
+        'permission_callback' => '__return_true',
+    ]);
+
     // ভবিষ্যতে এখানে /auth/forget-password ইত্যাদি যোগ হবে
 }
 add_action('rest_api_init', 'jpbd_register_auth_routes');
@@ -332,4 +353,91 @@ function jpbd_api_handle_linkedin_callback(WP_REST_Request $request)
     // --- ড্যাশবোর্ডে রিডাইরেক্ট ---
     wp_redirect(site_url('/job-portal/dashboard'));
     exit;
+}
+
+function jpbd_api_request_password_reset(WP_REST_Request $request)
+{
+    $params = $request->get_json_params();
+    $email = isset($params['email']) ? sanitize_email($params['email']) : '';
+
+    if (!is_email($email)) {
+        return new WP_Error('invalid_email', 'Invalid email address provided.', ['status' => 400]);
+    }
+
+    $user = get_user_by('email', $email);
+    if (!$user) {
+        // ব্যবহারকারী খুঁজে না পেলেও আমরা একটি সফল মেসেজ দেখাবো নিরাপত্তার জন্য
+        // যাতে কেউ ইমেল অ্যাড্রেস অনুমান করতে না পারে।
+        return new WP_REST_Response(['success' => true, 'message' => 'If an account with that email exists, a password reset code has been sent.'], 200);
+    }
+
+    // একটি ৬ সংখ্যার OTP তৈরি করা
+    $token = str_pad(rand(0, 999999), 6, '0', STR_PAD_LEFT);
+    $expiration_time = time() + (15 * 60); // টোকেনটি ১৫ মিনিটের জন্য বৈধ থাকবে
+
+    // টোকেন এবং এর মেয়াদ শেষ হওয়ার সময় user meta-তে সেভ করা
+    update_user_meta($user->ID, 'jpbd_reset_token', $token);
+    update_user_meta($user->ID, 'jpbd_reset_token_expires', $expiration_time);
+
+    // ব্যবহারকারীকে ইমেল পাঠানো
+    $subject = 'Your Password Reset Code for ' . get_bloginfo('name');
+    $message = "Hello,\n\nYour password reset code is: " . $token . "\n\nThis code will expire in 15 minutes.\n\nIf you did not request this, please ignore this email.";
+    wp_mail($email, $subject, $message);
+
+    return new WP_REST_Response(['success' => true, 'message' => 'A password reset code has been sent to your email.'], 200);
+}
+
+
+function jpbd_api_verify_reset_token(WP_REST_Request $request)
+{
+    $params = $request->get_json_params();
+    $email = isset($params['email']) ? sanitize_email($params['email']) : '';
+    $token = isset($params['token']) ? sanitize_text_field($params['token']) : '';
+
+    $user = get_user_by('email', $email);
+    if (!$user) {
+        return new WP_Error('invalid_token', 'Invalid token or email.', ['status' => 400]);
+    }
+
+    $stored_token = get_user_meta($user->ID, 'jpbd_reset_token', true);
+    $expiration = get_user_meta($user->ID, 'jpbd_reset_token_expires', true);
+
+    if ($stored_token !== $token || time() > $expiration) {
+        return new WP_Error('invalid_token', 'Your reset code is invalid or has expired.', ['status' => 400]);
+    }
+
+    // টোকেন সঠিক হলে, একটি অস্থায়ী ভেরিফিকেশন টোকেন তৈরি করে পাঠানো যেতে পারে
+    // অথবা শুধু সফলতার মেসেজ পাঠানো যেতে পারে।
+    return new WP_REST_Response(['success' => true, 'message' => 'Token verified successfully.'], 200);
+}
+
+
+function jpbd_api_set_new_password(WP_REST_Request $request)
+{
+    $params = $request->get_json_params();
+    $email = isset($params['email']) ? sanitize_email($params['email']) : '';
+    $token = isset($params['token']) ? sanitize_text_field($params['token']) : '';
+    $password = isset($params['password']) ? $params['password'] : '';
+
+    $user = get_user_by('email', $email);
+    if (!$user) {
+        return new WP_Error('invalid_data', 'Invalid data provided.', ['status' => 400]);
+    }
+
+    // টোকেনটি আবার ভেরিফাই করা নিরাপত্তার জন্য
+    $stored_token = get_user_meta($user->ID, 'jpbd_reset_token', true);
+    $expiration = get_user_meta($user->ID, 'jpbd_reset_token_expires', true);
+
+    if ($stored_token !== $token || time() > $expiration) {
+        return new WP_Error('invalid_token', 'Your session has expired. Please try again.', ['status' => 400]);
+    }
+
+    // নতুন পাসওয়ার্ড সেট করা
+    wp_set_password($password, $user->ID);
+
+    // ব্যবহৃত টোকেনটি মুছে ফেলা
+    delete_user_meta($user->ID, 'jpbd_reset_token');
+    delete_user_meta($user->ID, 'jpbd_reset_token_expires');
+
+    return new WP_REST_Response(['success' => true, 'message' => 'Password has been reset successfully. You can now log in.'], 200);
 }

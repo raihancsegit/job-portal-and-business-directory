@@ -10,7 +10,7 @@ function AuthLayout({ children }) {
                 <div className="auth-header">
                     <div className="logo">
                         <Link to="/">
-                            <img src={`${assets_url}images/logo/logo.svg`} alt="logo" />
+                            <img src={`${assets_url}images/icons/logo/logo.svg`} alt="logo" />
                         </Link>
                     </div>
                     <div className="header-right">

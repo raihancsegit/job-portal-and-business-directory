@@ -1,10 +1,10 @@
 .header {
-  width: calc(100% - 265px);
+  width: calc(100% - 260px);
   margin-left: auto;
-  height: 70px;
-  line-height: 70px;
-  padding: 0 20px;
-  background-color: $topbar-bg;
+  height: 85px;
+  line-height: 85px;
+  padding: 30px 20px 10px;
+  background-color: $site-bg;
   border-bottom: 1px solid $site-bg;
   position: sticky;
   top: 0;
@@ -30,18 +30,24 @@
     align-items: center;
     .btn-icon {
       position: relative;
-      background-color: $site-bg;
-      width: 32px;
-      height: 32px;
+      background-color: $card-bg;
+      width: 56px;
+      height: 56px;
       border-radius: 50%;
       font-size: 18px;
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      color: $text-secondary;
+      color: $text-accent;
       cursor: pointer;
       @include transition-3;
+
+      @include lg-down-device{
+        width: 34px;
+        height: 34px;
+        font-size: 16px;
+      }
       &:hover {
         background-color: $color-primary;
         color: $color-primary-text;
@@ -175,55 +181,27 @@
       }
     }
 
-    .lang-dropdown {
-      .btn-icon {
-        &:hover {
-          background-color: transparent;
-        }
-        .flag-icon {
-          line-height: 35px;
-          &.flag-icon-squared {
-            width: 35px !important;
-          }
-        }
-      }
-      .dropdown-menu {
-        ul {
-          li {
-            a {
-              display: flex;
-              align-items: center;
-              gap: 8px;
-              padding: 8px 15px;
-              color: $text-primary;
-              font-size: 14px;
-              i {
-                font-size: 16px;
-              }
-              &:hover {
-                background-color: $color-gray-1;
-              }
-            }
-          }
-        }
-      }
-    }
 
     .notification-dropdown {
       position: relative;
       > span {
         position: absolute;
-        top: -1px;
-        right: -1px;
-        @include square(14px, 50%);
+        top: 7px;
+        right: 12px;
+        @include square(16px, 50%);
         border: 1px solid $color-white;
-        background-color: $color-danger;
-        color: $color-primary-text;
-        font-size: 8px;
+        background-color: $color-primary-light;
+        color: $text-primary;
+        font-size: 12px;
+        font-weight: 600;
         display: flex;
         align-items: center;
         justify-content: center;
         z-index: 1;
+        @include lg-down-device{
+          top: -1px;
+          right: -1px;
+        }
       }
       .dropdown-menu {
         width: 320px;
@@ -244,6 +222,7 @@
         .notification-items {
           padding: 15px 0 0;
           max-height: 350px;
+          overflow: auto;
           .notification-item {
             margin-bottom: 10px;
             [dir="rtl"] & {
@@ -348,7 +327,10 @@
     .profile-dropdown {
       .topbar-profile {
         img {
-          @include square(35px, 50%);
+          @include square(56px, 50%);
+          @include lg-down-device{
+            @include square(34px, 50%);
+          }
         }
       }
       .dropdown-menu {
@@ -417,3 +399,11 @@
     margin-top: 18px;
   }
 }
+
+    .page-title {
+      font-size: 32px;
+
+      @include lg-down-device{
+        font-size: 24px;
+      }
+    }
