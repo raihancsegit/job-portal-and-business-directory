@@ -134,5 +134,10 @@
         }
     .card-body {
         padding: 30px;
+
+        @include lg-down-device{
+            padding: 16px;
+        }
     }
 }
+

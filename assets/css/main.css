@@ -211,6 +211,15 @@ button,
   padding-bottom: 100px;
 }
 
+.small-select {
+  width: 100px;
+  font-size: 14px;
+}
+.small-select .form-select {
+  padding: 0 10px;
+  height: 46px;
+}
+
 .i-badge {
   border-radius: 30px;
   display: inline-block;
@@ -516,6 +525,10 @@ button {
   margin-bottom: 40px;
 }
 
+.mb-35 {
+  margin-bottom: 35px;
+}
+
 .mb-30 {
   margin-bottom: 30px;
 }
@@ -546,6 +559,10 @@ button {
 
 .mt-10 {
   margin-bottom: 10px;
+}
+
+.radius-30 {
+  border-radius: 30px !important;
 }
 
 .section-title h2 {
@@ -1197,6 +1214,11 @@ table.dataTable.no-footer {
 .i-card-md .card-body {
   padding: 30px;
 }
+@media (max-width: 991px) {
+  .i-card-md .card-body {
+    padding: 16px;
+  }
+}
 
 .table-wrapper {
   background: #f9f8f6;
@@ -1846,8 +1868,9 @@ select {
 }
 
 .form-select {
-  padding: 0.75rem 2.2rem 0.75rem 1rem !important;
+  padding: 0.75rem 2.2rem 0.75rem 1rem;
   border-radius: 30px;
+  font-size: 14px;
 }
 
 .select2.select2-container {
@@ -1897,7 +1920,7 @@ select {
 
 .form-control {
   border: 1px solid var(--color-border) !important;
-  border-radius: 40px;
+  border-radius: 25px;
   padding: 10px 12px;
   background-color: var(--card-bg);
 }
@@ -2672,6 +2695,7 @@ select {
   padding: 16px 20px 20px;
   transition: 0.4s;
   position: relative;
+  background-color: var(--site-bg);
 }
 @media (max-width: 991px) {
   .main-content {
@@ -2787,4 +2811,68 @@ select {
   width: 1px;
   height: 50px;
   background-color: #ddd;
+}
+
+.multiFormContainer .stepper {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 35px;
+}
+.multiFormContainer .stepper .step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative !important;
+  flex: 1;
+  text-align: center;
+}
+.multiFormContainer .stepper .circle {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: var(--card-bg);
+  border: 1px solid var(--color-border);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 auto 12px;
+  z-index: 2;
+}
+.multiFormContainer .stepper .active .circle {
+  background: var(--color-primary-dark);
+  border: 1px solid var(--color-primary-dark);
+  color: #fff;
+}
+.multiFormContainer .stepper .active .line {
+  background-color: var(--color-primary-dark);
+}
+.multiFormContainer .stepper h6 {
+  font-weight: 700;
+  font-size: 16px;
+}
+@media (max-width: 991px) {
+  .multiFormContainer .stepper h6 {
+    font-size: 14px;
+  }
+}
+.multiFormContainer .stepper .active h6 {
+  color: var(--color-primary-dark);
+}
+.multiFormContainer .stepper .line {
+  position: absolute;
+  top: 30px;
+  left: 50%;
+  width: 100%;
+  height: 3px;
+  background: var(--color-border);
+  z-index: 1;
+}
+.multiFormContainer .form-section {
+  display: none;
+  min-height: 50vh;
+}
+.multiFormContainer .form-section.active {
+  display: block;
 }/*# sourceMappingURL=main.css.map */

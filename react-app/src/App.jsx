@@ -6,7 +6,7 @@ import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import VerifyOtpPage from './pages/VerifyOtpPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
 import PasswordSuccessPage from './pages/PasswordSuccessPage';
-
+import CreateOpportunityPage from './pages/dashboard/CreateOpportunityPage';
 // Dashboard Components
 import DashboardLayout from './components/dashboard/DashboardLayout';
 import DashboardHomePage from './pages/dashboard/DashboardHomePage';
@@ -28,10 +28,15 @@ function App() {
         {/* Protected Routes */}
         {/* === Protected Dashboard Routes (Uses DashboardLayout) === */}
         <Route path="/dashboard" element={<DashboardLayout />}>
-          <Route index element={<DashboardHomePage />} />
-          <Route path="settings" element={<SettingsPage />} />
-          {/* Add other dashboard routes here as you build them */}
-          {/* Example: <Route path="opportunities" element={<OpportunitiesPage />} /> */}
+          <Route index element={<DashboardHomePage />} handle={{ title: 'Dashboard' }}/>
+          <Route path="settings" element={<SettingsPage />} handle={{ title: 'Settings' }}/>
+          <Route path="create-opportunity" element={<CreateOpportunityPage />} />
+          {/* <Route 
+            path="opportunities" 
+            element={<OpportunitiesPage />} 
+            handle={{ title: 'Opportunities' }} 
+          /> */}
+          
         </Route>
 
         {/* Default route should be the login page */}

@@ -240,6 +240,16 @@ button,
   padding-bottom: 100px;
 }
 
+.small-select{
+  width: 100px;
+  font-size: 14px;
+
+  .form-select{
+    padding: 0 10px;
+    height: 46px;
+  }
+}
+
 .i-badge {
   border-radius: 30px;
   display: inline-block;
@@ -567,6 +577,10 @@ button {
   margin-bottom: 40px;
 }
 
+.mb-35 {
+  margin-bottom: 35px;
+}
+
 .mb-30 {
   margin-bottom: 30px;
 }
@@ -595,8 +609,11 @@ button {
   margin-bottom: 10px;
 }
 
-// section-title
+.radius-30{
+  border-radius: 30px !important;
+}
 
+// section-title
 .section-title {
   h2 {
     font-size: 34px;

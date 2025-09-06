@@ -1,4 +1,5 @@
 <?php
+
 // Exit if accessed directly.
 if (!defined('ABSPATH')) {
     exit;
@@ -39,6 +40,7 @@ final class Job_Portal_Main
         require_once JPBD_PATH . 'includes/api/auth-routes.php';
         require_once JPBD_PATH . 'includes/api/settings-routes.php';
         require_once JPBD_PATH . 'includes/api/dashboard-setting-routes.php';
+        require_once JPBD_PATH . 'includes/api/opportunities-routes.php';
     }
 
     private function init_hooks()

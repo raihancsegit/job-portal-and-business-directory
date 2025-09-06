@@ -526,8 +526,9 @@ select {
     font-size: 13px;
 }
 .form-select{
-    padding: .75rem 2.2rem .75rem 1rem !important;
+    padding: .75rem 2.2rem .75rem 1rem ;
     border-radius: 30px;
+    font-size: 14px;
 }
 
 .select2.select2-container {
@@ -572,7 +573,7 @@ select {
 }
 .form-control {
     border: 1px solid $color-border !important;
-    border-radius: 40px;
+    border-radius: 25px;
     padding: 10px 12px;
     background-color: $card-bg;
 

@@ -1,10 +1,38 @@
 import React from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { Link } from 'react-router-dom';
+import { Link,useLocation } from 'react-router-dom';
+
+const getPageTitle = (pathname) => {
+    // We get the last part of the URL. e.g., '/dashboard/settings' becomes 'settings'
+    const lastSegment = pathname.split('/').pop();
+
+    switch (lastSegment) {
+        case 'dashboard':
+            return 'Dashboard';
+        case 'settings':
+            return 'Settings';
+        case 'opportunities':
+            return 'Opportunities';
+        // Add more cases here for future pages
+        // e.g., case 'directory': return 'Directory';
+        default:
+            // If the URL is just /dashboard, the last segment will be 'dashboard'
+            // but if it's a route we don't recognize, default to Dashboard.
+            if (pathname.includes('/dashboard')) {
+                return 'Dashboard';
+            }
+            return 'Job Portal'; // A final fallback
+    }
+};
+
 
 function Header() {
     const { user, logout } = useAuth();
+    const location = useLocation(); // Get the current location object
+    // Get the dynamic page title using our helper function
+    const pageTitle = getPageTitle(location.pathname);
     
+   
     const handleLogout = (e) => {
         e.preventDefault();
         logout();
@@ -18,7 +46,7 @@ function Header() {
                         <i className="ri-menu-2-line lh-1"></i>
                     </button>
                 </div>
-                <h4 className="page-title">Settings</h4>
+                <h4 className="page-title">{pageTitle}</h4>
             </div>
             <div className="d-flex align-items-center gap-lg-3 gap-2">
                 <div className="header-icon">
@@ -57,7 +85,9 @@ function Header() {
                         </div>
                     </div>
                 </div>
-                <button className="i-btn btn--xl btn--dark d-lg-flex d-none">Post an opportunity <span><i className="ri-arrow-right-line"></i></span></button>
+               <Link to="/dashboard/create-opportunity" className="i-btn btn--xl btn--dark d-lg-flex d-none">
+                    Post an opportunity <span><i className="ri-arrow-right-line"></i></span>
+                </Link>
                 <div className="header-icon">
                     <div className="profile-dropdown">
                         <div className="topbar-profile dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">

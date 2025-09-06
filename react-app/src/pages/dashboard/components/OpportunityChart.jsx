@@ -1,47 +1,71 @@
-import React, { useEffect, memo } from 'react';
+import React, { useEffect, memo, useRef } from 'react';
 
+// memo ব্যবহার করা হয়েছে যাতে কম্পোনেন্টটি অপ্রয়োজনে re-render না হয়
 const OpportunityChart = memo(() => {
-    const { assets_url } = window.jpbd_object;
+    
+    // চার্টের div এলিমেন্টটিকে ধরে রাখার জন্য একটি ref তৈরি করা
+    const chartRef = useRef(null);
 
     useEffect(() => {
-        // এই ইফেক্টটি কম্পোনেন্টটি মাউন্ট হওয়ার পর একবার রান হবে
-        
-        const chartInitScriptSrc = `${assets_url}js/chart-init.js`;
-
-        // প্রথমে চেক করুন এই স্ক্রিপ্টটি অলরেডি DOM-এ যোগ করা হয়েছে কিনা
-        if (document.querySelector(`script[src="${chartInitScriptSrc}"]`)) {
-            console.log("Chart script already loaded.");
-            // যদি অলরেডি লোড হয়ে থাকে, resize ইভেন্ট দিয়ে পুনরায় রেন্ডার করার চেষ্টা করা যেতে পারে
-            window.dispatchEvent(new Event('resize'));
+        // নিশ্চিত করুন যে ApexCharts লাইব্রেরিটি লোড হয়েছে
+        if (typeof ApexCharts === 'undefined') {
+            console.error("ApexCharts library is not loaded.");
             return;
         }
-        
-        // যদি লোড না হয়ে থাকে, একটি নতুন script ট্যাগ তৈরি করুন
-        const script = document.createElement('script');
-        script.src = chartInitScriptSrc;
-        script.async = true; // অ্যাসিঙ্ক্রোনাসভাবে লোড হবে
 
-        // স্ক্রিপ্টটি লোড এবং রান হওয়ার পর কী হবে
-        script.onload = () => {
-            console.log("chart-init.js loaded and executed dynamically.");
-            // স্ক্রিপ্টটি লোড হওয়ার পর চার্টটি রেন্ডার হওয়ার জন্য একটি ছোট ডিলে দেওয়া যেতে পারে
-            setTimeout(() => {
-                window.dispatchEvent(new Event('resize'));
-            }, 100);
+        // আপনার chart-init.js ফাইল থেকে চার্টের অপশনগুলো এখানে কপি করা হয়েছে
+        const options = {
+            series: [{
+                name: 'Opportunities',
+                data: [30.40, 40.00, 35.50, 50.40, 49.90, 38.80, 42.10] // স্ট্যাটিক ডেটা
+            }],
+            chart: {
+                height: 265,
+                type: 'area',
+                toolbar: { show: false },
+                zoom: { enabled: false }
+            },
+            dataLabels: { enabled: false },
+            stroke: { curve: 'smooth', width: 2 },
+            colors: ['#c18544'],
+            fill: {
+                type: "gradient",
+                gradient: {
+                    shadeIntensity: 1,
+                    opacityFrom: 0.7,
+                    opacityTo: 0.1,
+                    stops: [0, 90, 100]
+                }
+            },
+            xaxis: {
+                categories: ["Mar '12", "Apr '12", "May '12", "Jun '12", "Jul '12", "Aug '12", "Sep '12"],
+            },
+            yaxis: {
+                labels: {
+                    formatter: function (val) {
+                        return val.toFixed(2);
+                    }
+                }
+            },
+            tooltip: {
+                x: {
+                    format: 'dd MMM yyyy'
+                },
+            },
         };
-        
-        // ট্যাগটিকে ডকুমেন্টের head-এ যোগ করা
-        document.head.appendChild(script);
 
-        // কম্পোনেন্টটি আনমাউন্ট হওয়ার সময় স্ক্রিপ্ট ট্যাগটি সরিয়ে ফেলা (ক্লিন-আপ)
+        // একটি নতুন চার্ট ইনস্ট্যান্স তৈরি করা
+        const chart = new ApexCharts(chartRef.current, options);
+        
+        // চার্টটি রেন্ডার করা
+        chart.render();
+
+        // কম্পোনেন্টটি আনমাউন্ট হওয়ার সময় চার্টটি ধ্বংস করা (memory leak প্রতিরোধের জন্য)
         return () => {
-            const existingScript = document.querySelector(`script[src="${chartInitScriptSrc}"]`);
-            if (existingScript) {
-                document.head.removeChild(existingScript);
-            }
+            chart.destroy();
         };
 
-    }, [assets_url]); // assets_url পরিবর্তন হলে ইফেক্টটি আবার রান হবে (যদিও এটি সাধারণত হয় না)
+    }, []); // খালি dependency array মানে এটি শুধু একবার রান হবে
 
     return (
         <div className="i-card-md">
@@ -50,9 +74,10 @@ const OpportunityChart = memo(() => {
             </div>
             <div className="card-body pt-0">
                 <h3 className="fs-100">12</h3>
-                <div id="opportunity-chart" className="apex-chart" style={{ minHeight: '265px' }}>
-                    
-                </div>
+                
+                {/* ref অ্যাট্রিবিউট ব্যবহার করে DOM এলিমেন্টটিকে সংযুক্ত করা */}
+                <div id="opportunity-chart" ref={chartRef} className="apex-chart" style={{ minHeight: '265px' }}></div>
+                
                 <div className="stats-container">
                     <div className="stat-box">
                         <div className="label"><span className="dot yellow"></span>Opportunity Views</div>
