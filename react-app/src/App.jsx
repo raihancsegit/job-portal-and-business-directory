@@ -12,6 +12,8 @@ import DashboardLayout from './components/dashboard/DashboardLayout';
 import DashboardHomePage from './pages/dashboard/DashboardHomePage';
 import SettingsPage from './pages/dashboard/SettingsPage';
 
+import OpportunitiesPage from './pages/dashboard/OpportunitiesPage';
+
 // This is your ROUTER. It decides which page to show based on the URL.
 function App() {
   const basename = window.jpbd_object?.page_slug || ''; // Use optional chaining for safety
@@ -31,6 +33,7 @@ function App() {
           <Route index element={<DashboardHomePage />} handle={{ title: 'Dashboard' }}/>
           <Route path="settings" element={<SettingsPage />} handle={{ title: 'Settings' }}/>
           <Route path="create-opportunity" element={<CreateOpportunityPage />} />
+          <Route path="opportunities" element={<OpportunitiesPage />} handle={{ title: 'Opportunities' }} />
           {/* <Route 
             path="opportunities" 
             element={<OpportunitiesPage />} 

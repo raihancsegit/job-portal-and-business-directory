@@ -67,3 +67,33 @@ function jpbd_api_create_opportunity(WP_REST_Request $request)
         'opportunity_id' => $wpdb->insert_id
     ], 201);
 }
+
+// নতুন একটি GET রুট যোগ করা হচ্ছে
+function jpbd_register_get_opportunities_route()
+{
+    register_rest_route('jpbd/v1', '/opportunities', [
+        'methods' => 'GET',
+        'callback' => 'jpbd_api_get_opportunities',
+        'permission_callback' => '__return_true', // আপাতত সবাই দেখতে পারবে
+    ]);
+}
+add_action('rest_api_init', 'jpbd_register_get_opportunities_route');
+
+/**
+ * API: Get all opportunities.
+ */
+function jpbd_api_get_opportunities(WP_REST_Request $request)
+{
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'jpbd_opportunities';
+
+    // পরে এখানে ফিল্টারিং এবং পেজিনেশন যোগ করা হবে
+    $query = "SELECT * FROM $table_name ORDER BY created_at DESC";
+    $results = $wpdb->get_results($query, ARRAY_A);
+
+    if ($results === null) {
+        return new WP_Error('db_error', 'Could not retrieve opportunities.', ['status' => 500]);
+    }
+
+    return new WP_REST_Response($results, 200);
+}

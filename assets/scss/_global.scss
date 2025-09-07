@@ -22,6 +22,7 @@
   --color-dark: #152130;
   --site-bg:#E2DFD8;
   --card-bg: #f6f6f3;
+  --card-bg-2: #F0EEEB;
   --topbar-bg: #fff;
   --sidebar-bg: #fff;
   --bg-light: #EAE6E0;
@@ -56,6 +57,7 @@
   --color-dark: #152130;
   --site-bg: #E2DFD8;
   --card-bg: #F6F6F3;
+  --card-bg-2: #F0EEEB;
   --topbar-bg: #fff;
   --sidebar-bg: #fff;
   --bg-light: #EAE6E0;
@@ -82,6 +84,7 @@ $color-dark: var(--color-dark);
 $color-white: var(--color-white);
 $site-bg: var(--site-bg);
 $card-bg: var(--card-bg);
+$card-bg-two: var(--card-bg-2);
 $topbar-bg: var(--topbar-bg);
 $sidebar-bg: var(--sidebar-bg);
 $bg-light: var(--bg-light);
@@ -110,6 +113,7 @@ h5,
 h6 {
   color: $text-primary;
   margin-bottom: 0;
+  font-weight: 600;
 }
 
 p {
@@ -122,13 +126,7 @@ a:visited,
 a:link {
   text-decoration: none;
 }
-ul,
-ol,
-li {
-  padding: 0;
-  margin: 0;
-  list-style-type: none;
-}
+
 body {
   display: flex;
   flex-direction: column;
@@ -194,6 +192,13 @@ button,
 
 .text--info {
   color: $color-info;
+}
+
+.bg--light{
+  background-color: $text-light;
+}
+.card-bg-two{
+  background-color: $card-bg-two !important;
 }
 
 .bg--danger {
@@ -473,6 +478,12 @@ button {
     border: 1px solid $color-primary;
     color: $color-primary-text;
   }
+  
+  &.btn--primary-dark {
+    background-color: $color-primary-dark;
+    border: 1px solid $color-primary;
+    color: $color-primary-text;
+  }
 
     &.btn--dark {
     background-color: $text-primary;
@@ -506,6 +517,12 @@ button {
         line-height: 1;
       }
     }
+  }
+
+  &.btn--soft {
+    background-color: $site-bg;
+    border: 1px solid $site-bg;
+    color: $text-accent;
   }
 
   &.btn--primary-outline {
