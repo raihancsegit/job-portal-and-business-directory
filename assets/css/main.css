@@ -120,6 +120,12 @@ button,
   cursor: pointer;
 }
 
+ul, ol {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
 .fs-72 {
   font-size: 72px !important;
   line-height: 1.2;
@@ -522,6 +528,8 @@ button {
   padding: 10px 14px 10px 20px;
   font-size: 17px;
   height: 56px;
+  display: flex;
+  align-items: center;
 }
 @media (max-width: 991px) {
   .i-btn.btn--xl {
@@ -3287,6 +3295,10 @@ select {
 
 .desc-list {
   list-style-type: disc !important;
+  padding-left: 20px;
+}
+.desc-list.style-small li {
+  font-size: 16px;
 }
 .desc-list li {
   margin-bottom: 6px;
@@ -3420,4 +3432,108 @@ select {
 }
 .pagination-wrapper .pagination-go:hover {
   background-color: rgb(101.26, 61.42, 23.24);
+}
+
+.overview-card {
+  border-radius: 12px;
+}
+.overview-card h6 {
+  font-size: 14px;
+  color: #555;
+}
+.overview-card h3 {
+  font-weight: 600;
+  margin-top: 5px;
+}
+.overview-card.views {
+  background: #e8fdf2;
+}
+.overview-card.applications {
+  background: #f3f6ff;
+}
+.overview-card.shortlisted {
+  background: #f8f6ff;
+}
+.overview-card.review {
+  background: #fff9f2;
+}
+
+.chart-card {
+  border-radius: 12px;
+}
+.chart-card h6 {
+  font-size: 15px;
+  font-weight: 600;
+}
+.chart-card button {
+  font-size: 13px;
+}
+
+.opportunity-card {
+  border-radius: 12px;
+  margin-top: 20px;
+}
+
+.opportunity-table th {
+  width: 180px;
+  font-weight: 600;
+  color: #555;
+  white-space: nowrap;
+}
+.opportunity-table td {
+  color: #333;
+}
+
+.status-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-right: 5px;
+}
+.status-dot.active {
+  background: #28a745;
+}
+
+@media (max-width: 768px) {
+  .overview-card h6 {
+    font-size: 12px;
+  }
+  .overview-card h3 {
+    font-size: 18px;
+  }
+  .opportunity-table th {
+    width: 120px;
+    font-size: 13px;
+  }
+  .opportunity-table td {
+    font-size: 13px;
+  }
+}
+.bordered-card {
+  border-radius: 30px;
+  border: 1px solid var(--color-border);
+  padding: 24px;
+  background-color: var(--card-bg-2);
+}
+@media (max-width: 991px) {
+  .bordered-card {
+    padding: 20px;
+  }
+}
+
+.details-list-wrapper .details-item {
+  padding: 18px;
+  border-bottom: 1px solid var(--color-border);
+}
+.details-list-wrapper .details-item:last-child {
+  border-bottom: unset;
+}
+@media (max-width: 991px) {
+  .details-list-wrapper .details-item {
+    padding: 10px;
+  }
+}
+.details-list-wrapper .details-item h6 {
+  color: var(--text-accent);
 }/*# sourceMappingURL=main.css.map */

@@ -38,3 +38,23 @@ body.full-width-app {
     background-color: var(--card-bg) !important;
     color: var(--bs-body-color);
 }
+
+.noUi-origin {
+    width:95% !important;
+}
+
+.sidebar .sidebar-menu-container .sidebar-menu {
+    padding: 0 !important;
+    margin: 0 !important;
+
+}
+
+.accordion-body ul {
+    padding:0 !important;
+    margin: 0 !important;
+}
+
+.pagination-wrapper .pagination-input {
+    border-radius: 20px !important;
+    padding: 0.25rem 0.75rem !important;
+}

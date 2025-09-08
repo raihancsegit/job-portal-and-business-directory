@@ -87,8 +87,47 @@ function jpbd_api_get_opportunities(WP_REST_Request $request)
     global $wpdb;
     $table_name = $wpdb->prefix . 'jpbd_opportunities';
 
-    // পরে এখানে ফিল্টারিং এবং পেজিনেশন যোগ করা হবে
-    $query = "SELECT * FROM $table_name ORDER BY created_at DESC";
+    // React থেকে পাঠানো ফিল্টার প্যারামিটারগুলো গ্রহণ করা
+    $filters = $request->get_params();
+
+    // SQL কোয়েরি তৈরি শুরু করা
+    $sql = "SELECT * FROM $table_name WHERE 1=1";
+    $params = [];
+
+    // জব টাইটেল দিয়ে সার্চ করার জন্য
+    if (!empty($filters['searchTitle'])) {
+        $sql .= " AND job_title LIKE %s";
+        $params[] = '%' . $wpdb->esc_like($filters['searchTitle']) . '%';
+    }
+
+    // লোকেশন দিয়ে সার্চ করার জন্য
+    if (!empty($filters['searchLocation'])) {
+        $sql .= " AND location LIKE %s";
+        $params[] = '%' . $wpdb->esc_like($filters['searchLocation']) . '%';
+    }
+
+    // জব টাইপ দিয়ে ফিল্টার করার জন্য
+    if (!empty($filters['jobType'])) {
+        $sql .= " AND job_type = %s";
+        $params[] = $filters['jobType'];
+    }
+
+    // Experience দিয়ে ফিল্টার করার জন্য
+    if (!empty($filters['experience'])) {
+        $sql .= " AND experience = %s";
+        $params[] = $filters['experience'];
+    }
+
+    // Workplace দিয়ে ফিল্টার করার জন্য
+    if (!empty($filters['workplace'])) {
+        $sql .= " AND workplace = %s";
+        $params[] = $filters['workplace'];
+    }
+
+    $sql .= " ORDER BY created_at DESC";
+
+    // সুরক্ষিতভাবে কোয়েরি চালানো
+    $query = $wpdb->prepare($sql, $params);
     $results = $wpdb->get_results($query, ARRAY_A);
 
     if ($results === null) {

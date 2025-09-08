@@ -153,6 +153,12 @@ button,
   cursor: pointer;
 }
 
+ul, ol{
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
 .fs-72{
   font-size: 72px !important;
   line-height: 1.2;
@@ -578,6 +584,8 @@ button {
     padding: 10px 14px 10px 20px;
     font-size: 17px;
     height: 56px;
+    display: flex;
+    align-items: center;
 
     @include lg-down-device{
       height: 42px;

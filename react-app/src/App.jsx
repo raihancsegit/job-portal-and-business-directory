@@ -34,11 +34,8 @@ function App() {
           <Route path="settings" element={<SettingsPage />} handle={{ title: 'Settings' }}/>
           <Route path="create-opportunity" element={<CreateOpportunityPage />} />
           <Route path="opportunities" element={<OpportunitiesPage />} handle={{ title: 'Opportunities' }} />
-          {/* <Route 
-            path="opportunities" 
-            element={<OpportunitiesPage />} 
-            handle={{ title: 'Opportunities' }} 
-          /> */}
+          <Route path="opportunities-list" element={<OpportunitiesPage />}  handle={{ title: 'Opportunities List' }}/>
+          
           
         </Route>
 

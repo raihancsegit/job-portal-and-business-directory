@@ -676,6 +676,13 @@
 
 .desc-list {
   list-style-type: disc !important;
+  padding-left: 20px;
+
+  &.style-small{
+    li{
+      font-size: 16px;
+    }
+  }
 
   li {
     margin-bottom: 6px;
@@ -830,4 +837,107 @@
       background-color: darken(#7a4a1c, 5%);
     }
   }
+}
+
+
+// Job details
+.overview-card {
+  border-radius: 12px;
+  h6 {
+    font-size: 14px;
+    color: #555;
+  }
+  h3 {
+    font-weight: 600;
+    margin-top: 5px;
+  }
+
+  &.views { background: #e8fdf2; }
+  &.applications { background: #f3f6ff; }
+  &.shortlisted { background: #f8f6ff; }
+  &.review { background: #fff9f2; }
+}
+
+.chart-card {
+  border-radius: 12px;
+  h6 {
+    font-size: 15px;
+    font-weight: 600;
+  }
+  button {
+    font-size: 13px;
+  }
+}
+
+.opportunity-card {
+  border-radius: 12px;
+  margin-top: 20px;
+}
+
+.opportunity-table {
+  th {
+    width: 180px;
+    font-weight: 600;
+    color: #555;
+    white-space: nowrap;
+  }
+  td {
+    color: #333;
+  }
+}
+
+// Status Dot
+.status-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-right: 5px;
+  &.active { background: #28a745; }
+}
+
+// Responsive Adjustments
+@media (max-width: 768px) {
+  .overview-card h6 { font-size: 12px; }
+  .overview-card h3 { font-size: 18px; }
+  .opportunity-table th {
+    width: 120px;
+    font-size: 13px;
+  }
+  .opportunity-table td {
+    font-size: 13px;
+  }
+}
+
+
+.bordered-card{
+  border-radius: 30px;
+  border: 1px solid $color-border;
+  padding: 24px;
+  background-color: $card-bg-two;
+
+  @include lg-down-device{
+    padding: 20px;
+  }
+}
+
+
+.details-list-wrapper{
+  .details-item{
+    padding: 18px;
+    border-bottom: 1px solid $color-border;
+
+    &:last-child{
+      border-bottom: unset;
+    }
+
+    @include lg-down-device{
+      padding: 10px;
+    }
+
+    h6{
+      color: $text-accent
+    }
+  }
+
 }

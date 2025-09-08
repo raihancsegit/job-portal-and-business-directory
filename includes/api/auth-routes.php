@@ -149,7 +149,14 @@ function jpbd_api_login_user(WP_REST_Request $request)
         return new WP_Error('login_failed', 'Email and password are required.', ['status' => 400]);
     }
 
-    // WP-JWT-Auth প্লাগইন থেকে দেওয়া API এন্ডপয়েন্ট কল করা
+    // প্রথমে ইউজারকে ভেরিফাই করে তার অবজেক্টটি নিয়ে আসা
+    $user = wp_authenticate($email, $password);
+
+    if (is_wp_error($user)) {
+        return new WP_Error('login_failed', 'Invalid email or password.', ['status' => 403]);
+    }
+
+    // এখন JWT প্লাগইনের কাছে টোকেনের জন্য রিকোয়েস্ট পাঠানো
     $login_request = new WP_REST_Request('POST', '/jwt-auth/v1/token');
     $login_request->set_body_params([
         'username' => $email,
@@ -160,17 +167,16 @@ function jpbd_api_login_user(WP_REST_Request $request)
     $data = rest_get_server()->response_to_data($response, false);
 
     if ($response->is_error()) {
-        $error_code = $response->get_data()['code'];
-        $message = 'Invalid email or password.';
-        // JWT প্লাগইন বিভিন্ন এরর কোড দেয়, আমরা একটি সাধারণ মেসেজ দেখাব
-        if ($error_code === '[jwt_auth] invalid_email' || $error_code === '[jwt_auth] incorrect_password') {
-            return new WP_Error('login_failed', $message, ['status' => 403]);
-        }
-        return new WP_Error('login_failed', 'An unknown error occurred.', ['status' => 500]);
+        return new WP_Error('login_failed', 'Token generation failed.', ['status' => 500]);
     }
 
-    // সফল লগইনের পর JWT প্লাগইন থেকে পাওয়া ডেটা রিটার্ন করা
-    // ডেটার মধ্যে token, user_email, user_nicename, user_display_name থাকবে
+    // ======================================================
+    // এই অংশটিই হলো আসল সমাধান:
+    // আমরা নিজে থেকে user ID-টি রেসপন্সের সাথে যোগ করে দিচ্ছি
+    // ======================================================
+    $data['id'] = $user->ID;
+    // ======================================================
+
     return new WP_REST_Response($data, 200);
 }
 
