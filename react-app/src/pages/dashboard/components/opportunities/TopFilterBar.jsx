@@ -25,13 +25,20 @@ const TopFilterBar = ({ filters, setFilters }) => {
                         <input type="text" name="searchLocation" placeholder="Location" className="form-control flex-grow-1" value={filters.searchLocation} onChange={handleChange} />
                     </div>
                 </div>
-                <div className="col-md-3">
+               <div className="col-md-3">
                     <div className="top-filter-item">
                         <div className="icon"><i className="ri-time-line"></i></div>
-                        <select name="experience" className="form-select border-0 bg-transparent flex-grow-1 text-secondary" value={filters.experience} onChange={handleChange}>
+                        <select 
+                            name="experience" // নামটি state-এর কী-এর সাথে মিলতে হবে
+                            className="form-select border-0 bg-transparent flex-grow-1 text-secondary" 
+                            value={filters.experience || ''} // state থেকে মান দেখানো হচ্ছে
+                            onChange={handleChange}     // state পরিবর্তন করার জন্য হ্যান্ডলার
+                        >
                             <option value="">Experience level</option>
-                            <option value="No experience">No experience</option>
+                            <option value="No experience required">No experience required</option>
                             <option value="1-2 years">1-2 years</option>
+                            <option value="3-5 years">3-5 years</option>
+                            <option value="5+ years">5+ years</option>
                         </select>
                     </div>
                 </div>

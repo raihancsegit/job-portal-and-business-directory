@@ -8,11 +8,10 @@ const FilterPanel = ({ filters, setFilters }) => {
     const minPriceInputRef = useRef(null);
     const maxPriceInputRef = useRef(null);
 
-    // Handler for all radio button changes
     const handleRadioChange = (e) => {
         const { name, value } = e.target;
-        // If clicking the same radio button again, clear the filter
         if (filters[name] === value) {
+            // ঠিক করা হয়েছে: শুধু নির্দিষ্ট ফিল্টার কী-টি খালি করা হচ্ছে
             setFilters(prev => ({ ...prev, [name]: '' }));
         } else {
             setFilters(prev => ({ ...prev, [name]: value }));
@@ -191,15 +190,15 @@ const FilterPanel = ({ filters, setFilters }) => {
                             <ul className="list-unstyled mb-0">
                                 <li className="d-flex align-items-center justify-content-between cursor-pointer mb-2">
                                     <label className="d-flex align-items-center text-secondary small">
-                                        <input type="radio" name="jobType" value="Full-time" checked={filters.jobType === 'Full-time'} onChange={handleRadioChange} className="form-check-input me-2" />
-                                        Full-time
+                                        <input type="radio" name="jobType" value="Full Time" checked={filters.jobType === 'Full Time'} onChange={handleRadioChange} className="form-check-input me-2" />
+                                        Full Time
                                     </label>
                                     <span className="item-count">124</span>
                                 </li>
                                 <li className="d-flex align-items-center justify-content-between cursor-pointer mb-2">
                                     <label className="d-flex align-items-center text-secondary small">
-                                        <input type="radio" name="jobType" value="Part-time" checked={filters.jobType === 'Part-time'} onChange={handleRadioChange} className="form-check-input me-2" />
-                                        Part-time
+                                        <input type="radio" name="jobType" value="Part Time" checked={filters.jobType === 'Part Time'} onChange={handleRadioChange} className="form-check-input me-2" />
+                                        Part Time
                                     </label>
                                     <span className="item-count">45</span>
                                 </li>
@@ -287,6 +286,8 @@ const FilterPanel = ({ filters, setFilters }) => {
                                 <li className="d-flex align-items-center justify-content-between cursor-pointer mb-2"><label className="d-flex align-items-center text-secondary small"><input type="radio" name="industry" value="sales-marketing" checked={filters.industry === 'sales-marketing'} onChange={handleRadioChange} className="form-check-input me-2" />Sales & Marketing</label><span className="item-count">09</span></li>
                                 <li className="d-flex align-items-center justify-content-between cursor-pointer mb-2"><label className="d-flex align-items-center text-secondary small"><input type="radio" name="industry" value="development" checked={filters.industry === 'development'} onChange={handleRadioChange} className="form-check-input me-2" />Development</label><span className="item-count">14</span></li>
                                 <li className="d-flex align-items-center justify-content-between cursor-pointer mb-2"><label className="d-flex align-items-center text-secondary small"><input type="radio" name="industry" value="telecom" checked={filters.industry === 'telecom'} onChange={handleRadioChange} className="form-check-input me-2" />Telecommunications</label><span className="item-count">02</span></li>
+                                <li className="d-flex align-items-center justify-content-between cursor-pointer mb-2"><label className="d-flex align-items-center text-secondary small"><input type="radio" name="industry" value="IT" checked={filters.industry === 'IT'} onChange={handleRadioChange} className="form-check-input me-2" />IT</label><span className="item-count">02</span></li>
+                                <li className="d-flex align-items-center justify-content-between cursor-pointer mb-2"><label className="d-flex align-items-center text-secondary small"><input type="radio" name="industry" value="design" checked={filters.industry === 'design'} onChange={handleRadioChange} className="form-check-input me-2" />Design</label><span className="item-count">02</span></li>
                             </ul>
                         </div>
                     </div>
