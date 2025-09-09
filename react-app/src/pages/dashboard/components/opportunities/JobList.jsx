@@ -1,5 +1,5 @@
 import React from 'react';
-
+import { Link } from 'react-router-dom';
 const JobList = ({ opportunities, onSelectOpportunity, selectedOpportunityId }) => {
     return (
         <div id="job-listings" className="job-listings">
@@ -26,7 +26,7 @@ const JobList = ({ opportunities, onSelectOpportunity, selectedOpportunityId }) 
                                 <div className="post-bottom mb-4">
                                     <span className="dot"></span><span>{job.salary_type} paid</span>
                                 </div>
-                                <button className="i-btn btn--lg btn--primary w-100">View Proposal</button>
+                                <Link to={`/dashboard/opportunities/${job.id}`} className="i-btn btn--lg btn--primary w-100">View Proposal</Link>
                             </div>
                         </div>
                     ))

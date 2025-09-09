@@ -20,7 +20,7 @@ function OpportunitiesPage() {
         jobType: '',
         workplace: '',
         datePosted: 'all',
-        industry: 'all',
+        industry: '',
     });
 
     const { api_base_url } = window.jpbd_object;

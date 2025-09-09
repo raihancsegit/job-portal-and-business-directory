@@ -276,7 +276,13 @@ const FilterPanel = ({ filters, setFilters }) => {
                     <div id="collapseIndustry" className="accordion-collapse collapse" data-bs-parent="#filterAccordion">
                          <div className="accordion-body px-0 pt-2 pb-0">
                             <ul className="list-unstyled mb-0">
-                                <li className="d-flex align-items-center justify-content-between cursor-pointer mb-2"><label className="d-flex align-items-center text-secondary small"><input type="radio" name="industry" value="all" checked={filters.industry === 'all'} onChange={handleRadioChange} className="form-check-input me-2" />All</label><span className="item-count">114</span></li>
+                                <li className="d-flex align-items-center justify-content-between cursor-pointer mb-2">
+                                    <label className="d-flex align-items-center text-secondary small">
+                                        <input type="radio" name="industry" value="" checked={filters.industry === ''} onChange={handleRadioChange} className="form-check-input me-2" />
+                                        All
+                                    </label>
+                                    <span className="item-count">114</span>
+                                </li>
                                 <li className="d-flex align-items-center justify-content-between cursor-pointer mb-2"><label className="d-flex align-items-center text-secondary small"><input type="radio" name="industry" value="accounting" checked={filters.industry === 'accounting'} onChange={handleRadioChange} className="form-check-input me-2" />Accounting/Finance</label><span className="item-count">18</span></li>
                                 <li className="d-flex align-items-center justify-content-between cursor-pointer mb-2"><label className="d-flex align-items-center text-secondary small"><input type="radio" name="industry" value="automotive" checked={filters.industry === 'automotive'} onChange={handleRadioChange} className="form-check-input me-2" />Automotive</label><span className="item-count">12</span></li>
                                 <li className="d-flex align-items-center justify-content-between cursor-pointer mb-2"><label className="d-flex align-items-center text-secondary small"><input type="radio" name="industry" value="construction" checked={filters.industry === 'construction'} onChange={handleRadioChange} className="form-check-input me-2" />Construction</label><span className="item-count">14</span></li>
