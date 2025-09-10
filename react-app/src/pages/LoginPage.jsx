@@ -161,7 +161,7 @@ function LoginPage() {
                             </div>
                             <div className="have-account">
                                 <p className="text--accent fw-semibold">
-                                    Don’t have an account? <Link className="text--primary" to="/signup">Signup</Link>
+                                    Don’t have an account? <Link className="text--primary" to="/signup/employer">Signup</Link>
                                 </p>
                             </div>
                         </form>

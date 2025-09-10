@@ -26,27 +26,25 @@ require_once plugin_dir_path(__FILE__) . 'includes/class-main.php';
 function jpbd_activate_plugin()
 {
 
+    // আগের 'job_seeker' রোলটি মুছে ফেলা (যদি থাকে)
     remove_role('job_seeker');
-    // Task A: Add custom user role
-    add_role(
-        'job_seeker',
-        'Job Seeker',
-        [
-            'read' => true,
-            'create_opportunities'   => true,
-        ]
-    );
 
-    jpbd_create_opportunities_table();
+    // নতুন রোলগুলো তৈরি করা
+    add_role('employer', 'Employer', ['read' => true, 'create_opportunities' => true]);
+    add_role('candidate', 'Candidate', ['read' => true]);
+    add_role('business', 'Business', ['read' => true]);
 
+    // অ্যাডমিনকে সব ক্ষমতা দেওয়া
     $admin_role = get_role('administrator');
     if ($admin_role) {
         $admin_role->add_cap('create_opportunities', true);
     }
 
-    // Task B: Add rewrite rules and flush them
-    jpbd_add_rewrite_rules_on_init(); // Define rules
-    flush_rewrite_rules();           // Save them to the database
+    // Rewrite rules flush করা
+    jpbd_add_rewrite_rules_on_init();
+    flush_rewrite_rules();
+
+    jpbd_create_opportunities_table();
 }
 register_activation_hook(__FILE__, 'jpbd_activate_plugin');
 
@@ -90,10 +88,17 @@ function jpbd_create_opportunities_table()
 // 2. Deactivation Hook: Combines all deactivation tasks.
 function jpbd_deactivate_plugin()
 {
-    // Task A: Remove custom user role
-    remove_role('job_seeker');
+    // প্লাগইন ডিঅ্যাক্টিভেট করার সময় রোলগুলো মুছে ফেলা
+    remove_role('employer');
+    remove_role('candidate');
+    remove_role('business');
 
-    // Task B: Flush rewrite rules to remove our custom rule
+    // অ্যাডমিনের কাছ থেকে ক্ষমতা সরিয়ে নেওয়া
+    $admin_role = get_role('administrator');
+    if ($admin_role) {
+        $admin_role->remove_cap('create_opportunities');
+    }
+
     flush_rewrite_rules();
 }
 register_deactivation_hook(__FILE__, 'jpbd_deactivate_plugin');

@@ -1,8 +1,22 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 
 function Sidebar() {
     const { assets_url } = window.jpbd_object;
+
+    const { user } = useAuth(); // ২. AuthContext থেকে ইউজার নিন
+
+    // ৩. ব্যবহারকারীর রোল থেকে একটি সুন্দর নাম তৈরি করার জন্য হেল্পার ফাংশন
+    const getRoleDisplayName = () => {
+        if (!user || !user.roles || user.roles.length === 0) {
+            return 'User';
+        }
+        // আমরা প্রথম রোলটিকেই প্রধান রোল হিসেবে ধরব
+        const role = user.roles[0];
+        // 'job_seeker'-কে 'Job Seeker'-এ রূপান্তর করা
+        return role.replace('_', ' ').replace(/\b\w/g, char => char.toUpperCase());
+    };
 
     return (
         <div className="sidebar">
@@ -14,10 +28,15 @@ function Sidebar() {
             <div className="sidebar-menu-container" data-simplebar>
                 <div className="sidebar-profile">
                     <div className="image">
-                        <img src={`${assets_url}images/bg/sidebar-profile.png`} alt="sidebar-profile" />
+                        {/* ডাইনামিক প্রোফাইল ছবি */}
+                        <img 
+                            src={user?.avatar_url || `${assets_url}images/bg/sidebar-profile.png`} 
+                            alt="sidebar-profile" 
+                        />
                     </div>
                     <div className="content">
-                        <h4>Employer</h4>
+                        {/* ডাইনামিক রোল */}
+                        <h4>{getRoleDisplayName()}</h4>
                         <span>Current Profile</span>
                     </div>
                 </div>

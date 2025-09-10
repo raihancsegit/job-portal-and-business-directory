@@ -1,9 +1,10 @@
 import React, { useState ,useRef } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate,useParams  } from 'react-router-dom';
 import AuthLayout from '../components/AuthLayout';
 import axios from 'axios';
 
 function SignupPage() {
+    const { role } = useParams();
     const { assets_url, api_base_url, nonce } = window.jpbd_object;
     const navigate = useNavigate();
 
@@ -65,6 +66,7 @@ function SignupPage() {
                     fullName,
                     email,
                     password,
+                    role
                 },
                 {
                     headers: {
@@ -87,6 +89,12 @@ function SignupPage() {
         } finally {
             setLoading(false);
         }
+    };
+
+    // টাইটেলটিকে ডাইনামিক করা
+    const getTitle = () => {
+        if (!role) return 'Create an Account';
+        return `Create ${role.charAt(0).toUpperCase() + role.slice(1)} Account`;
     };
 
     return (
@@ -120,7 +128,7 @@ function SignupPage() {
                     <div className="blur-bg"></div>
                     <div className="blur-bg-2"></div>
                     <div className="auth-form-wrapper">
-                        <h4 className="form-title">Create an account</h4>
+                        <h4 className="form-title">{getTitle()}</h4>
 
                         {error && <div className="alert alert-danger">{error}</div>}
                         {successMessage && <div className="alert alert-success">{successMessage}</div>}

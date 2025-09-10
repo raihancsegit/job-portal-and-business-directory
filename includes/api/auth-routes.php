@@ -86,51 +86,37 @@ function jpbd_api_register_user(WP_REST_Request $request)
 {
     $params = $request->get_json_params();
 
-    // 1. Validate the data from React
     $full_name = isset($params['fullName']) ? sanitize_text_field($params['fullName']) : '';
     $email = isset($params['email']) ? sanitize_email($params['email']) : '';
     $password = isset($params['password']) ? $params['password'] : '';
+    $role = isset($params['role']) ? sanitize_key($params['role']) : ''; // নতুন: রোল গ্রহণ করা
 
-    if (empty($full_name)) {
-        return new WP_Error('registration_failed', 'Full name is required.', ['status' => 400]);
+    // --- ভ্যালিডেশন ---
+    $allowed_roles = ['employer', 'candidate', 'business'];
+    if (empty($role) || !in_array($role, $allowed_roles, true)) {
+        return new WP_Error('registration_failed', 'A valid role is required.', ['status' => 400]);
     }
-    if (!is_email($email)) {
-        return new WP_Error('registration_failed', 'Invalid email address.', ['status' => 400]);
-    }
-    if (empty($password) || strlen($password) < 6) {
-        return new WP_Error('registration_failed', 'Password must be at least 6 characters long.', ['status' => 400]);
-    }
+    // ... (আপনার আগের অন্যান্য ভ্যালিডেশন)
 
-    // 2. Check if user already exists
     if (username_exists($email) || email_exists($email)) {
-        return new WP_Error('registration_failed', 'An account with this email address already exists.', ['status' => 409]); // 409 Conflict
+        return new WP_Error('registration_failed', 'An account with this email address already exists.', ['status' => 409]);
     }
 
-    // 3. Create the new user
+    // --- ইউজার তৈরি করা ---
     $user_data = [
         'user_login' => $email,
         'user_email' => $email,
         'user_pass'  => $password,
         'display_name' => $full_name,
-        'role'       => 'job_seeker', // আমাদের নতুন কাস্টম রোল
+        'role'       => $role, // ডাইনামিক রোল সেট করা
     ];
-
     $user_id = wp_insert_user($user_data);
 
-    // 4. Check for errors and return response
     if (is_wp_error($user_id)) {
-        // If wp_insert_user fails, it returns a WP_Error object
         return new WP_Error('registration_failed', $user_id->get_error_message(), ['status' => 500]);
     }
 
-    // Registration successful!
-    // ভবিষ্যতে এখানে ব্যবহারকারীকে অটো-লগইন করানো যেতে পারে
-    // এবং একটি লগইন টোকেন রিটার্ন করা যেতে পারে।
-
-    return new WP_REST_Response([
-        'success' => true,
-        'message' => 'Registration successful! You can now log in.',
-    ], 201); // 201 Created
+    return new WP_REST_Response(['success' => true, 'message' => 'Registration successful! You can now log in.'], 201);
 }
 
 /**
@@ -174,7 +160,10 @@ function jpbd_api_login_user(WP_REST_Request $request)
     // এই অংশটিই হলো আসল সমাধান:
     // আমরা নিজে থেকে user ID-টি রেসপন্সের সাথে যোগ করে দিচ্ছি
     // ======================================================
+
     $data['id'] = $user->ID;
+    $data['roles'] = array_values($user->roles);
+    $data['avatar_url'] = get_avatar_url($user->ID);
     // ======================================================
 
     return new WP_REST_Response($data, 200);

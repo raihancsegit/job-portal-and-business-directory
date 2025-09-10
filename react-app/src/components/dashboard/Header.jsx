@@ -85,13 +85,15 @@ function Header() {
                         </div>
                     </div>
                 </div>
-               <Link to="/dashboard/create-opportunity" className="i-btn btn--xl btn--dark d-lg-flex d-none">
-                    Post an opportunity <span><i className="ri-arrow-right-line"></i></span>
+                {user && user.roles && user.roles.includes('candidate') && (
+                <Link to="/dashboard/create-opportunity" className="i-btn btn--xl btn--dark d-lg-flex d-none">
+                        Post an opportunity <span><i className="ri-arrow-right-line"></i></span>
                 </Link>
+                 )}
                 <div className="header-icon">
                     <div className="profile-dropdown">
                         <div className="topbar-profile dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <img src="https://themesbrand.com/velzon/html/default/assets/images/users/avatar-3.jpg" alt="User Avatar" />
+                            <img src={user?.avatar_url || 'https://themesbrand.com/velzon/html/default/assets/images/users/avatar-3.jpg'}  alt="User Avatar" />
                         </div>
                         <div className="dropdown-menu dropdown-menu-end">
                             <ul>
