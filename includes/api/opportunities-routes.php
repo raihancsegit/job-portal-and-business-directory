@@ -65,6 +65,14 @@ function jpbd_register_opportunities_api_routes()
         'callback' => 'jpbd_api_get_filter_counts',
         'permission_callback' => '__return_true',
     ]);
+
+    register_rest_route('jpbd/v1', '/opportunities/bulk-delete', [
+        'methods' => 'POST',
+        'callback' => 'jpbd_api_bulk_delete_opportunities',
+        'permission_callback' => function () {
+            return is_user_logged_in();
+        },
+    ]);
 }
 add_action('rest_api_init', 'jpbd_register_opportunities_api_routes');
 
@@ -217,6 +225,41 @@ function jpbd_api_get_opportunities(WP_REST_Request $request)
     if (isset($filters['maxSalary']) && is_numeric($filters['maxSalary'])) {
         $sql .= " AND CAST(salary_amount AS UNSIGNED) <= %d";
         $params[] = (int) $filters['maxSalary'];
+    }
+
+    if (isset($filters['viewMode']) && $filters['viewMode'] === 'my_opportunities') {
+        $user_id = get_current_user_id();
+        // নিশ্চিত করুন যে ব্যবহারকারী লগইন করা আছে
+        if ($user_id > 0) {
+            $sql .= " AND user_id = %d";
+            $params[] = $user_id;
+        } else {
+            // যদি লগইন করা না থাকে, তাহলে কোনো রেজাল্ট পাঠাবে না
+            $sql .= " AND 1=0";
+        }
+    }
+
+    if (!empty($filters['dateRange'])) {
+        $date_range = $filters['dateRange'];
+        $current_time = current_time('mysql');
+
+        $from_date = '';
+        switch ($date_range) {
+            case 'this-week':
+                $from_date = date('Y-m-d H:i:s', strtotime('monday this week', strtotime($current_time)));
+                break;
+            case 'this-month':
+                $from_date = date('Y-m-d H:i:s', strtotime('first day of this month', strtotime($current_time)));
+                break;
+            case 'this-year':
+                $from_date = date('Y-m-d H:i:s', strtotime('first day of january this year', strtotime($current_time)));
+                break;
+        }
+
+        if ($from_date) {
+            $sql .= " AND created_at >= %s";
+            $params[] = $from_date;
+        }
     }
 
     $sql .= " ORDER BY created_at DESC";
@@ -418,4 +461,48 @@ function jpbd_api_get_filter_counts()
     ];
 
     return new WP_REST_Response($counts, 200);
+}
+
+/**
+ * API: Handle bulk deletion of opportunities.
+ */
+function jpbd_api_bulk_delete_opportunities(WP_REST_Request $request)
+{
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'jpbd_opportunities';
+    $user_id = get_current_user_id();
+    $params = $request->get_json_params();
+    $ids_to_delete = isset($params['ids']) ? $params['ids'] : [];
+
+    if (empty($ids_to_delete) || !is_array($ids_to_delete)) {
+        return new WP_Error('no_ids', 'No opportunity IDs provided for deletion.', ['status' => 400]);
+    }
+
+    // নিশ্চিত করুন যে সব আইডি সংখ্যা
+    $sanitized_ids = array_map('intval', $ids_to_delete);
+
+    // তৈরি করা স্ট্রিং: "1, 2, 3"
+    $ids_placeholder = implode(',', $sanitized_ids);
+
+    // ধাপ ১: শুধুমাত্র নিজের তৈরি করা opportunity ডিলিট করার অনুমতি আছে কিনা তা চেক করা
+    // সব ID-র জন্য user_id চেক করা
+    $owned_ids_count = $wpdb->get_var(
+        $wpdb->prepare(
+            "SELECT COUNT(*) FROM $table_name WHERE id IN ($ids_placeholder) AND user_id = %d",
+            $user_id
+        )
+    );
+
+    if (count($sanitized_ids) !== (int) $owned_ids_count) {
+        return new WP_Error('permission_denied', 'You can only delete your own opportunities.', ['status' => 403]);
+    }
+
+    // ধাপ ২: ডাটাবেস থেকে ডিলিট করা
+    $result = $wpdb->query("DELETE FROM $table_name WHERE id IN ($ids_placeholder)");
+
+    if ($result === false) {
+        return new WP_Error('db_error', 'Could not delete the opportunities.', ['status' => 500]);
+    }
+
+    return new WP_REST_Response(['success' => true, 'message' => $result . ' opportunities deleted successfully.'], 200);
 }

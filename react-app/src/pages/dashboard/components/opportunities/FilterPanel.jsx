@@ -140,6 +140,7 @@ const FilterPanel = ({ filters, setFilters }) => {
             maxPriceInput.removeEventListener('change', maxChangeHandler);
         };
     }, []);
+    
 
     return (
         <div className="filter-panel" id="filterPanel">

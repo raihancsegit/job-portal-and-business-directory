@@ -84,9 +84,34 @@ const CreateOpportunityPage = () => {
                         <div className={`form-section ${currentStep === 1 ? 'active' : ''}`}>
                             <h4 className="mb-35">Basic Information</h4>
                             <div className="row align-items-start mb-3"><div className="col-lg-3 d-lg-block d-none"><label htmlFor="jobTitle" className="form-label">Job Title</label></div><div className="col-lg-9 col-12"><input type="text" id="jobTitle" className="form-control" placeholder="Enter job title" value={formData.jobTitle} onChange={handleChange} /></div></div>
-                            <div className="row align-items-start mb-3"><div className="col-lg-3 d-lg-block d-none"><label htmlFor="industry" className="form-label">Industry</label></div><div className="col-lg-9 col-12"><select id="industry" className="form-select bg-transparent" value={formData.industry} onChange={handleChange}><option value="">Select industry</option><option value="accounting">Accounting</option><option value="automotive">Automotive</option><option value="construction">Construction</option><option value="education">Education</option><option value="healthcare">Healthcare</option><option value="restaurant">Restaurant</option><option value="sales-marketing">Sales Marketing</option><option value="development">Development</option><option value="design">Design</option><option value="telecom">Telecommunications</option><option value="IT">IT</option></select></div></div>
-                            <div className="row align-items-start mb-3"><div className="col-lg-3 d-lg-block d-none"><label htmlFor="jobType" className="form-label">Job Type</label></div><div className="col-lg-9 col-12"><select id="jobType" className="form-select bg-transparent" value={formData.jobType} onChange={handleChange}><option value="">Select type</option><option value="Full Time">Full Time</option><option value="Part Time">Part Time</option><option value="Contract">Contract</option><option value="Freelance">Freelance</option><option value="Intern">Intern</option><option value="Temporary">Temporary</option></select></div></div>
-                            <div className="row align-items-start mb-3"><div className="col-lg-3 d-lg-block d-none"><label htmlFor="workplace" className="form-label">Workplace</label></div><div className="col-lg-9 col-12"><select id="workplace" className="form-select bg-transparent" value={formData.workplace} onChange={handleChange}><option value="">Select Workplace</option><option value="On-site">On-site</option><option value="Hybrid">Hybrid</option><option value="Remote">Remote</option></select></div></div>
+                            <div className="row align-items-start mb-3"><div className="col-lg-3 d-lg-block d-none"><label htmlFor="industry" className="form-label">Industry</label></div><div className="col-lg-9 col-12"><select id="industry" className="form-select bg-transparent" value={formData.industry} onChange={handleChange}>
+                                <option value="">Select industry</option>
+                                <option value="accounting">Accounting</option>
+                                <option value="automotive">Automotive</option>
+                                <option value="construction">Construction</option>
+                                <option value="education">Education</option>
+                                <option value="healthcare">Healthcare</option>
+                                <option value="restaurant">Restaurant</option>
+                                <option value="sales-marketing">Sales Marketing</option>
+                                <option value="development">Development</option>
+                                <option value="design">Design</option>
+                                <option value="telecom">Telecommunications</option>
+                                <option value="IT">IT</option>
+                                </select></div></div>
+                            <div className="row align-items-start mb-3"><div className="col-lg-3 d-lg-block d-none"><label htmlFor="jobType" className="form-label">Job Type</label></div><div className="col-lg-9 col-12"><select id="jobType" className="form-select bg-transparent" value={formData.jobType} onChange={handleChange}>
+                                <option value="">Select type</option>
+                                <option value="Full Time">Full Time</option>
+                                <option value="Part Time">Part Time</option>
+                                <option value="Contract">Contract</option>
+                                <option value="Freelance">Freelance</option>
+                                <option value="Intern">Intern</option>
+                                <option value="Temporary">Temporary</option>
+                                </select></div></div>
+                            <div className="row align-items-start mb-3"><div className="col-lg-3 d-lg-block d-none"><label htmlFor="workplace" className="form-label">Workplace</label></div><div className="col-lg-9 col-12"><select id="workplace" className="form-select bg-transparent" value={formData.workplace} onChange={handleChange}><option value="">Select Workplace</option>
+                            <option value="On-site">On-site</option>
+                            <option value="Hybrid">Hybrid</option>
+                            <option value="Remote">Remote</option>
+                            </select></div></div>
                             <div className="row align-items-start mb-3"><div className="col-lg-3 d-lg-block d-none"><label htmlFor="location" className="form-label">Location</label></div><div className="col-lg-9 col-12"><input type="text" id="location" className="form-control" placeholder="Enter location" value={formData.location} onChange={handleChange} /></div></div>
                             <div className="row align-items-start mb-3">
                                 <div className="col-lg-3 d-lg-block d-none"><label className="form-label">Salary</label></div>
@@ -112,8 +137,21 @@ const CreateOpportunityPage = () => {
                         <div className={`form-section ${currentStep === 2 ? 'active' : ''}`}>
                             <h4 className="mb-35">Skill & Experience</h4>
                             <div className="row align-items-start mb-3"><div className="col-lg-3 d-lg-block d-none"><label htmlFor="skills" className="form-label">Skill Needed</label></div><div className="col-lg-9 col-12"><input type="text" id="skills" className="form-control" placeholder="Enter Skill (Comma separated)" value={formData.skills} onChange={handleChange} /></div></div>
-                            <div className="row align-items-start mb-3"><div className="col-lg-3 d-lg-block d-none"><label htmlFor="experience" className="form-label">Job Experience</label></div><div className="col-lg-9 col-12"><select id="experience" className="form-select bg-transparent" value={formData.experience} onChange={handleChange}><option value="fresh">Fresh</option><option value="less-than-1">Less Than 1</option><option value="2-years">2 Years</option><option value="3-years">3 Years</option><option value="4-years">4 Years</option><option value="5-years">5 Years</option><option value="5-years+">5 Years+</option></select></div></div>
-                            <div className="row align-items-start mb-3"><div className="col-lg-3 d-lg-block d-none"><label htmlFor="educationLevel" className="form-label">Education Level</label></div><div className="col-lg-9 col-12"><select id="educationLevel" className="form-select bg-transparent" value={formData.educationLevel} onChange={handleChange}><option value="">Select Education Level</option><option>High School</option><option>Bachelor's</option></select></div></div>
+                            <div className="row align-items-start mb-3"><div className="col-lg-3 d-lg-block d-none"><label htmlFor="experience" className="form-label">Job Experience</label></div><div className="col-lg-9 col-12"><select id="experience" className="form-select bg-transparent" value={formData.experience} onChange={handleChange}>
+                                <option value="fresh">Fresh</option>
+                                <option value="less-than-1">Less Than 1</option>
+                                <option value="2-years">2 Years</option>
+                                <option value="3-years">3 Years</option>
+                                <option value="4-years">4 Years</option>
+                                <option value="5-years">5 Years</option>
+                                <option value="5-years+">5 Years+</option>
+                                </select>
+                                </div></div>
+                            <div className="row align-items-start mb-3"><div className="col-lg-3 d-lg-block d-none"><label htmlFor="educationLevel" className="form-label">Education Level</label></div><div className="col-lg-9 col-12"><select id="educationLevel" className="form-select bg-transparent" value={formData.educationLevel} onChange={handleChange}>
+                                <option value="">Select Education Level</option>
+                                <option>High School</option>
+                                <option>Bachelor's</option>
+                                </select></div></div>
                             
                             {/* === NAVIGATION BUTTONS FOR STEP 2 === */}
                             <div className="d-flex justify-content-end gap-2">

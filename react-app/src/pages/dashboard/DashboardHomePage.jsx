@@ -1,10 +1,13 @@
-import React from 'react';
+import React , { useState } from 'react';
 import OpportunityChart from './components/OpportunityChart';
 import StatsCards from './components/StatsCards';
 import ShortlistedTable from './components/ShortlistedTable';
 import OpportunityPostedTable from './components/OpportunityPostedTable';
 
 function DashboardHomePage() {
+     const [postedTableFilters, setPostedTableFilters] = useState({
+        dateRange: 'all-time'
+    });
     return (
         <>
             <div className="row g-2 mb-2">
@@ -24,7 +27,10 @@ function DashboardHomePage() {
             </div>
             <div className="row">
                 <div className="col-lg-12">
-                    <OpportunityPostedTable />
+                    <OpportunityPostedTable 
+                        filters={postedTableFilters} 
+                        setFilters={setPostedTableFilters}  
+                    />
                 </div>
             </div>
         </>

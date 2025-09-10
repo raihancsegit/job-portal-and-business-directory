@@ -1,15 +1,24 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo,useRef  } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../../../context/AuthContext'; // AuthContext ইম্পোর্ট করুন
-
-const OpportunityListTable = ({ opportunities,onDelete  }) => {
+import OpportunityTabs from './OpportunityTabs';
+import DateRangeDropdown from './DateRangeDropdown';
+import Papa from 'papaparse';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
+import axios from 'axios';
+const OpportunityListTable = ({ opportunities,onDelete,activeTab, setActiveTab ,filters, setFilters,setOpportunities  }) => {
     const { user } = useAuth(); // বর্তমানে লগইন করা ব্যবহারকারীর তথ্য নিন
-
+    const { api_base_url } = window.jpbd_object || {};
+    const token = localStorage.getItem('authToken');
+     const tableRef = useRef(null);
     // পেজিনেশনের জন্য state
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage, setItemsPerPage] = useState(3); // প্রতি পেজে ৫টি আইটেম
      const [goToPage, setGoToPage] = useState("");
 
+     // চেকবক্সের জন্য নতুন state
+    const [selectedIds, setSelectedIds] = useState([]);
     // বর্তমান পেজের জন্য ডেটা গণনা করা
     const currentTableData = useMemo(() => {
         const firstPageIndex = (currentPage - 1) * itemsPerPage;
@@ -46,6 +55,95 @@ const OpportunityListTable = ({ opportunities,onDelete  }) => {
         }
     };
 
+    // চেকবক্স হ্যান্ডলিং
+    const handleSelectAll = (e) => {
+        if (e.target.checked) {
+            setSelectedIds(currentTableData.map(job => job.id));
+        } else {
+            setSelectedIds([]);
+        }
+    };
+
+     const handleSelectSingle = (e, id) => {
+        if (e.target.checked) {
+            setSelectedIds(prev => [...prev, id]);
+        } else {
+            setSelectedIds(prev => prev.filter(selectedId => selectedId !== id));
+        }
+    };
+
+    // Bulk Delete হ্যান্ডলার
+      const handleBulkDelete = async () => {
+        if (selectedIds.length === 0) { /* ... */ return; }
+        if (window.confirm(`Are you sure you want to delete ${selectedIds.length} items?`)) {
+            try {
+                await axios.post(`${api_base_url}opportunities/bulk-delete`, { ids: selectedIds }, { headers: { 'Authorization': `Bearer ${token}` } });
+                setOpportunities(prev => prev.filter(opp => !selectedIds.includes(opp.id)));
+                setSelectedIds([]);
+                alert('Selected opportunities deleted.');
+            } catch (error) {
+                alert(error.response?.data?.message || 'Could not delete.');
+            }
+        }
+    };
+
+     const handleExport = (format) => {
+        if (opportunities.length === 0) {
+            alert("No data to export.");
+            return;
+        }
+
+        switch (format) {
+            case 'csv':
+                const csv = Papa.unparse(opportunities);
+                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                const link = document.createElement("a");
+                link.href = URL.createObjectURL(blob);
+                link.setAttribute("download", "opportunities.csv");
+                link.click();
+                link.remove();
+                break;
+            
+            case 'pdf':
+            case 'png':
+                const tableElement = tableRef.current;
+                if (!tableElement) return;
+                
+                html2canvas(tableElement).then(canvas => {
+                    const imgData = canvas.toDataURL('image/png');
+                    if (format === 'png') {
+                        const link = document.createElement('a');
+                        link.download = 'opportunities.png';
+                        link.href = imgData;
+                        link.click();
+                        link.remove();
+                    } else { // PDF
+                        const pdf = new jsPDF('p', 'mm', 'a4');
+                        const imgWidth = 210; // A4 width in mm
+                        const pageHeight = 295; // A4 height in mm
+                        const imgHeight = canvas.height * imgWidth / canvas.width;
+                        let heightLeft = imgHeight;
+                        let position = 0;
+
+                        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                        heightLeft -= pageHeight;
+
+                        while (heightLeft >= 0) {
+                            position = heightLeft - imgHeight;
+                            pdf.addPage();
+                            pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                            heightLeft -= pageHeight;
+                        }
+                        pdf.save("opportunities.pdf");
+                    }
+                });
+                break;
+            default:
+                break;
+        }
+    };
+
+
     return (
         <div>
             <div className="d-flex justify-content-between flex-wrap gap-3 align-items-center mb-4 mt-3 w-100">
@@ -54,22 +152,29 @@ const OpportunityListTable = ({ opportunities,onDelete  }) => {
                         <i className="ri-layout-grid-fill me-2"></i> Grid View
                     </Link>
                 </div>
-                <div className="flex-grow-1" role="group">
-                    <button type="button" className="i-btn btn--outline btn--lg active">All Opportunities</button>
-                    <button type="button" className="i-btn btn--primary-dark btn--lg">My Opportunities</button>
-                    <button type="button" className="i-btn btn--outline btn--lg">Hired</button>
-                </div>
-                <div className="d-flex justify-content-end flex-grow-1">
-                    <div className="i-badge big-badge soft">All-time</div>
-                    <div className="dropdown"><button className="icon-btn-lg" type="button" data-bs-toggle="dropdown" aria-expanded="false"><i className="ri-arrow-down-s-line"></i></button><ul className="dropdown-menu dropdown-menu-end"><li><a className="dropdown-item" href="#">This Month</a></li><li><a className="dropdown-item" href="#">This Week</a></li><li><a className="dropdown-item" href="#">This Year</a></li></ul></div>
-                </div>
+                <OpportunityTabs activeTab={activeTab} setActiveTab={setActiveTab} />
+                <DateRangeDropdown filters={filters} setFilters={setFilters} />
             </div>
             <div className="i-card-md bg--light">
                 <div className="table-filter">
                     <div className="left"><h4 className="card-title">Opportunity Posted</h4></div>
                     <div className="right">
-                        <div className="dropdown"><button className="i-btn btn--lg btn--outline" type="button" data-bs-toggle="dropdown" aria-expanded="false">Export as CSV <i className="ri-arrow-down-s-line ms-1"></i></button><ul className="dropdown-menu dropdown-menu-end"><li><a className="dropdown-item" href="#">Export as PDF</a></li><li><a className="dropdown-item" href="#">Export as PNG</a></li></ul></div>
-                        <button className="icon-btn-lg"><i className="ri-delete-bin-6-line"></i></button>
+                        <div className="dropdown">
+                            <button className="i-btn btn--lg btn--outline" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Export as <i className="ri-arrow-down-s-line ms-1"></i>
+                            </button>
+                            <ul className="dropdown-menu dropdown-menu-end">
+                                <li><a className="dropdown-item" href="#" onClick={(e) => {e.preventDefault(); handleExport('csv');}}>Export as CSV</a></li>
+                                {/* <li><a className="dropdown-item" href="#" onClick={(e) => {e.preventDefault(); handleExport('pdf');}}>Export as PDF</a></li>
+                                <li><a className="dropdown-item" href="#" onClick={(e) => {e.preventDefault(); handleExport('png');}}>Export as PNG</a></li> */}
+                            </ul>
+                        </div>
+                        {selectedIds.length > 0 && (
+                            <button className="icon-btn-lg text-danger" onClick={handleBulkDelete}>
+                                <i className="ri-delete-bin-6-line"></i>
+                            </button>
+                        )}
+                       
                     </div>
                 </div>
                 <div className="card-body pt-0">
@@ -77,7 +182,7 @@ const OpportunityListTable = ({ opportunities,onDelete  }) => {
                         <table>
                             <thead>
                                 <tr>
-                                    <th><input type="checkbox" /></th>
+                                    <th><input type="checkbox" onChange={handleSelectAll} checked={selectedIds.length === currentTableData.length && currentTableData.length > 0} /></th>
                                     <th>Opportunity Title</th>
                                     <th>Date Posted</th>
                                     <th>Views</th>
@@ -90,7 +195,7 @@ const OpportunityListTable = ({ opportunities,onDelete  }) => {
                                 {currentTableData.length > 0 ? (
                                     currentTableData.map(job => (
                                         <tr key={job.id}>
-                                            <td><input type="checkbox" /></td>
+                                            <td><input type="checkbox" checked={selectedIds.includes(job.id)} onChange={(e) => handleSelectSingle(e, job.id)} /></td>
                                             <td>{job.job_title}</td>
                                             <td>{new Date(job.publish_date || job.created_at).toLocaleDateString()}</td>
                                             <td>{job.views || 0}</td>

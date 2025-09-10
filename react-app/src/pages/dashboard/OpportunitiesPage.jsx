@@ -1,41 +1,58 @@
-import React, { useState, useEffect,useCallback  } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import axios from 'axios';
-import { useLocation, Link } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 
 import FilterPanel from './components/opportunities/FilterPanel';
 import JobList from './components/opportunities/JobList';
 import JobDetails from './components/opportunities/JobDetails';
 import TopFilterBar from './components/opportunities/TopFilterBar';
-import OpportunityListTable from './components/opportunities/OpportunityListTable'; // নতুন ইম্পোর্ট
-
+import OpportunityListTable from './components/opportunities/OpportunityListTable';
+import OpportunityTabs from './components/opportunities/OpportunityTabs';
+import DateRangeDropdown from './components/opportunities/DateRangeDropdown';
 function OpportunitiesPage() {
+    const { user } = useAuth();
     const [opportunities, setOpportunities] = useState([]);
     const [selectedOpportunity, setSelectedOpportunity] = useState(null);
     const [loading, setLoading] = useState(true);
-     const token = localStorage.getItem('authToken');
+    const token = localStorage.getItem('authToken');
 
-     const [filters, setFilters] = useState({
-        searchTitle: '',
-        searchLocation: '',
-        experience: '',
-        jobType: '',
-        workplace: '',
-        datePosted: 'all',
-        industry: '',
-        minSalary: '', 
-        maxSalary: '', 
+    // ======================================================
+    // ধাপ ১: ট্যাবের জন্য নতুন state তৈরি করা
+    // ======================================================
+    const [activeTab, setActiveTab] = useState('all'); // 'all', 'my_opportunities', or 'hired'
+
+    const [filters, setFilters] = useState({
+        searchTitle: '', searchLocation: '', experience: '',
+        jobType: '', workplace: '', datePosted: 'all', industry: '',
+        minSalary: '', maxSalary: '', dateRange: 'all-time',
     });
 
-    const { api_base_url } = window.jpbd_object;
-    
-    // URL দেখে বর্তমান ভিউ নির্ধারণ করা
+    const { api_base_url } = window.jpbd_object || {};
     const location = useLocation();
     const isListView = location.pathname.includes('opportunities-list');
+    const debounceTimeout = useRef(null);
 
-
-     const fetchOpportunities = useCallback(() => {
+    // ======================================================
+    // ধাপ ২: API কল করার ফাংশনটিকে activeTab অনুযায়ী আপডেট করা
+    // ======================================================
+    const fetchOpportunities = useCallback(() => {
         setLoading(true);
-        axios.get(`${api_base_url}opportunities`, { params: filters })
+        
+        const params = { ...filters };
+        const config = { params, headers: {} };
+
+        // ট্যাবের উপর ভিত্তি করে API প্যারামিটার সেট করা
+        if (activeTab === 'my_opportunities') {
+            params.viewMode = 'my_opportunities';
+            if (token) {
+                config.headers['Authorization'] = `Bearer ${token}`;
+            }
+        } else {
+            delete params.viewMode;
+        }
+        
+        axios.get(`${api_base_url}opportunities`, config)
             .then(response => {
                 setOpportunities(response.data);
                 if (response.data.length > 0 && !isListView) {
@@ -44,57 +61,45 @@ function OpportunitiesPage() {
                     setSelectedOpportunity(null);
                 }
             })
-            .catch(error => console.error("Failed to fetch opportunities", error))
+            .catch(error => {
+                console.error("Failed to fetch opportunities", error);
+                setOpportunities([]);
+                setSelectedOpportunity(null);
+            })
             .finally(() => setLoading(false));
-    }, [api_base_url, isListView, filters]);
+    }, [api_base_url, isListView, token, filters, activeTab]); // activeTab-কে dependency হিসেবে যোগ করা
 
+    // `filters` বা `activeTab` পরিবর্তন হলে API কল করা
     useEffect(() => {
-        const handler = setTimeout(() => {
+        if (debounceTimeout.current) {
+            clearTimeout(debounceTimeout.current);
+        }
+        debounceTimeout.current = setTimeout(() => {
             fetchOpportunities();
         }, 500);
-        return () => clearTimeout(handler);
-    }, [filters, fetchOpportunities]);
 
-    useEffect(() => {
-        const fetchOpportunities = async () => {
-            setLoading(true);
-            try {
-                const response = await axios.get(`${api_base_url}opportunities`);
-                setOpportunities(response.data);
-                if (response.data.length > 0 && !isListView) {
-                    setSelectedOpportunity(response.data[0]);
-                }
-            } catch (error) {
-                console.error("Failed to fetch opportunities", error);
-            } finally {
-                setLoading(false);
+        return () => {
+            if (debounceTimeout.current) {
+                clearTimeout(debounceTimeout.current);
             }
         };
-        fetchOpportunities();
-    }, [api_base_url, isListView]);
-
-    if (loading) {
-        return <div className="p-4">Loading opportunities...</div>;
-    }
-
-    // নতুন ডিলিট হ্যান্ডলার ফাংশন
+    }, [filters, activeTab, fetchOpportunities]); // activeTab-কে dependency হিসেবে যোগ করা
+    
+    // ... (handleDeleteOpportunity ফাংশন অপরিবর্তিত) ...
     const handleDeleteOpportunity = async (opportunityId) => {
-        // ব্যবহারকারীকে কনফার্ম করতে বলা
         if (!window.confirm('Are you sure you want to delete this opportunity? This action cannot be undone.')) {
             return;
         }
-
         try {
             await axios.delete(`${api_base_url}opportunities/${opportunityId}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
-            // সফলভাবে ডিলিট হওয়ার পর, UI থেকে opportunity-টি সরিয়ে দেওয়া
-            setOpportunities(prevOpportunities => 
-                prevOpportunities.filter(opp => opp.id !== opportunityId)
-            );
+            setOpportunities(prev => prev.filter(opp => opp.id !== opportunityId));
+            if (selectedOpportunity?.id === opportunityId) {
+                setSelectedOpportunity(null);
+            }
             alert('Opportunity deleted successfully!');
         } catch (error) {
-            console.error("Failed to delete opportunity", error);
             alert(error.response?.data?.message || 'Could not delete the opportunity.');
         }
     };
@@ -103,32 +108,33 @@ function OpportunitiesPage() {
         <div className="i-card-md radius-30 card-bg-two">
             <div className="card-body">
                <TopFilterBar filters={filters} setFilters={setFilters} />
-
                 {isListView ? (
-                    // ===================
-                    // LIST VIEW
-                    // ===================
-                    <OpportunityListTable opportunities={opportunities} onDelete={handleDeleteOpportunity}/>
+                    <OpportunityListTable 
+                        opportunities={opportunities}  
+                        onDelete={handleDeleteOpportunity}
+                        activeTab={activeTab} // prop পাস করা
+                        setActiveTab={setActiveTab} // prop পাস করা
+                        filters={filters}
+                        setFilters={setFilters}
+                    />
                 ) : (
-                    // ===================
-                    // GRID VIEW
-                    // ===================
                     <div className="description-container">
                         <FilterPanel filters={filters} setFilters={setFilters} />
                         <div className="descrition-content">
-                             <div className="d-flex justify-content-between flex-wrap gap-3 align-items-center mb-4 mt-3">
-                               <div className="flex-grow-1" role="group">
-                                    <button type="button" className="i-btn btn--outline btn--lg active">All Opportunities</button>
-                                    <button type="button" className="i-btn btn--primary-dark btn--lg">My Opportunities</button>
-                                    <button type="button" className="i-btn btn--outline btn--lg">Hired</button>
-                                </div>
+                            {/* ====================================================== */}
+                            {/* ধাপ ৩: বাটনগুলোকে state-এর সাথে যুক্ত করা */}
+                            {/* ====================================================== */}
+                            <div className="d-flex justify-content-between flex-wrap gap-3 align-items-center mb-4 mt-3">
+                                 <OpportunityTabs activeTab={activeTab} setActiveTab={setActiveTab} />
+                                
+                                <DateRangeDropdown filters={filters} setFilters={setFilters} />
                             </div>
                             <div className="row g-3">
                                 <div className="col-xxl-4">
                                     <JobList 
-                                        opportunities={opportunities}
-                                        onSelectOpportunity={setSelectedOpportunity}
-                                        selectedOpportunityId={selectedOpportunity?.id}
+                                        opportunities={opportunities} 
+                                        onSelectOpportunity={setSelectedOpportunity} 
+                                        selectedOpportunityId={selectedOpportunity?.id} 
                                     />
                                 </div>
                                 <div className="col-xxl-8">
