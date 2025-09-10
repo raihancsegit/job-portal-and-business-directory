@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../../../context/AuthContext'; // AuthContext ইম্পোর্ট করুন
 
-const OpportunityListTable = ({ opportunities }) => {
+const OpportunityListTable = ({ opportunities,onDelete  }) => {
     const { user } = useAuth(); // বর্তমানে লগইন করা ব্যবহারকারীর তথ্য নিন
 
     // পেজিনেশনের জন্য state
@@ -102,12 +102,40 @@ const OpportunityListTable = ({ opportunities }) => {
                                                         <i className="ri-more-2-fill"></i>
                                                     </button>
                                                     <ul className="dropdown-menu dropdown-menu-end">
-                                                        <li><a className="dropdown-item" href="#">View</a></li>
+                                                       <li>
+                                                            {/* This link goes to the dynamic details page */}
+                                                            <Link 
+                                                                className="dropdown-item" 
+                                                                to={`/dashboard/opportunities/${job.id}`}
+                                                            >
+                                                                View
+                                                            </Link>
+                                                        </li>
                                                         {/* কন্ডিশনাল রেন্ডারিং: যদি জবের user_id এবং বর্তমান ইউজারের আইডি একই হয় */}
                                                         {user && parseInt(user.id, 10) === parseInt(job.user_id, 10) && (
                                                             <>
-                                                                <li><a className="dropdown-item" href="#">Edit</a></li>
-                                                                <li><a className="dropdown-item text-danger" href="#">Delete</a></li>
+                                                            <li>
+                                                                {/* This link goes to the dynamic update page */}
+                                                                <Link 
+                                                                    className="dropdown-item" 
+                                                                    to={`/dashboard/update-opportunity/${job.id}`}
+                                                                >
+                                                                    Edit
+                                                                </Link>
+                                                            </li>
+                                                                <li>
+                                                                    {/* Delete will be a button that triggers a function */}
+                                                                    <a 
+                                                                        className="dropdown-item text-danger" 
+                                                                        href="#" 
+                                                                        onClick={(e) => {
+                                                                            e.preventDefault();
+                                                                            onDelete(job.id); // প্যারেন্ট কম্পোনেন্টের ফাংশন কল করা হচ্ছে
+                                                                        }}
+                                                                    >
+                                                                        Delete
+                                                                    </a>
+                                                                </li>
                                                             </>
                                                         )}
                                                     </ul>

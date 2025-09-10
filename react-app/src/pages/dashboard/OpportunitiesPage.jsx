@@ -12,6 +12,7 @@ function OpportunitiesPage() {
     const [opportunities, setOpportunities] = useState([]);
     const [selectedOpportunity, setSelectedOpportunity] = useState(null);
     const [loading, setLoading] = useState(true);
+     const token = localStorage.getItem('authToken');
 
      const [filters, setFilters] = useState({
         searchTitle: '',
@@ -21,6 +22,8 @@ function OpportunitiesPage() {
         workplace: '',
         datePosted: 'all',
         industry: '',
+        minSalary: '', 
+        maxSalary: '', 
     });
 
     const { api_base_url } = window.jpbd_object;
@@ -74,6 +77,28 @@ function OpportunitiesPage() {
         return <div className="p-4">Loading opportunities...</div>;
     }
 
+    // নতুন ডিলিট হ্যান্ডলার ফাংশন
+    const handleDeleteOpportunity = async (opportunityId) => {
+        // ব্যবহারকারীকে কনফার্ম করতে বলা
+        if (!window.confirm('Are you sure you want to delete this opportunity? This action cannot be undone.')) {
+            return;
+        }
+
+        try {
+            await axios.delete(`${api_base_url}opportunities/${opportunityId}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            // সফলভাবে ডিলিট হওয়ার পর, UI থেকে opportunity-টি সরিয়ে দেওয়া
+            setOpportunities(prevOpportunities => 
+                prevOpportunities.filter(opp => opp.id !== opportunityId)
+            );
+            alert('Opportunity deleted successfully!');
+        } catch (error) {
+            console.error("Failed to delete opportunity", error);
+            alert(error.response?.data?.message || 'Could not delete the opportunity.');
+        }
+    };
+
     return (
         <div className="i-card-md radius-30 card-bg-two">
             <div className="card-body">
@@ -83,7 +108,7 @@ function OpportunitiesPage() {
                     // ===================
                     // LIST VIEW
                     // ===================
-                    <OpportunityListTable opportunities={opportunities} />
+                    <OpportunityListTable opportunities={opportunities} onDelete={handleDeleteOpportunity}/>
                 ) : (
                     // ===================
                     // GRID VIEW

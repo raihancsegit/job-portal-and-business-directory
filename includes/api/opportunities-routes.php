@@ -27,19 +27,43 @@ function jpbd_register_opportunities_api_routes()
         ],
     ]);
 
+    register_rest_route(
+        'jpbd/v1',
+        '/opportunities/(?P<id>\d+)',
+        [
+            'methods' => 'POST', // WordPress-এ আপডেটের জন্য POST ব্যবহার করা সহজ
+            'callback' => 'jpbd_api_update_opportunity',
+            'permission_callback' => function () {
+                return is_user_logged_in();
+            },
+            'args' => [
+                'id' => [
+                    'validate_callback' => function ($param) {
+                        return is_numeric($param);
+                    }
+                ],
+            ],
+        ]
+
+    );
+
     register_rest_route('jpbd/v1', '/opportunities/(?P<id>\d+)', [
-        'methods' => 'POST', // WordPress-এ আপডেটের জন্য POST ব্যবহার করা সহজ
-        'callback' => 'jpbd_api_update_opportunity',
+        'methods' => WP_REST_Server::DELETABLE, // DELETE
+        'callback' => 'jpbd_api_delete_opportunity',
         'permission_callback' => function () {
             return is_user_logged_in();
         },
         'args' => [
-            'id' => [
-                'validate_callback' => function ($param) {
-                    return is_numeric($param);
-                }
-            ],
+            'id' => ['validate_callback' => function ($param) {
+                return is_numeric($param);
+            }],
         ],
+    ]);
+
+    register_rest_route('jpbd/v1', '/opportunities/filters/counts', [
+        'methods' => 'GET',
+        'callback' => 'jpbd_api_get_filter_counts',
+        'permission_callback' => '__return_true',
     ]);
 }
 add_action('rest_api_init', 'jpbd_register_opportunities_api_routes');
@@ -185,6 +209,16 @@ function jpbd_api_get_opportunities(WP_REST_Request $request)
         }
     }
 
+    // আমরা salary_amount কলামটিকে সংখ্যা হিসেবে তুলনা করব
+    if (isset($filters['minSalary']) && is_numeric($filters['minSalary'])) {
+        $sql .= " AND CAST(salary_amount AS UNSIGNED) >= %d";
+        $params[] = (int) $filters['minSalary'];
+    }
+    if (isset($filters['maxSalary']) && is_numeric($filters['maxSalary'])) {
+        $sql .= " AND CAST(salary_amount AS UNSIGNED) <= %d";
+        $params[] = (int) $filters['maxSalary'];
+    }
+
     $sql .= " ORDER BY created_at DESC";
 
     // সুরক্ষিতভাবে কোয়েরি চালানো
@@ -225,6 +259,7 @@ function jpbd_api_get_single_opportunity(WP_REST_Request $request)
  * API: Update an existing opportunity.
  * This function now includes all fields from your form.
  */
+
 function jpbd_api_update_opportunity(WP_REST_Request $request)
 {
     global $wpdb;
@@ -232,7 +267,99 @@ function jpbd_api_update_opportunity(WP_REST_Request $request)
     $user_id = get_current_user_id();
     $opportunity_id = (int) $request['id'];
 
-    // Step 1: Verify ownership and existence
+    // Step 1: Verify ownership (this part is correct)
+    $existing_opportunity = $wpdb->get_row($wpdb->prepare("SELECT user_id FROM $table_name WHERE id = %d", $opportunity_id));
+    if (!$existing_opportunity) {
+        return new WP_Error('not_found', 'Opportunity not found.', ['status' => 404]);
+    }
+    if ((int) $existing_opportunity->user_id !== $user_id) {
+        return new WP_Error('rest_forbidden', 'You do not have permission to edit this opportunity.', ['status' => 403]);
+    }
+
+    // ======================================================
+    // THIS IS THE FIX
+    // ======================================================
+
+    // Step 2: Dynamically build the data array ONLY with received fields
+    $params = $request->get_json_params();
+    $data = []; // Start with an empty array
+
+    // List of all possible fields that can be updated
+    $allowed_fields = [
+        'job_title',
+        'industry',
+        'job_type',
+        'workplace',
+        'location',
+        'salary_currency',
+        'salary_amount',
+        'salary_type',
+        'job_details',
+        'responsibilities',
+        'qualifications',
+        'skills',
+        'experience',
+        'education_level',
+        'vacancy_status',
+        'publish_date',
+        'end_date'
+    ];
+
+    // Loop through the allowed fields and add them to the $data array if they exist in the request
+    foreach ($allowed_fields as $field) {
+        // We also check for the camelCase version from React
+        $camelCaseField = lcfirst(str_replace('_', '', ucwords($field, '_')));
+
+        if (isset($params[$field])) {
+            $data[$field] = sanitize_text_field($params[$field]);
+        } elseif (isset($params[$camelCaseField])) {
+            $data[$field] = sanitize_text_field($params[$camelCaseField]);
+        }
+    }
+
+    // Sanitize text areas separately
+    if (isset($params['job_details']) || isset($params['jobDetails'])) {
+        $data['job_details'] = sanitize_textarea_field($params['job_details'] ?? $params['jobDetails']);
+    }
+    if (isset($params['responsibilities'])) {
+        $data['responsibilities'] = sanitize_textarea_field($params['responsibilities']);
+    }
+    if (isset($params['qualifications'])) {
+        $data['qualifications'] = sanitize_textarea_field($params['qualifications']);
+    }
+
+    // If no data was sent to update, there's nothing to do.
+    if (empty($data)) {
+        return new WP_Error('no_data', 'No data provided to update.', ['status' => 400]);
+    }
+
+    // ======================================================
+    // END OF FIX
+    // ======================================================
+
+    // Step 3: Update the database record
+    $where = ['id' => $opportunity_id];
+    $result = $wpdb->update($table_name, $data, $where);
+
+    if ($result === false) {
+        return new WP_Error('db_error', 'Could not update the opportunity.', ['status' => 500]);
+    }
+
+    return new WP_REST_Response(['success' => true, 'message' => 'Opportunity updated successfully!'], 200);
+}
+
+
+/**
+ * API: Delete an existing opportunity.
+ */
+function jpbd_api_delete_opportunity(WP_REST_Request $request)
+{
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'jpbd_opportunities';
+    $user_id = get_current_user_id();
+    $opportunity_id = (int) $request['id'];
+
+    // ধাপ ১: Opportunity-টি আছে কিনা এবং এটি বর্তমান ব্যবহারকারীর কিনা তা চেক করা
     $existing_opportunity = $wpdb->get_row(
         $wpdb->prepare("SELECT user_id FROM $table_name WHERE id = %d", $opportunity_id)
     );
@@ -242,42 +369,53 @@ function jpbd_api_update_opportunity(WP_REST_Request $request)
     }
 
     if ((int) $existing_opportunity->user_id !== $user_id) {
-        return new WP_Error('rest_forbidden', 'You do not have permission to edit this opportunity.', ['status' => 403]);
+        return new WP_Error('rest_forbidden', 'You do not have permission to delete this opportunity.', ['status' => 403]);
     }
 
-    // Step 2: Get and sanitize all parameters from React
-    $params = $request->get_json_params();
-
-    $data = [
-        'job_title' => isset($params['job_title']) ? sanitize_text_field($params['job_title']) : '',
-        'industry' => isset($params['industry']) ? sanitize_text_field($params['industry']) : '',
-        'job_type' => isset($params['job_type']) ? sanitize_text_field($params['job_type']) : '',
-        'workplace' => isset($params['workplace']) ? sanitize_text_field($params['workplace']) : '',
-        'location' => isset($params['location']) ? sanitize_text_field($params['location']) : '',
-        'salary_currency' => isset($params['salary_currency']) ? sanitize_text_field($params['salary_currency']) : 'USD',
-        'salary_amount' => isset($params['salary_amount']) ? sanitize_text_field($params['salary_amount']) : '',
-        'salary_type' => isset($params['salary_type']) ? sanitize_text_field($params['salary_type']) : 'Hourly',
-        'job_details' => isset($params['job_details']) ? sanitize_textarea_field($params['job_details']) : '',
-        'responsibilities' => isset($params['responsibilities']) ? sanitize_textarea_field($params['responsibilities']) : '',
-        'qualifications' => isset($params['qualifications']) ? sanitize_textarea_field($params['qualifications']) : '',
-        'skills' => isset($params['skills']) ? sanitize_text_field($params['skills']) : '',
-        'experience' => isset($params['experience']) ? sanitize_text_field($params['experience']) : '',
-        'education_level' => isset($params['education_level']) ? sanitize_text_field($params['education_level']) : '',
-        'vacancy_status' => isset($params['vacancy_status']) ? sanitize_text_field($params['vacancy_status']) : 'Open',
-        'publish_date' => isset($params['publish_date']) ? sanitize_text_field($params['publish_date']) : null,
-        'end_date' => isset($params['end_date']) ? sanitize_text_field($params['end_date']) : null,
-    ];
-
-    // Step 3: Update the database record
-    $where = ['id' => $opportunity_id];
-    $result = $wpdb->update($table_name, $data, $where);
+    // ধাপ ২: ডাটাবেস থেকে রেকর্ডটি ডিলিট করা
+    $result = $wpdb->delete($table_name, ['id' => $opportunity_id]);
 
     if ($result === false) {
-        return new WP_Error('db_error', 'Could not update the opportunity in the database.', ['status' => 500]);
+        return new WP_Error('db_error', 'Could not delete the opportunity.', ['status' => 500]);
     }
 
-    return new WP_REST_Response([
-        'success' => true,
-        'message' => 'Opportunity updated successfully!'
-    ], 200);
+    return new WP_REST_Response(['success' => true, 'message' => 'Opportunity deleted successfully!'], 200);
+}
+
+/**
+ * API: Get the count of opportunities for each filter category.
+ */
+function jpbd_api_get_filter_counts()
+{
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'jpbd_opportunities';
+
+    // গ্রুপ করে প্রতিটি ক্যাটাগরির জন্য COUNT(*) গণনা করা
+    $job_type_counts = $wpdb->get_results("SELECT job_type as name, COUNT(*) as count FROM $table_name GROUP BY job_type", ARRAY_A);
+    $workplace_counts = $wpdb->get_results("SELECT workplace as name, COUNT(*) as count FROM $table_name GROUP BY workplace", ARRAY_A);
+    $industry_counts = $wpdb->get_results("SELECT industry as name, COUNT(*) as count FROM $table_name GROUP BY industry", ARRAY_A);
+    $experience_counts = $wpdb->get_results("SELECT experience as name, COUNT(*) as count FROM $table_name GROUP BY experience", ARRAY_A);
+
+    // Date Posted-এর জন্য গণনা একটু জটিল, তাই আমরা PHP-তে করব
+    $now = current_time('timestamp');
+    $date_counts = [
+        'all' => (int) $wpdb->get_var("SELECT COUNT(*) FROM $table_name"),
+        'last-hour' => (int) $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM $table_name WHERE created_at >= %s", date('Y-m-d H:i:s', $now - HOUR_IN_SECONDS))),
+        'last-24-hours' => (int) $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM $table_name WHERE created_at >= %s", date('Y-m-d H:i:s', $now - DAY_IN_SECONDS))),
+        'last-week' => (int) $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM $table_name WHERE created_at >= %s", date('Y-m-d H:i:s', $now - WEEK_IN_SECONDS))),
+        // === ADDED THESE TWO ===
+        'last-2-weeks' => (int) $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM $table_name WHERE created_at >= %s", date('Y-m-d H:i:s', $now - (2 * WEEK_IN_SECONDS)))),
+        'last-month' => (int) $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM $table_name WHERE created_at >= %s", date('Y-m-d H:i:s', strtotime('-1 month', $now)))),
+    ];
+
+    // একটি সুন্দর ফরম্যাটে ডেটা রিটার্ন করা
+    $counts = [
+        'jobType' => $job_type_counts,
+        'workplace' => $workplace_counts,
+        'industry' => $industry_counts,
+        'experience' => $experience_counts,
+        'datePosted' => $date_counts,
+    ];
+
+    return new WP_REST_Response($counts, 200);
 }

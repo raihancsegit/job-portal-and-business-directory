@@ -1,12 +1,38 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef,useState,memo   } from 'react';
 import { Link } from 'react-router-dom';
-
+import axios from 'axios';
 const FilterPanel = ({ filters, setFilters }) => {
     // Refs for salary slider and histogram canvas
     const priceHistogramCanvasRef = useRef(null);
     const priceSliderRef = useRef(null);
     const minPriceInputRef = useRef(null);
     const maxPriceInputRef = useRef(null);
+
+    const [counts, setCounts] = useState(null);
+    const { api_base_url } = window.jpbd_object;
+
+      useEffect(() => {
+        const fetchCounts = async () => {
+            try {
+                const response = await axios.get(`${api_base_url}opportunities/filters/counts`);
+                setCounts(response.data);
+            } catch (error) {
+                console.error("Failed to fetch filter counts", error);
+            }
+        };
+        fetchCounts();
+    }, [api_base_url]);
+
+    const getCount = (category, name) => {
+        if (!counts || !counts[category]) return 0;
+
+        if (category === 'datePosted') {
+            return counts.datePosted[name] || 0;
+        }
+
+        const item = counts[category].find(c => c.name === name);
+        return item ? item.count : 0;
+    };
 
     const handleRadioChange = (e) => {
         const { name, value } = e.target;
@@ -17,6 +43,7 @@ const FilterPanel = ({ filters, setFilters }) => {
             setFilters(prev => ({ ...prev, [name]: value }));
         }
     };
+    
     
     useEffect(() => {
         const priceHistogramCanvas = priceHistogramCanvasRef.current;
@@ -136,42 +163,43 @@ const FilterPanel = ({ filters, setFilters }) => {
                                         <input type="radio" name="datePosted" value="all" checked={filters.datePosted === 'all'} onChange={handleRadioChange} className="form-check-input me-2" />
                                         All
                                     </label>
-                                    <span className="item-count">512</span>
+                                    {/* The optional chaining operator (?.) prevents errors if counts is null */}
+                                    <span className="item-count">{counts?.datePosted?.all || 0}</span>
                                 </li>
                                 <li className="d-flex align-items-center justify-content-between cursor-pointer mb-2">
                                     <label className="d-flex align-items-center text-secondary small">
                                         <input type="radio" name="datePosted" value="last-hour" checked={filters.datePosted === 'last-hour'} onChange={handleRadioChange} className="form-check-input me-2" />
                                         Last hour
                                     </label>
-                                    <span className="item-count">34</span>
+                                    <span className="item-count">{counts?.datePosted?.['last-hour'] || 0}</span>
                                 </li>
                                 <li className="d-flex align-items-center justify-content-between cursor-pointer mb-2">
                                     <label className="d-flex align-items-center text-secondary small">
                                         <input type="radio" name="datePosted" value="last-24-hours" checked={filters.datePosted === 'last-24-hours'} onChange={handleRadioChange} className="form-check-input me-2" />
                                         Last 24 hours
                                     </label>
-                                    <span className="item-count">23</span>
+                                    <span className="item-count">{counts?.datePosted?.['last-24-hours'] || 0}</span>
                                 </li>
                                 <li className="d-flex align-items-center justify-content-between cursor-pointer mb-2">
                                     <label className="d-flex align-items-center text-secondary small">
                                         <input type="radio" name="datePosted" value="last-week" checked={filters.datePosted === 'last-week'} onChange={handleRadioChange} className="form-check-input me-2" />
                                         Last week
                                     </label>
-                                    <span className="item-count">12</span>
+                                    <span className="item-count">{counts?.datePosted?.['last-week'] || 0}</span>
                                 </li>
                                 <li className="d-flex align-items-center justify-content-between cursor-pointer mb-2">
                                     <label className="d-flex align-items-center text-secondary small">
                                         <input type="radio" name="datePosted" value="last-2-weeks" checked={filters.datePosted === 'last-2-weeks'} onChange={handleRadioChange} className="form-check-input me-2" />
                                         Last 2 weeks
                                     </label>
-                                    <span className="item-count">31</span>
+                                    <span className="item-count">{counts?.datePosted?.['last-2-weeks'] || 0}</span>
                                 </li>
                                 <li className="d-flex align-items-center justify-content-between cursor-pointer mb-2">
                                     <label className="d-flex align-items-center text-secondary small">
                                         <input type="radio" name="datePosted" value="last-month" checked={filters.datePosted === 'last-month'} onChange={handleRadioChange} className="form-check-input me-2" />
                                         Last month
                                     </label>
-                                    <span className="item-count">234</span>
+                                    <span className="item-count">{counts?.datePosted?.['last-month'] || 0}</span>
                                 </li>
                             </ul>
                         </div>
@@ -191,44 +219,44 @@ const FilterPanel = ({ filters, setFilters }) => {
                                 <li className="d-flex align-items-center justify-content-between cursor-pointer mb-2">
                                     <label className="d-flex align-items-center text-secondary small">
                                         <input type="radio" name="jobType" value="Full Time" checked={filters.jobType === 'Full Time'} onChange={handleRadioChange} className="form-check-input me-2" />
-                                        Full Time
+                                        Full-time
                                     </label>
-                                    <span className="item-count">124</span>
+                                    <span className="item-count">{getCount('jobType', 'Full Time')}</span>
                                 </li>
                                 <li className="d-flex align-items-center justify-content-between cursor-pointer mb-2">
                                     <label className="d-flex align-items-center text-secondary small">
                                         <input type="radio" name="jobType" value="Part Time" checked={filters.jobType === 'Part Time'} onChange={handleRadioChange} className="form-check-input me-2" />
-                                        Part Time
+                                        Part-time
                                     </label>
-                                    <span className="item-count">45</span>
+                                    <span className="item-count">{getCount('jobType', 'Part Time')}</span>
                                 </li>
                                 <li className="d-flex align-items-center justify-content-between cursor-pointer mb-2">
                                     <label className="d-flex align-items-center text-secondary small">
                                         <input type="radio" name="jobType" value="Contract" checked={filters.jobType === 'Contract'} onChange={handleRadioChange} className="form-check-input me-2" />
                                         Contract
                                     </label>
-                                    <span className="item-count">06</span>
+                                    <span className="item-count">{getCount('jobType', 'Contract')}</span>
                                 </li>
                                 <li className="d-flex align-items-center justify-content-between cursor-pointer mb-2">
                                     <label className="d-flex align-items-center text-secondary small">
                                         <input type="radio" name="jobType" value="Freelance" checked={filters.jobType === 'Freelance'} onChange={handleRadioChange} className="form-check-input me-2" />
                                         Freelance
                                     </label>
-                                    <span className="item-count">21</span>
+                                    <span className="item-count">{getCount('jobType', 'Freelance')}</span>
                                 </li>
                                 <li className="d-flex align-items-center justify-content-between cursor-pointer mb-2">
                                     <label className="d-flex align-items-center text-secondary small">
                                         <input type="radio" name="jobType" value="Intern" checked={filters.jobType === 'Intern'} onChange={handleRadioChange} className="form-check-input me-2" />
                                         Intern
                                     </label>
-                                    <span className="item-count">14</span>
+                                    <span className="item-count">{getCount('jobType', 'Intern')}</span>
                                 </li>
                                 <li className="d-flex align-items-center justify-content-between cursor-pointer mb-2">
                                     <label className="d-flex align-items-center text-secondary small">
                                         <input type="radio" name="jobType" value="Temporary" checked={filters.jobType === 'Temporary'} onChange={handleRadioChange} className="form-check-input me-2" />
                                         Temporary
                                     </label>
-                                    <span className="item-count">0</span>
+                                    <span className="item-count">{getCount('jobType', 'Temporary')}</span>
                                 </li>
                             </ul>
                         </div>
@@ -250,21 +278,21 @@ const FilterPanel = ({ filters, setFilters }) => {
                                         <input type="radio" name="workplace" value="On-site" checked={filters.workplace === 'On-site'} onChange={handleRadioChange} className="form-check-input me-2" />
                                         On-site
                                     </label>
-                                    <span className="item-count">232</span>
+                                    <span className="item-count">{getCount('workplace', 'On-site')}</span>
                                 </li>
                                 <li className="d-flex align-items-center justify-content-between cursor-pointer mb-2">
                                     <label className="d-flex align-items-center text-secondary small">
                                         <input type="radio" name="workplace" value="Hybrid" checked={filters.workplace === 'Hybrid'} onChange={handleRadioChange} className="form-check-input me-2" />
                                         Hybrid
                                     </label>
-                                    <span className="item-count">42</span>
+                                    <span className="item-count">{getCount('workplace', 'Hybrid')}</span>
                                 </li>
                                 <li className="d-flex align-items-center justify-content-between cursor-pointer mb-2">
                                     <label className="d-flex align-items-center text-secondary small">
                                         <input type="radio" name="workplace" value="Remote" checked={filters.workplace === 'Remote'} onChange={handleRadioChange} className="form-check-input me-2" />
                                         Remote
                                     </label>
-                                    <span className="item-count">23</span>
+                                    <span className="item-count">{getCount('workplace', 'Remote')}</span>
                                 </li>
                             </ul>
                         </div>
@@ -281,19 +309,86 @@ const FilterPanel = ({ filters, setFilters }) => {
                                         <input type="radio" name="industry" value="" checked={filters.industry === ''} onChange={handleRadioChange} className="form-check-input me-2" />
                                         All
                                     </label>
-                                    <span className="item-count">114</span>
+                                    {/* 'all' count is a special case, we can sum up others if needed or get from API */}
+                                    <span className="item-count">{counts?.industry?.reduce((acc, item) => acc + parseInt(item.count), 0) || 0}</span>
                                 </li>
-                                <li className="d-flex align-items-center justify-content-between cursor-pointer mb-2"><label className="d-flex align-items-center text-secondary small"><input type="radio" name="industry" value="accounting" checked={filters.industry === 'accounting'} onChange={handleRadioChange} className="form-check-input me-2" />Accounting/Finance</label><span className="item-count">18</span></li>
-                                <li className="d-flex align-items-center justify-content-between cursor-pointer mb-2"><label className="d-flex align-items-center text-secondary small"><input type="radio" name="industry" value="automotive" checked={filters.industry === 'automotive'} onChange={handleRadioChange} className="form-check-input me-2" />Automotive</label><span className="item-count">12</span></li>
-                                <li className="d-flex align-items-center justify-content-between cursor-pointer mb-2"><label className="d-flex align-items-center text-secondary small"><input type="radio" name="industry" value="construction" checked={filters.industry === 'construction'} onChange={handleRadioChange} className="form-check-input me-2" />Construction</label><span className="item-count">14</span></li>
-                                <li className="d-flex align-items-center justify-content-between cursor-pointer mb-2"><label className="d-flex align-items-center text-secondary small"><input type="radio" name="industry" value="education" checked={filters.industry === 'education'} onChange={handleRadioChange} className="form-check-input me-2" />Education</label><span className="item-count">25</span></li>
-                                <li className="d-flex align-items-center justify-content-between cursor-pointer mb-2"><label className="d-flex align-items-center text-secondary small"><input type="radio" name="industry" value="healthcare" checked={filters.industry === 'healthcare'} onChange={handleRadioChange} className="form-check-input me-2" />Healthcare</label><span className="item-count">08</span></li>
-                                <li className="d-flex align-items-center justify-content-between cursor-pointer mb-2"><label className="d-flex align-items-center text-secondary small"><input type="radio" name="industry" value="restaurant" checked={filters.industry === 'restaurant'} onChange={handleRadioChange} className="form-check-input me-2" />Restaurant/Food</label><span className="item-count">12</span></li>
-                                <li className="d-flex align-items-center justify-content-between cursor-pointer mb-2"><label className="d-flex align-items-center text-secondary small"><input type="radio" name="industry" value="sales-marketing" checked={filters.industry === 'sales-marketing'} onChange={handleRadioChange} className="form-check-input me-2" />Sales & Marketing</label><span className="item-count">09</span></li>
-                                <li className="d-flex align-items-center justify-content-between cursor-pointer mb-2"><label className="d-flex align-items-center text-secondary small"><input type="radio" name="industry" value="development" checked={filters.industry === 'development'} onChange={handleRadioChange} className="form-check-input me-2" />Development</label><span className="item-count">14</span></li>
-                                <li className="d-flex align-items-center justify-content-between cursor-pointer mb-2"><label className="d-flex align-items-center text-secondary small"><input type="radio" name="industry" value="telecom" checked={filters.industry === 'telecom'} onChange={handleRadioChange} className="form-check-input me-2" />Telecommunications</label><span className="item-count">02</span></li>
-                                <li className="d-flex align-items-center justify-content-between cursor-pointer mb-2"><label className="d-flex align-items-center text-secondary small"><input type="radio" name="industry" value="IT" checked={filters.industry === 'IT'} onChange={handleRadioChange} className="form-check-input me-2" />IT</label><span className="item-count">02</span></li>
-                                <li className="d-flex align-items-center justify-content-between cursor-pointer mb-2"><label className="d-flex align-items-center text-secondary small"><input type="radio" name="industry" value="design" checked={filters.industry === 'design'} onChange={handleRadioChange} className="form-check-input me-2" />Design</label><span className="item-count">02</span></li>
+                                <li className="d-flex align-items-center justify-content-between cursor-pointer mb-2">
+                                    <label className="d-flex align-items-center text-secondary small">
+                                        <input type="radio" name="industry" value="Accounting/Finance" checked={filters.industry === 'Accounting/Finance'} onChange={handleRadioChange} className="form-check-input me-2" />
+                                        Accounting/Finance
+                                    </label>
+                                    <span className="item-count">{getCount('industry', 'Accounting/Finance')}</span>
+                                </li>
+                                <li className="d-flex align-items-center justify-content-between cursor-pointer mb-2">
+                                    <label className="d-flex align-items-center text-secondary small">
+                                        <input type="radio" name="industry" value="Automotive" checked={filters.industry === 'Automotive'} onChange={handleRadioChange} className="form-check-input me-2" />
+                                        Automotive
+                                    </label>
+                                    <span className="item-count">{getCount('industry', 'Automotive')}</span>
+                                </li>
+                                <li className="d-flex align-items-center justify-content-between cursor-pointer mb-2">
+                                    <label className="d-flex align-items-center text-secondary small">
+                                        <input type="radio" name="industry" value="Construction" checked={filters.industry === 'Construction'} onChange={handleRadioChange} className="form-check-input me-2" />
+                                        Construction
+                                    </label>
+                                    <span className="item-count">{getCount('industry', 'Construction')}</span>
+                                </li>
+                                <li className="d-flex align-items-center justify-content-between cursor-pointer mb-2">
+                                    <label className="d-flex align-items-center text-secondary small">
+                                        <input type="radio" name="industry" value="Education" checked={filters.industry === 'Education'} onChange={handleRadioChange} className="form-check-input me-2" />
+                                        Education
+                                    </label>
+                                    <span className="item-count">{getCount('industry', 'Education')}</span>
+                                </li>
+                                <li className="d-flex align-items-center justify-content-between cursor-pointer mb-2">
+                                    <label className="d-flex align-items-center text-secondary small">
+                                        <input type="radio" name="industry" value="Healthcare" checked={filters.industry === 'Healthcare'} onChange={handleRadioChange} className="form-check-input me-2" />
+                                        Healthcare
+                                    </label>
+                                    <span className="item-count">{getCount('industry', 'Healthcare')}</span>
+                                </li>
+                                <li className="d-flex align-items-center justify-content-between cursor-pointer mb-2">
+                                    <label className="d-flex align-items-center text-secondary small">
+                                        <input type="radio" name="industry" value="Restaurant/Food" checked={filters.industry === 'Restaurant/Food'} onChange={handleRadioChange} className="form-check-input me-2" />
+                                        Restaurant/Food
+                                    </label>
+                                    <span className="item-count">{getCount('industry', 'Restaurant/Food')}</span>
+                                </li>
+                                <li className="d-flex align-items-center justify-content-between cursor-pointer mb-2">
+                                    <label className="d-flex align-items-center text-secondary small">
+                                        <input type="radio" name="industry" value="Sales & Marketing" checked={filters.industry === 'Sales & Marketing'} onChange={handleRadioChange} className="form-check-input me-2" />
+                                        Sales & Marketing
+                                    </label>
+                                    <span className="item-count">{getCount('industry', 'Sales & Marketing')}</span>
+                                </li>
+                                <li className="d-flex align-items-center justify-content-between cursor-pointer mb-2">
+                                    <label className="d-flex align-items-center text-secondary small">
+                                        <input type="radio" name="industry" value="Development" checked={filters.industry === 'Development'} onChange={handleRadioChange} className="form-check-input me-2" />
+                                        Development
+                                    </label>
+                                    <span className="item-count">{getCount('industry', 'Development')}</span>
+                                </li>
+                                <li className="d-flex align-items-center justify-content-between cursor-pointer mb-2">
+                                    <label className="d-flex align-items-center text-secondary small">
+                                        <input type="radio" name="industry" value="Telecommunications" checked={filters.industry === 'Telecommunications'} onChange={handleRadioChange} className="form-check-input me-2" />
+                                        Telecommunications
+                                    </label>
+                                    <span className="item-count">{getCount('industry', 'Telecommunications')}</span>
+                                </li>
+                                <li className="d-flex align-items-center justify-content-between cursor-pointer mb-2">
+                                    <label className="d-flex align-items-center text-secondary small">
+                                        <input type="radio" name="industry" value="IT" checked={filters.industry === 'IT'} onChange={handleRadioChange} className="form-check-input me-2" />
+                                        IT
+                                    </label>
+                                    <span className="item-count">{getCount('industry', 'IT')}</span>
+                                </li>
+                                <li className="d-flex align-items-center justify-content-between cursor-pointer mb-2">
+                                    <label className="d-flex align-items-center text-secondary small">
+                                        <input type="radio" name="industry" value="Design" checked={filters.industry === 'Design'} onChange={handleRadioChange} className="form-check-input me-2" />
+                                        Design
+                                    </label>
+                                    <span className="item-count">{getCount('industry', 'Design')}</span>
+                                </li>
                             </ul>
                         </div>
                     </div>
@@ -315,14 +410,56 @@ const FilterPanel = ({ filters, setFilters }) => {
                     <div id="collapseExperience" className="accordion-collapse collapse" data-bs-parent="#filterAccordion">
                         <div className="accordion-body px-0 pt-2 pb-0">
                             <ul className="list-unstyled mb-0">
-                                    <li className="d-flex align-items-center justify-content-between cursor-pointer mb-2"><label className="d-flex align-items-center text-secondary small"><input type="radio" name="experience" value="fresh" checked={filters.experience === 'fresh'} onChange={handleRadioChange} className="form-check-input me-2" />Fresh</label><span className="item-count">114</span></li>
-                                    <li className="d-flex align-items-center justify-content-between cursor-pointer mb-2"><label className="d-flex align-items-center text-secondary small"><input type="radio" name="experience" value="less-than-1" checked={filters.experience === 'less-than-1'} onChange={handleRadioChange} className="form-check-input me-2" />Less than 1 year</label><span className="item-count">18</span></li>
-                                    <li className="d-flex align-items-center justify-content-between cursor-pointer mb-2"><label className="d-flex align-items-center text-secondary small"><input type="radio" name="experience" value="2-years" checked={filters.experience === '2-years'} onChange={handleRadioChange} className="form-check-input me-2" />2 years</label><span className="item-count">12</span></li>
-                                    <li className="d-flex align-items-center justify-content-between cursor-pointer mb-2"><label className="d-flex align-items-center text-secondary small"><input type="radio" name="experience" value="3-years" checked={filters.experience === '3-years'} onChange={handleRadioChange} className="form-check-input me-2" />3 years</label><span className="item-count">14</span></li>
-                                    <li className="d-flex align-items-center justify-content-between cursor-pointer mb-2"><label className="d-flex align-items-center text-secondary small"><input type="radio" name="experience" value="4-years" checked={filters.experience === '4-years'} onChange={handleRadioChange} className="form-check-input me-2" />4 years</label><span className="item-count">25</span></li>
-                                    <li className="d-flex align-items-center justify-content-between cursor-pointer mb-2"><label className="d-flex align-items-center text-secondary small"><input type="radio" name="experience" value="5-years" checked={filters.experience === '5-years'} onChange={handleRadioChange} className="form-check-input me-2" />5 years</label><span className="item-count">08</span></li>
-                                    <li className="d-flex align-items-center justify-content-between cursor-pointer mb-2"><label className="d-flex align-items-center text-secondary small"><input type="radio" name="experience" value="5-years+" checked={filters.experience === '5-years+'} onChange={handleRadioChange} className="form-check-input me-2" />5 years+</label><span className="item-count">12</span></li>
-                                </ul>
+                                <li className="d-flex align-items-center justify-content-between cursor-pointer mb-2">
+                                    <label className="d-flex align-items-center text-secondary small">
+                                        <input type="radio" name="experience" value="fresh" checked={filters.experience === 'fresh'} onChange={handleRadioChange} className="form-check-input me-2" />
+                                        Fresh
+                                    </label>
+                                    <span className="item-count">{getCount('experience', 'fresh')}</span>
+                                </li>
+                                <li className="d-flex align-items-center justify-content-between cursor-pointer mb-2">
+                                    <label className="d-flex align-items-center text-secondary small">
+                                        <input type="radio" name="experience" value="less-than-1" checked={filters.experience === 'less-than-1'} onChange={handleRadioChange} className="form-check-input me-2" />
+                                        Less than 1 year {/* The label can be different from the value */}
+                                    </label>
+                                    <span className="item-count">{getCount('experience', 'less-than-1')}</span>
+                                </li>
+                                <li className="d-flex align-items-center justify-content-between cursor-pointer mb-2">
+                                    <label className="d-flex align-items-center text-secondary small">
+                                        <input type="radio" name="experience" value="2-years" checked={filters.experience === '2-years'} onChange={handleRadioChange} className="form-check-input me-2" />
+                                        2 years
+                                    </label>
+                                    <span className="item-count">{getCount('experience', '2-years')}</span>
+                                </li>
+                                <li className="d-flex align-items-center justify-content-between cursor-pointer mb-2">
+                                    <label className="d-flex align-items-center text-secondary small">
+                                        <input type="radio" name="experience" value="3-years" checked={filters.experience === '3-years'} onChange={handleRadioChange} className="form-check-input me-2" />
+                                        3 years
+                                    </label>
+                                    <span className="item-count">{getCount('experience', '3-years')}</span>
+                                </li>
+                                <li className="d-flex align-items-center justify-content-between cursor-pointer mb-2">
+                                    <label className="d-flex align-items-center text-secondary small">
+                                        <input type="radio" name="experience" value="4-years" checked={filters.experience === '4-years'} onChange={handleRadioChange} className="form-check-input me-2" />
+                                        4 years
+                                    </label>
+                                    <span className="item-count">{getCount('experience', '4-years')}</span>
+                                </li>
+                                <li className="d-flex align-items-center justify-content-between cursor-pointer mb-2">
+                                    <label className="d-flex align-items-center text-secondary small">
+                                        <input type="radio" name="experience" value="5-years" checked={filters.experience === '5-years'} onChange={handleRadioChange} className="form-check-input me-2" />
+                                        5 years
+                                    </label>
+                                    <span className="item-count">{getCount('experience', '5-years')}</span>
+                                </li>
+                                <li className="d-flex align-items-center justify-content-between cursor-pointer mb-2">
+                                    <label className="d-flex align-items-center text-secondary small">
+                                        <input type="radio" name="experience" value="5-years+" checked={filters.experience === '5-years+'} onChange={handleRadioChange} className="form-check-input me-2" />
+                                        5 years+
+                                    </label>
+                                    <span className="item-count">{getCount('experience', '5-years+')}</span>
+                                </li>
+                            </ul>
                         </div>
                     </div>
                 </div>
