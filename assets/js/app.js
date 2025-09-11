@@ -1,4 +1,4 @@
-(function() {
+(function () {
     ("use strict");
 
     // HTML Root Element
@@ -34,7 +34,7 @@
             const newAttribute = currentAttribute === "open" ? "close" : "open";
             setSidebarAttribute(newAttribute);
             if (newAttribute === "open") {
-                overlay.addEventListener("click", function() {
+                overlay.addEventListener("click", function () {
                     overlay.style.display = "none";
                     setSidebarAttribute("close");
                 });
@@ -50,17 +50,17 @@
     // Sidebar Menu
     if (document.querySelectorAll(".sidebar-menu .collapse")) {
         var collapses = document.querySelectorAll(".sidebar-menu .collapse");
-        Array.from(collapses).forEach(function(collapse) {
+        Array.from(collapses).forEach(function (collapse) {
             var collapseInstance = new bootstrap.Collapse(collapse, {
                 toggle: false,
             });
 
-            collapse.addEventListener("show.bs.collapse", function(e) {
+            collapse.addEventListener("show.bs.collapse", function (e) {
                 e.stopPropagation();
                 var closestCollapse = collapse.parentElement.closest(".collapse");
                 if (closestCollapse) {
                     var siblingCollapses = closestCollapse.querySelectorAll(".collapse");
-                    Array.from(siblingCollapses).forEach(function(siblingCollapse) {
+                    Array.from(siblingCollapses).forEach(function (siblingCollapse) {
                         var siblingCollapseInstance = bootstrap.Collapse.getInstance(siblingCollapse);
                         if (siblingCollapseInstance === collapseInstance) {
                             return;
@@ -68,7 +68,7 @@
                         siblingCollapseInstance.hide();
                     });
                 } else {
-                    var getSiblings = function(elem) {
+                    var getSiblings = function (elem) {
                         var siblings = [];
                         var sibling = elem.parentNode.firstChild;
                         while (sibling) {
@@ -80,15 +80,15 @@
                         return siblings;
                     };
                     var siblings = getSiblings(collapse.parentElement);
-                    Array.from(siblings).forEach(function(item) {
+                    Array.from(siblings).forEach(function (item) {
                         if (item.childNodes.length > 2)
                             item.firstElementChild.setAttribute("aria-expanded", "false");
                         var ids = item.querySelectorAll("*[id]");
-                        Array.from(ids).forEach(function(item1) {
+                        Array.from(ids).forEach(function (item1) {
                             item1.classList.remove("show");
                             if (item1.childNodes.length > 2) {
                                 var val = item1.querySelectorAll("ul li a");
-                                Array.from(val).forEach(function(subitem) {
+                                Array.from(val).forEach(function (subitem) {
                                     if (subitem.hasAttribute("aria-expanded"))
                                         subitem.setAttribute("aria-expanded", "false");
                                 });
@@ -99,10 +99,10 @@
             });
 
             // Hide nested collapses on `hide.bs.collapse`
-            collapse.addEventListener("hide.bs.collapse", function(e) {
+            collapse.addEventListener("hide.bs.collapse", function (e) {
                 e.stopPropagation();
                 var childCollapses = collapse.querySelectorAll(".collapse");
-                Array.from(childCollapses).forEach(function(childCollapse) {
+                Array.from(childCollapses).forEach(function (childCollapse) {
                     childCollapseInstance = bootstrap.Collapse.getInstance(childCollapse);
                     childCollapseInstance.hide();
                 });
@@ -564,251 +564,251 @@
     }
 
     // application chart
-      var options = {
-      chart: {
-        type: 'area',
-        height: 210,
-        toolbar: { show: false },
-        zoom: { enabled: false }
-      },
-      series: [{
-        name: 'Applications',
-        data: [12, 40, 28, 33, 21, 30]
-      }],
-      xaxis: {
-        categories: ['Aug 24', 'Aug 25', 'Aug 26', 'Aug 27', 'Aug 28', 'Aug 29'],
-        labels: {
-          style: { colors: '#555', fontSize: '13px' }
+    var options = {
+        chart: {
+            type: 'area',
+            height: 210,
+            toolbar: { show: false },
+            zoom: { enabled: false }
         },
-        axisBorder: { show: false },
-        axisTicks: { show: false }
-      },
-      yaxis: {
-        min: 0,
-        max: 45,
-        tickAmount: 4,
-        labels: { style: { colors: '#777', fontSize: '13px' } }
-      },
-      stroke: {
-        curve: 'smooth',
-        width: 3,
-        colors: ['#7b3f00']
-      },
-      fill: {
-        type: 'gradient',
-        gradient: {
-          shadeIntensity: 1,
-          opacityFrom: 0.3,
-          opacityTo: 0.05,
-          stops: [0, 100],
-          colorStops: [
-            {
-              offset: 0,
-              color: '#ff8c00',
-              opacity: 0.2
+        series: [{
+            name: 'Applications',
+            data: [12, 40, 28, 33, 21, 30]
+        }],
+        xaxis: {
+            categories: ['Aug 24', 'Aug 25', 'Aug 26', 'Aug 27', 'Aug 28', 'Aug 29'],
+            labels: {
+                style: { colors: '#555', fontSize: '13px' }
             },
-            {
-              offset: 100,
-              color: '#ffffff',
-              opacity: 0
+            axisBorder: { show: false },
+            axisTicks: { show: false }
+        },
+        yaxis: {
+            min: 0,
+            max: 45,
+            tickAmount: 4,
+            labels: { style: { colors: '#777', fontSize: '13px' } }
+        },
+        stroke: {
+            curve: 'smooth',
+            width: 3,
+            colors: ['#7b3f00']
+        },
+        fill: {
+            type: 'gradient',
+            gradient: {
+                shadeIntensity: 1,
+                opacityFrom: 0.3,
+                opacityTo: 0.05,
+                stops: [0, 100],
+                colorStops: [
+                    {
+                        offset: 0,
+                        color: '#ff8c00',
+                        opacity: 0.2
+                    },
+                    {
+                        offset: 100,
+                        color: '#ffffff',
+                        opacity: 0
+                    }
+                ]
             }
-          ]
-        }
-      },
-      grid: {
-        borderColor: '#e6e6e6',
-        strokeDashArray: 2,
-      },
-      markers: {
-        size: 5,
-        colors: ['#fff'],
-        strokeColors: '#7b3f00',
-        strokeWidth: 3,
-        hover: { size: 7 }
-      },
-      tooltip: {
-        theme: 'light',
-        style: { fontSize: '14px' },
-        marker: { show: false },
-        y: {
-          formatter: function (val) { return val; }
-        }
-      },
-      dataLabels: { enabled: false },
-      legend: { show: false }
+        },
+        grid: {
+            borderColor: '#e6e6e6',
+            strokeDashArray: 2,
+        },
+        markers: {
+            size: 5,
+            colors: ['#fff'],
+            strokeColors: '#7b3f00',
+            strokeWidth: 3,
+            hover: { size: 7 }
+        },
+        tooltip: {
+            theme: 'light',
+            style: { fontSize: '14px' },
+            marker: { show: false },
+            y: {
+                formatter: function (val) { return val; }
+            }
+        },
+        dataLabels: { enabled: false },
+        legend: { show: false }
     };
 
     const chartE2 = document.querySelector("#applicationsChart");
-    if(chartE2) {
-      var applicationChart = new ApexCharts(chartE2, options);
-      applicationChart.render();
-    }
-  
-
-// Opportunity Js
-document.addEventListener("DOMContentLoaded", () => {
-    const priceHistogramCanvas = document.getElementById('priceHistogram');
-    if (!priceHistogramCanvas) return; // exit if canvas not found
-
-    const ctx = priceHistogramCanvas.getContext('2d');
-    if (!ctx) {
-        console.error('Canvas context not supported');
-        return;
+    if (chartE2) {
+        var applicationChart = new ApexCharts(chartE2, options);
+        applicationChart.render();
     }
 
-    // Initialize the slider
-    const priceSlider = document.getElementById('priceSlider');
-    noUiSlider.create(priceSlider, {
-        start: [100, 500],
-        connect: true,
-        range: {
-            'min': 100,
-            'max': 500
-        },
-        step: 1,
-        tooltips: false,
+
+    // Opportunity Js
+    document.addEventListener("DOMContentLoaded", () => {
+        const priceHistogramCanvas = document.getElementById('priceHistogram');
+        if (!priceHistogramCanvas) return; // exit if canvas not found
+
+        const ctx = priceHistogramCanvas.getContext('2d');
+        if (!ctx) {
+            console.error('Canvas context not supported');
+            return;
+        }
+
+        // Initialize the slider
+        const priceSlider = document.getElementById('priceSlider');
+        noUiSlider.create(priceSlider, {
+            start: [100, 500],
+            connect: true,
+            range: {
+                'min': 100,
+                'max': 500
+            },
+            step: 1,
+            tooltips: false,
+        });
+
+        // Generate data with a normal distribution
+        function generateNormalData(count, mean, stdDev, minValue, maxValue) {
+            const data = [];
+            for (let i = 0; i < count; i++) {
+                let value;
+                do {
+                    const u1 = Math.random();
+                    const u2 = Math.random();
+                    const z = Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
+                    value = mean + z * stdDev;
+                } while (value < minValue || value > maxValue);
+                data.push(value);
+            }
+            return data;
+        }
+
+        const binCount = 42;
+        const minValue = 100;
+        const maxValue = 500;
+        const mean = 300;
+        const stdDev = 80;
+
+        const rawData = generateNormalData(1000, mean, stdDev, minValue, maxValue);
+        const histogramData = Array(binCount).fill(0);
+        const binWidth = (maxValue - minValue) / binCount;
+
+        for (let i = 0; i < rawData.length; i++) {
+            const value = rawData[i];
+            const binIndex = Math.floor((value - minValue) / binWidth);
+            histogramData[Math.min(binIndex, binCount - 1)]++;
+        }
+
+        // Draw Area Chart
+        function drawAreaChart(minPrice, maxPrice) {
+            ctx.clearRect(0, 0, priceHistogramCanvas.width, priceHistogramCanvas.height);
+
+            const pointSpacing = priceHistogramCanvas.width / (binCount - 1);
+            const maxY = Math.max(...histogramData);
+
+            const minBinIndex = Math.max(0, Math.floor((minPrice - minValue) / binWidth));
+            const maxBinIndex = Math.min(binCount - 1, Math.floor((maxPrice - minValue) / binWidth));
+
+            // Background histogram
+            ctx.beginPath();
+            ctx.moveTo(0, priceHistogramCanvas.height);
+            for (let i = 0; i < histogramData.length; i++) {
+                const x = i * pointSpacing;
+                const y = priceHistogramCanvas.height - (histogramData[i] / maxY) * priceHistogramCanvas.height;
+                ctx.lineTo(x, y);
+            }
+            ctx.lineTo(priceHistogramCanvas.width, priceHistogramCanvas.height);
+            ctx.closePath();
+
+            const bgGradient = ctx.createLinearGradient(0, 0, 0, priceHistogramCanvas.height);
+            bgGradient.addColorStop(0, 'rgba(41, 44, 45, 0.3)');
+            bgGradient.addColorStop(1, 'rgba(41, 44, 45, 0)');
+            ctx.fillStyle = bgGradient;
+            ctx.fill();
+
+            // Selected range
+            ctx.beginPath();
+            ctx.moveTo(minBinIndex * pointSpacing, priceHistogramCanvas.height);
+            for (let i = minBinIndex; i <= maxBinIndex; i++) {
+                const x = i * pointSpacing;
+                const y = priceHistogramCanvas.height - (histogramData[i] / maxY) * priceHistogramCanvas.height;
+                ctx.lineTo(x, y);
+            }
+            ctx.lineTo(maxBinIndex * pointSpacing, priceHistogramCanvas.height);
+            ctx.closePath();
+
+            const fgGradient = ctx.createLinearGradient(0, 0, 0, priceHistogramCanvas.height);
+            fgGradient.addColorStop(0, '#86562B');
+            fgGradient.addColorStop(1, '#86562B');
+            ctx.fillStyle = fgGradient;
+            ctx.fill();
+
+            ctx.beginPath();
+            for (let i = minBinIndex; i <= maxBinIndex; i++) {
+                const x = i * pointSpacing;
+                const y = priceHistogramCanvas.height - (histogramData[i] / maxY) * priceHistogramCanvas.height;
+                if (i === minBinIndex) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            }
+            ctx.strokeStyle = '#86562B';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+        }
+
+        function updateChart() {
+            const [minPrice, maxPrice] = priceSlider.noUiSlider.get().map(Number);
+            document.getElementById('minPriceInput').value = Math.round(minPrice);
+            document.getElementById('maxPriceInput').value = Math.round(maxPrice);
+            drawAreaChart(minPrice, maxPrice);
+        }
+
+        priceSlider.noUiSlider.on('update', updateChart);
+
+        document.getElementById('minPriceInput').addEventListener('change', function () {
+            let minPrice = parseInt(this.value);
+            const maxPrice = parseInt(document.getElementById('maxPriceInput').value);
+
+            if (isNaN(minPrice) || minPrice < 100) minPrice = 100;
+            if (minPrice >= maxPrice) minPrice = maxPrice - 1;
+            if (minPrice > 500) minPrice = 499;
+
+            this.value = minPrice;
+            priceSlider.noUiSlider.set([minPrice, null]);
+        });
+
+        document.getElementById('maxPriceInput').addEventListener('change', function () {
+            let maxPrice = parseInt(this.value);
+            const minPrice = parseInt(document.getElementById('minPriceInput').value);
+
+            if (isNaN(maxPrice) || maxPrice > 500) maxPrice = 500;
+            if (maxPrice <= minPrice) maxPrice = minPrice + 1;
+            if (maxPrice < 100) maxPrice = 101;
+
+            this.value = maxPrice;
+            priceSlider.noUiSlider.set([null, maxPrice]);
+        });
+
+        updateChart();
     });
 
-    // Generate data with a normal distribution
-    function generateNormalData(count, mean, stdDev, minValue, maxValue) {
-        const data = [];
-        for (let i = 0; i < count; i++) {
-            let value;
-            do {
-                const u1 = Math.random();
-                const u2 = Math.random();
-                const z = Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
-                value = mean + z * stdDev;
-            } while (value < minValue || value > maxValue);
-            data.push(value);
-        }
-        return data;
-    }
-
-    const binCount = 42;
-    const minValue = 100;
-    const maxValue = 500;
-    const mean = 300;
-    const stdDev = 80;
-
-    const rawData = generateNormalData(1000, mean, stdDev, minValue, maxValue);
-    const histogramData = Array(binCount).fill(0);
-    const binWidth = (maxValue - minValue) / binCount;
-
-    for (let i = 0; i < rawData.length; i++) {
-        const value = rawData[i];
-        const binIndex = Math.floor((value - minValue) / binWidth);
-        histogramData[Math.min(binIndex, binCount - 1)]++;
-    }
-
-    // Draw Area Chart
-    function drawAreaChart(minPrice, maxPrice) {
-        ctx.clearRect(0, 0, priceHistogramCanvas.width, priceHistogramCanvas.height);
-
-        const pointSpacing = priceHistogramCanvas.width / (binCount - 1);
-        const maxY = Math.max(...histogramData);
-
-        const minBinIndex = Math.max(0, Math.floor((minPrice - minValue) / binWidth));
-        const maxBinIndex = Math.min(binCount - 1, Math.floor((maxPrice - minValue) / binWidth));
-
-        // Background histogram
-        ctx.beginPath();
-        ctx.moveTo(0, priceHistogramCanvas.height);
-        for (let i = 0; i < histogramData.length; i++) {
-            const x = i * pointSpacing;
-            const y = priceHistogramCanvas.height - (histogramData[i] / maxY) * priceHistogramCanvas.height;
-            ctx.lineTo(x, y);
-        }
-        ctx.lineTo(priceHistogramCanvas.width, priceHistogramCanvas.height);
-        ctx.closePath();
-
-        const bgGradient = ctx.createLinearGradient(0, 0, 0, priceHistogramCanvas.height);
-        bgGradient.addColorStop(0, 'rgba(41, 44, 45, 0.3)');
-        bgGradient.addColorStop(1, 'rgba(41, 44, 45, 0)');
-        ctx.fillStyle = bgGradient;
-        ctx.fill();
-
-        // Selected range
-        ctx.beginPath();
-        ctx.moveTo(minBinIndex * pointSpacing, priceHistogramCanvas.height);
-        for (let i = minBinIndex; i <= maxBinIndex; i++) {
-            const x = i * pointSpacing;
-            const y = priceHistogramCanvas.height - (histogramData[i] / maxY) * priceHistogramCanvas.height;
-            ctx.lineTo(x, y);
-        }
-        ctx.lineTo(maxBinIndex * pointSpacing, priceHistogramCanvas.height);
-        ctx.closePath();
-
-        const fgGradient = ctx.createLinearGradient(0, 0, 0, priceHistogramCanvas.height);
-        fgGradient.addColorStop(0, '#86562B');
-        fgGradient.addColorStop(1, '#86562B');
-        ctx.fillStyle = fgGradient;
-        ctx.fill();
-
-        ctx.beginPath();
-        for (let i = minBinIndex; i <= maxBinIndex; i++) {
-            const x = i * pointSpacing;
-            const y = priceHistogramCanvas.height - (histogramData[i] / maxY) * priceHistogramCanvas.height;
-            if (i === minBinIndex) ctx.moveTo(x, y);
-            else ctx.lineTo(x, y);
-        }
-        ctx.strokeStyle = '#86562B';
-        ctx.lineWidth = 2;
-        ctx.stroke();
-    }
-
-    function updateChart() {
-        const [minPrice, maxPrice] = priceSlider.noUiSlider.get().map(Number);
-        document.getElementById('minPriceInput').value = Math.round(minPrice);
-        document.getElementById('maxPriceInput').value = Math.round(maxPrice);
-        drawAreaChart(minPrice, maxPrice);
-    }
-
-    priceSlider.noUiSlider.on('update', updateChart);
-
-    document.getElementById('minPriceInput').addEventListener('change', function () {
-        let minPrice = parseInt(this.value);
-        const maxPrice = parseInt(document.getElementById('maxPriceInput').value);
-
-        if (isNaN(minPrice) || minPrice < 100) minPrice = 100;
-        if (minPrice >= maxPrice) minPrice = maxPrice - 1;
-        if (minPrice > 500) minPrice = 499;
-
-        this.value = minPrice;
-        priceSlider.noUiSlider.set([minPrice, null]);
-    });
-
-    document.getElementById('maxPriceInput').addEventListener('change', function () {
-        let maxPrice = parseInt(this.value);
-        const minPrice = parseInt(document.getElementById('minPriceInput').value);
-
-        if (isNaN(maxPrice) || maxPrice > 500) maxPrice = 500;
-        if (maxPrice <= minPrice) maxPrice = minPrice + 1;
-        if (maxPrice < 100) maxPrice = 101;
-
-        this.value = maxPrice;
-        priceSlider.noUiSlider.set([null, maxPrice]);
-    });
-
-    updateChart();
-});
 
 
-
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         const filterToggleBtn = document.getElementById('filterToggleBtn');
         const filterPanel = document.getElementById('filterPanel');
         const overlay = document.getElementById('overlay');
 
-        if(filterToggleBtn) {
-          filterToggleBtn.addEventListener('click', function() {
-              filterPanel.classList.toggle('show');
-              overlay.classList.toggle('show');
-          });
+        if (filterToggleBtn) {
+            filterToggleBtn.addEventListener('click', function () {
+                filterPanel.classList.toggle('show');
+                overlay.classList.toggle('show');
+            });
         }
 
-        if(overlay) {
-            overlay.addEventListener('click', function() {
+        if (overlay) {
+            overlay.addEventListener('click', function () {
                 filterPanel.classList.remove('show');
                 overlay.classList.remove('show');
             });
@@ -816,5 +816,60 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
 
+    // step form
+    let currentStep = 0;
+    const formSections = document.querySelectorAll(".form-section");
+    const steps = document.querySelectorAll(".step");
+
+    function showStep(index) {
+        formSections.forEach((section, i) => {
+            section.classList.toggle("active", i === index);
+            if (steps[i]) {
+                steps[i].classList.toggle("active", i <= index);
+                steps[i].classList.toggle("completed", i < index);
+            }
+        });
+        currentStep = index;
+    }
+
+    function nextStep() {
+        if (currentStep < formSections.length - 1) {
+            showStep(currentStep + 1);
+        }
+    }
+
+    function prevStep() {
+        if (currentStep > 0) {
+            showStep(currentStep - 1);
+        }
+    }
+
+    document.querySelectorAll(".nextBtn").forEach(btn => {
+        btn.addEventListener("click", nextStep);
+    });
+
+    document.querySelectorAll(".prevBtn").forEach(btn => {
+        btn.addEventListener("click", prevStep);
+    });
+
+    document.getElementById("multiStepForm").addEventListener("submit", (e) => {
+        e.preventDefault();
+        alert("Form submitted!");
+    });
+
+    showStep(currentStep);
+
+
+ document.addEventListener('DOMContentLoaded', function () {
+        const applyButtons = document.querySelectorAll('button[data-job-title]');
+        const jobTitleElement = document.getElementById('job-title');
+
+        applyButtons.forEach(button => {
+            button.addEventListener('click', function () {
+                    const jobTitle = this.getAttribute('data-job-title');
+                    jobTitleElement.textContent = jobTitle || 'this post';
+            });
+        });
+    });
 
 }())

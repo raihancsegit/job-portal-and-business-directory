@@ -85,7 +85,7 @@ function Header() {
                         </div>
                     </div>
                 </div>
-                {user && user.roles && user.roles.includes('candidate') && (
+                {user && user.roles && user.roles.includes('employer') && (
                 <Link to="/dashboard/create-opportunity" className="i-btn btn--xl btn--dark d-lg-flex d-none">
                         Post an opportunity <span><i className="ri-arrow-right-line"></i></span>
                 </Link>

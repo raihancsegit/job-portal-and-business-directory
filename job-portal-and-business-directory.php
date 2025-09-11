@@ -45,6 +45,7 @@ function jpbd_activate_plugin()
     flush_rewrite_rules();
 
     jpbd_create_opportunities_table();
+    jpbd_create_applications_table();
 }
 register_activation_hook(__FILE__, 'jpbd_activate_plugin');
 

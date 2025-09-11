@@ -5,7 +5,8 @@
   color-scheme: light;
   --color-primary: #C18544;
   --color-primary-light: #E4B65F;
-  --color-primary-dark: #86562B;
+  --color-primary-dark: rgb(134, 86, 43);
+  --primary-dark-border: rgba(134, 86, 43,.2);
   --color-primary-text: #ffffff;
   --text-primary: #241907;
   --text-secondary: #777;
@@ -41,7 +42,8 @@
   color-scheme: light;
   --color-primary: #C18544;
   --color-primary-light: #E4B65F;
-  --color-primary-dark: #86562B;
+  --color-primary-dark: rgb(134, 86, 43);
+  --primary-dark-border: rgba(134, 86, 43,.2);
   --color-primary-text: #ffffff;
   --text-primary: #15192c;
   --text-secondary: #777;
@@ -67,6 +69,7 @@
 $font-primary: var(--font-primary);
 $color-primary: var(--color-primary);
 $color-primary-dark: var(--color-primary-dark);
+$primary-dark-border: var(--primary-dark-border);
 $color-primary-light: var(--color-primary-light);
 $color-primary-text: var(--color-primary-text);
 $text-primary: var(--text-primary);
@@ -279,7 +282,7 @@ ul, ol{
   }
 
   &.big-badge{
-    height: 48px;
+    height: 56px;
     padding: 0px 16px;
     display: inline-flex;
     justify-content: center;
@@ -453,6 +456,31 @@ ul, ol{
   }
 }
 
+.icon-btn-xl {
+  @include square(56px, 4px);
+  min-width: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  border-radius: 50%;
+  border: 1px solid $color-border;
+  background-color: $card-bg;
+  @include transition-4;
+  i{
+    color: $text-icon;
+  }
+
+  &:hover{
+    background-color: $color-primary;
+
+    i{
+      color: $color-white;
+    }
+  }
+}
+
+
 // Buttons Css
 button {
   outline: none;
@@ -581,10 +609,10 @@ button {
   }
 
     &.btn--xl {
-    padding: 10px 14px 10px 20px;
+    padding: 10px 20px 10px 20px;
     font-size: 17px;
     height: 56px;
-    display: flex;
+    display: inline-flex;
     align-items: center;
 
     @include lg-down-device{

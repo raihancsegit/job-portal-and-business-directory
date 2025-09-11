@@ -1,0 +1,186 @@
+<?php
+if (!defined('ABSPATH')) exit;
+
+/**
+ * Register all candidate profile related API routes.
+ */
+function jpbd_register_candidate_api_routes()
+{
+    register_rest_route('jpbd/v1', '/candidate/profile', [
+        [
+            'methods' => 'GET',
+            'callback' => 'jpbd_api_get_candidate_profile',
+            'permission_callback' => function () {
+                return is_user_logged_in();
+            },
+        ],
+        [
+            'methods' => 'POST',
+            'callback' => 'jpbd_api_update_candidate_profile',
+            'permission_callback' => function () {
+                return is_user_logged_in();
+            },
+        ]
+    ]);
+
+    register_rest_route('jpbd/v1', '/candidate/upload-cv', [
+        'methods' => 'POST',
+        'callback' => 'jpbd_api_upload_candidate_cv',
+        'permission_callback' => function () {
+            return is_user_logged_in();
+        },
+    ]);
+}
+add_action('rest_api_init', 'jpbd_register_candidate_api_routes');
+
+/**
+ * API: Get candidate-specific profile data.
+ */
+function jpbd_api_get_candidate_profile()
+{
+    $user_id = get_current_user_id();
+    if (0 === $user_id) {
+        return new WP_Error('no_user', 'User not found.', ['status' => 404]);
+    }
+
+    $candidate_data = [
+        'about' => get_user_meta($user_id, 'jpbd_about', true),
+        'skills' => get_user_meta($user_id, 'jpbd_skills', true) ?: [], // Return empty array if not set
+        'education' => get_user_meta($user_id, 'jpbd_education', true) ?: [],
+        'experience' => get_user_meta($user_id, 'jpbd_experience', true) ?: [],
+        'cvs' => get_user_meta($user_id, 'jpbd_cvs', true) ?: [],
+    ];
+
+    return new WP_REST_Response($candidate_data, 200);
+}
+
+/**
+ * API: Update candidate-specific profile data.
+ * This version correctly handles arrays for repeater fields.
+ */
+function jpbd_api_update_candidate_profile(WP_REST_Request $request)
+{
+    $user_id = get_current_user_id();
+    if (0 === $user_id) {
+        return new WP_Error('auth_error', 'User not authenticated.', ['status' => 401]);
+    }
+
+    $params = $request->get_json_params();
+
+    // Sanitize and update each field
+    if (isset($params['about'])) {
+        update_user_meta($user_id, 'jpbd_about', sanitize_textarea_field($params['about']));
+    }
+
+    // Skills are saved as a single comma-separated string
+    if (isset($params['skills'])) {
+        update_user_meta($user_id, 'jpbd_skills', sanitize_text_field($params['skills']));
+    }
+
+    // Sanitize Education Repeater Data (Array of Objects)
+    if (isset($params['education']) && is_array($params['education'])) {
+        $sanitized_education = [];
+        foreach ($params['education'] as $item) {
+            $sanitized_education[] = [
+                'institution' => sanitize_text_field($item['institution'] ?? ''),
+                'degree'      => sanitize_text_field($item['degree'] ?? ''),
+                'startYear'   => sanitize_text_field($item['startYear'] ?? ''),
+                'endYear'     => sanitize_text_field($item['endYear'] ?? ''),
+                'description' => sanitize_textarea_field($item['description'] ?? ''),
+            ];
+        }
+        update_user_meta($user_id, 'jpbd_education', $sanitized_education);
+    }
+
+    // Sanitize Experience Repeater Data (Array of Objects)
+    if (isset($params['experience']) && is_array($params['experience'])) {
+        $sanitized_experience = [];
+        foreach ($params['experience'] as $item) {
+            $sanitized_experience[] = [
+                'title'       => sanitize_text_field($item['title'] ?? ''),
+                'company'     => sanitize_text_field($item['company'] ?? ''),
+                'startYear'   => sanitize_text_field($item['startYear'] ?? ''),
+                'endYear'     => sanitize_text_field($item['endYear'] ?? ''),
+                'location'    => sanitize_text_field($item['location'] ?? ''),
+                'description' => sanitize_textarea_field($item['description'] ?? ''),
+            ];
+        }
+        update_user_meta($user_id, 'jpbd_experience', $sanitized_experience);
+    }
+
+    // ======================================================
+    // ADD THIS BLOCK TO SAVE CV DATA
+    // ======================================================
+    if (isset($params['cvs']) && is_array($params['cvs'])) {
+        $sanitized_cvs = [];
+        foreach ($params['cvs'] as $cv) {
+            // Only save items that have a name and a file URL
+            if (!empty($cv['name']) && !empty($cv['file_url'])) {
+                $sanitized_cvs[] = [
+                    'name'          => sanitize_text_field($cv['name']),
+                    'file_url'      => esc_url_raw($cv['file_url']),
+                    'attachment_id' => isset($cv['attachment_id']) ? (int) $cv['attachment_id'] : 0,
+                ];
+            }
+        }
+        update_user_meta($user_id, 'jpbd_cvs', $sanitized_cvs);
+    }
+
+    return new WP_REST_Response(['success' => true, 'message' => 'Candidate profile updated successfully!'], 200);
+}
+
+
+function jpbd_api_upload_candidate_cv(WP_REST_Request $request)
+{
+    $user_id = get_current_user_id();
+    if (0 === $user_id) {
+        return new WP_Error('auth_error', 'User not authenticated.', ['status' => 401]);
+    }
+
+    // WordPress-এর ফাইল আপলোড ফাংশনালিটি লোড করা
+    if (!function_exists('wp_handle_upload')) {
+        require_once(ABSPATH . 'wp-admin/includes/file.php');
+    }
+
+    $uploadedfile = $_FILES['cv_file']; // React থেকে পাঠানো ফাইলের নাম
+    $upload_overrides = ['test_form' => false];
+
+    // ফাইলটি আপলোড এবং WordPress মিডিয়া লাইব্রেরিতে যোগ করা
+    $movefile = wp_handle_upload($uploadedfile, $upload_overrides);
+
+    if ($movefile && !isset($movefile['error'])) {
+        // ফাইলটি সফলভাবে আপলোড হয়েছে
+        $filename = basename($movefile['url']);
+        $filetype = wp_check_filetype($filename, null);
+
+        $attachment = [
+            'guid'           => $movefile['url'],
+            'post_mime_type' => $filetype['type'],
+            'post_title'     => preg_replace('/\.[^.]+$/', '', $filename),
+            'post_content'   => '',
+            'post_status'    => 'inherit'
+        ];
+
+        // মিডিয়া লাইব্রেরিতে অ্যাটাচমেন্ট হিসেবে ফাইলটি ইনসার্ট করা
+        $attach_id = wp_insert_attachment($attachment, $movefile['file']);
+
+        if (is_wp_error($attach_id)) {
+            return new WP_Error('upload_error', $attach_id->get_error_message(), ['status' => 500]);
+        }
+
+        // অ্যাটাচমেন্ট মেটাডেটা তৈরি করা
+        require_once(ABSPATH . 'wp-admin/includes/image.php');
+        $attach_data = wp_generate_attachment_metadata($attach_id, $movefile['file']);
+        wp_update_attachment_metadata($attach_id, $attach_data);
+
+        // React-কে ফাইলের URL এবং ID ফেরত পাঠানো
+        return new WP_REST_Response([
+            'success' => true,
+            'message' => 'File uploaded successfully!',
+            'file_url' => $movefile['url'],
+            'attachment_id' => $attach_id,
+        ], 200);
+    } else {
+        return new WP_Error('upload_error', $movefile['error'], ['status' => 500]);
+    }
+}

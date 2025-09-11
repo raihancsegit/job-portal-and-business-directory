@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-
+import CandidateProfileTab from '../dashboard/components/settings/CandidateProfileTab';
+import { useAuth } from '../../context/AuthContext';
 // ======================================================
 // General Tab Component
 // ======================================================
@@ -396,6 +397,10 @@ function SettingsPage() {
     const { assets_url, api_base_url } = window.jpbd_object;
     const token = localStorage.getItem('authToken');
 
+
+     const { user } = useAuth(); // Get the current user
+     const isCandidate = user?.roles?.includes('candidate'); // Check if user has 'candidate' role
+
     const showNotice = (message, status = 'success', type = 'general') => {
         setNotice({ message, status, type });
         setTimeout(() => setNotice({ message: '', status: '', type: '' }), 4000);
@@ -456,6 +461,12 @@ function SettingsPage() {
                             <li className="nav-item">
                                 <button className={`nav-link ${activeTab === 'general' ? 'active' : ''}`} onClick={() => setActiveTab('general')}>General</button>
                             </li>
+                            {isCandidate && (
+                                <li className="nav-item candidate-tab">
+                                    <button className={`nav-link ${activeTab === 'candidate' ? 'active' : ''}`} onClick={() => setActiveTab('candidate')}>Candidate Profile</button>
+                                </li>
+                            )}
+
                             <li className="nav-item">
                                 <button className={`nav-link ${activeTab === 'password' ? 'active' : ''}`} onClick={() => setActiveTab('password')}>Password</button>
                             </li>
@@ -475,6 +486,11 @@ function SettingsPage() {
                                             assets_url={assets_url} 
                                         />
                                     )}
+
+                                    {isCandidate && activeTab === 'candidate' && (
+                                        <CandidateProfileTab showNotice={showNotice} notice={notice} />
+                                    )}
+
                                     {activeTab === 'password' && (
                                         <PasswordTabContent 
                                             handleSavePassword={handleSavePassword} 

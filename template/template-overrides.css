@@ -58,3 +58,43 @@ body.full-width-app {
     border-radius: 20px !important;
     padding: 0.25rem 0.75rem !important;
 }
+
+
+/* in admin-style.css */
+.candidate-profile .form-block {
+    padding: 20px 0;
+    border-bottom: 1px solid #e0e0e0;
+}
+.candidate-profile .form-block:last-child {
+    border-bottom: none;
+}
+.candidate-profile .form-block-title {
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+}
+.candidate-profile .repeater-item-box {
+    background-color: #f8f9fa;
+    padding: 15px;
+    border: 1px solid #dee2e6;
+    border-radius: 5px;
+    position: relative;
+}
+.candidate-profile .repeater-item-box + .repeater-item-box {
+    margin-top: 15px;
+}
+.candidate-profile .btn-icon-danger {
+    background: #fde8e8;
+    color: #f1556c;
+    border: 1px solid #f1556c;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+.candidate-tab button {
+    border-left: 1px solid #d9d4d4 !important;
+    border-right: 1px solid #d9d4d4 !important;
+}

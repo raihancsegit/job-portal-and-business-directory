@@ -326,6 +326,8 @@
 
     .profile-dropdown {
       .topbar-profile {
+        background-color: $color-primary-light;
+        border-radius: 50%;
         img {
           @include square(56px, 50%);
           @include lg-down-device{

@@ -41,6 +41,8 @@ final class Job_Portal_Main
         require_once JPBD_PATH . 'includes/api/settings-routes.php';
         require_once JPBD_PATH . 'includes/api/dashboard-setting-routes.php';
         require_once JPBD_PATH . 'includes/api/opportunities-routes.php';
+        require_once JPBD_PATH . 'includes/api/candidate-routes.php';
+        require_once JPBD_PATH . 'includes/api/application-routes.php';
     }
 
     private function init_hooks()

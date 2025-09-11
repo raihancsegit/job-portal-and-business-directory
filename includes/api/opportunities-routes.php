@@ -73,6 +73,14 @@ function jpbd_register_opportunities_api_routes()
             return is_user_logged_in();
         },
     ]);
+
+    register_rest_route('jpbd/v1', '/applications/check/(?P<id>\d+)', [
+        'methods' => 'GET',
+        'callback' => 'jpbd_api_check_application_status',
+        'permission_callback' => function () {
+            return is_user_logged_in();
+        },
+    ]);
 }
 add_action('rest_api_init', 'jpbd_register_opportunities_api_routes');
 
@@ -295,6 +303,22 @@ function jpbd_api_get_single_opportunity(WP_REST_Request $request)
         return new WP_Error('not_found', 'Opportunity not found.', ['status' => 404]);
     }
 
+
+
+    $opportunity['has_applied'] = false;
+    if (is_user_logged_in()) {
+        $user_id = get_current_user_id();
+        $app_table_name = $wpdb->prefix . 'jpbd_applications';
+        $application = $wpdb->get_var($wpdb->prepare(
+            "SELECT id FROM $app_table_name WHERE opportunity_id = %d AND candidate_id = %d",
+            $id, // Use the ID from the request
+            $user_id
+        ));
+        if ($application) {
+            $opportunity['has_applied'] = true;
+        }
+    }
+
     return new WP_REST_Response($opportunity, 200);
 }
 
@@ -505,4 +529,20 @@ function jpbd_api_bulk_delete_opportunities(WP_REST_Request $request)
     }
 
     return new WP_REST_Response(['success' => true, 'message' => $result . ' opportunities deleted successfully.'], 200);
+}
+
+function jpbd_api_check_application_status(WP_REST_Request $request)
+{
+    $user_id = get_current_user_id();
+    $opportunity_id = (int) $request['id'];
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'jpbd_applications';
+
+    $application = $wpdb->get_var($wpdb->prepare(
+        "SELECT id FROM $table_name WHERE opportunity_id = %d AND candidate_id = %d",
+        $opportunity_id,
+        $user_id
+    ));
+
+    return new WP_REST_Response(['applied' => !empty($application)], 200);
 }
