@@ -30,6 +30,22 @@ function jpbd_register_candidate_api_routes()
             return is_user_logged_in();
         },
     ]);
+
+    register_rest_route('jpbd/v1', '/candidate/(?P<id>\d+)/profile', [
+        'methods'  => 'GET',
+        'callback' => 'jpbd_api_get_public_candidate_profile',
+        'permission_callback' => function () {
+            // শুধুমাত্র লগইন করা employer বা admin-রাই প্রোফাইল দেখতে পারবে
+            return current_user_can('manage_applications');
+        },
+        'args' => [
+            'id' => [
+                'validate_callback' => function ($param) {
+                    return is_numeric($param);
+                }
+            ],
+        ],
+    ]);
 }
 add_action('rest_api_init', 'jpbd_register_candidate_api_routes');
 
@@ -183,4 +199,47 @@ function jpbd_api_upload_candidate_cv(WP_REST_Request $request)
     } else {
         return new WP_Error('upload_error', $movefile['error'], ['status' => 500]);
     }
+}
+
+/**
+ * API Callback: Get a specific candidate's profile data by their user ID.
+ * This is for employers to view.
+ */
+function jpbd_api_get_public_candidate_profile(WP_REST_Request $request)
+{
+    $user_id = (int) $request['id'];
+
+    // WordPress ইউজার অবজেক্ট থেকে বেসিক তথ্য নেওয়া
+    $user_data = get_userdata($user_id);
+    if (!$user_data) {
+        return new WP_Error('not_found', 'Candidate not found.', ['status' => 404]);
+    }
+
+    // ক্যান্ডিডেটের প্রোফাইল ডেটা তৈরি করা
+    $profile_data = [
+        'user_info' => [
+            'id' => $user_data->ID,
+            'name' => $user_data->display_name ?: ($user_data->first_name . ' ' . $user_data->last_name),
+            'email' => $user_data->user_email,
+            'avatar' => get_avatar_url($user_data->ID, ['size' => 96]),
+            // আরও তথ্য যোগ করা যেতে পারে, যেমন location, phone ইত্যাদি user meta থেকে
+
+            'location' => get_user_meta($user_id, 'city', true) . ', ' . get_user_meta($user_id, 'country', true),
+            'phone' => get_user_meta($user_id, 'phone_code', true) . get_user_meta($user_id, 'phone_number', true),
+        ],
+        'profile_details' => [
+            'about'      => get_user_meta($user_id, 'jpbd_about', true),
+            'skills'     => get_user_meta($user_id, 'jpbd_skills', true) ?: '',
+            'education'  => get_user_meta($user_id, 'jpbd_education', true) ?: [],
+            'experience' => get_user_meta($user_id, 'jpbd_experience', true) ?: [],
+            'cvs'        => get_user_meta($user_id, 'jpbd_cvs', true) ?: [],
+        ],
+    ];
+
+    // যদি city এবং country দুটোই খালি থাকে, তাহলে location খালি স্ট্রিং হিসেবে পাঠানো
+    if (trim($profile_data['user_info']['location']) === ',') {
+        $profile_data['user_info']['location'] = '';
+    }
+
+    return new WP_REST_Response($profile_data, 200);
 }

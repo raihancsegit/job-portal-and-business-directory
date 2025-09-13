@@ -315,66 +315,66 @@ const FilterPanel = ({ filters, setFilters }) => {
                                 </li>
                                 <li className="d-flex align-items-center justify-content-between cursor-pointer mb-2">
                                     <label className="d-flex align-items-center text-secondary small">
-                                        <input type="radio" name="industry" value="Accounting/Finance" checked={filters.industry === 'Accounting/Finance'} onChange={handleRadioChange} className="form-check-input me-2" />
+                                        <input type="radio" name="industry" value="accounting" checked={filters.industry === 'accounting'} onChange={handleRadioChange} className="form-check-input me-2" />
                                         Accounting/Finance
                                     </label>
-                                    <span className="item-count">{getCount('industry', 'Accounting/Finance')}</span>
+                                    <span className="item-count">{getCount('industry', 'accounting')}</span>
                                 </li>
                                 <li className="d-flex align-items-center justify-content-between cursor-pointer mb-2">
                                     <label className="d-flex align-items-center text-secondary small">
-                                        <input type="radio" name="industry" value="Automotive" checked={filters.industry === 'Automotive'} onChange={handleRadioChange} className="form-check-input me-2" />
+                                        <input type="radio" name="industry" value="automotive" checked={filters.industry === 'automotive'} onChange={handleRadioChange} className="form-check-input me-2" />
                                         Automotive
                                     </label>
-                                    <span className="item-count">{getCount('industry', 'Automotive')}</span>
+                                    <span className="item-count">{getCount('industry', 'automotive')}</span>
                                 </li>
                                 <li className="d-flex align-items-center justify-content-between cursor-pointer mb-2">
                                     <label className="d-flex align-items-center text-secondary small">
-                                        <input type="radio" name="industry" value="Construction" checked={filters.industry === 'Construction'} onChange={handleRadioChange} className="form-check-input me-2" />
+                                        <input type="radio" name="industry" value="construction" checked={filters.industry === 'construction'} onChange={handleRadioChange} className="form-check-input me-2" />
                                         Construction
                                     </label>
-                                    <span className="item-count">{getCount('industry', 'Construction')}</span>
+                                    <span className="item-count">{getCount('industry', 'construction')}</span>
                                 </li>
                                 <li className="d-flex align-items-center justify-content-between cursor-pointer mb-2">
                                     <label className="d-flex align-items-center text-secondary small">
-                                        <input type="radio" name="industry" value="Education" checked={filters.industry === 'Education'} onChange={handleRadioChange} className="form-check-input me-2" />
+                                        <input type="radio" name="industry" value="education" checked={filters.industry === 'education'} onChange={handleRadioChange} className="form-check-input me-2" />
                                         Education
                                     </label>
-                                    <span className="item-count">{getCount('industry', 'Education')}</span>
+                                    <span className="item-count">{getCount('industry', 'education')}</span>
                                 </li>
                                 <li className="d-flex align-items-center justify-content-between cursor-pointer mb-2">
                                     <label className="d-flex align-items-center text-secondary small">
-                                        <input type="radio" name="industry" value="Healthcare" checked={filters.industry === 'Healthcare'} onChange={handleRadioChange} className="form-check-input me-2" />
+                                        <input type="radio" name="industry" value="healthcare" checked={filters.industry === 'healthcare'} onChange={handleRadioChange} className="form-check-input me-2" />
                                         Healthcare
                                     </label>
-                                    <span className="item-count">{getCount('industry', 'Healthcare')}</span>
+                                    <span className="item-count">{getCount('industry', 'healthcare')}</span>
                                 </li>
                                 <li className="d-flex align-items-center justify-content-between cursor-pointer mb-2">
                                     <label className="d-flex align-items-center text-secondary small">
-                                        <input type="radio" name="industry" value="Restaurant/Food" checked={filters.industry === 'Restaurant/Food'} onChange={handleRadioChange} className="form-check-input me-2" />
+                                        <input type="radio" name="industry" value="restaurant" checked={filters.industry === 'restaurant'} onChange={handleRadioChange} className="form-check-input me-2" />
                                         Restaurant/Food
                                     </label>
-                                    <span className="item-count">{getCount('industry', 'Restaurant/Food')}</span>
+                                    <span className="item-count">{getCount('industry', 'restaurant')}</span>
                                 </li>
                                 <li className="d-flex align-items-center justify-content-between cursor-pointer mb-2">
                                     <label className="d-flex align-items-center text-secondary small">
-                                        <input type="radio" name="industry" value="Sales & Marketing" checked={filters.industry === 'Sales & Marketing'} onChange={handleRadioChange} className="form-check-input me-2" />
+                                        <input type="radio" name="industry" value="sales-marketing" checked={filters.industry === 'sales-marketing'} onChange={handleRadioChange} className="form-check-input me-2" />
                                         Sales & Marketing
                                     </label>
-                                    <span className="item-count">{getCount('industry', 'Sales & Marketing')}</span>
+                                    <span className="item-count">{getCount('industry', 'sales-marketing')}</span>
                                 </li>
                                 <li className="d-flex align-items-center justify-content-between cursor-pointer mb-2">
                                     <label className="d-flex align-items-center text-secondary small">
-                                        <input type="radio" name="industry" value="Development" checked={filters.industry === 'Development'} onChange={handleRadioChange} className="form-check-input me-2" />
+                                        <input type="radio" name="industry" value="development" checked={filters.industry === 'development'} onChange={handleRadioChange} className="form-check-input me-2" />
                                         Development
                                     </label>
-                                    <span className="item-count">{getCount('industry', 'Development')}</span>
+                                    <span className="item-count">{getCount('industry', 'development')}</span>
                                 </li>
                                 <li className="d-flex align-items-center justify-content-between cursor-pointer mb-2">
                                     <label className="d-flex align-items-center text-secondary small">
-                                        <input type="radio" name="industry" value="Telecommunications" checked={filters.industry === 'Telecommunications'} onChange={handleRadioChange} className="form-check-input me-2" />
+                                        <input type="radio" name="industry" value="telecom" checked={filters.industry === 'telecom'} onChange={handleRadioChange} className="form-check-input me-2" />
                                         Telecommunications
                                     </label>
-                                    <span className="item-count">{getCount('industry', 'Telecommunications')}</span>
+                                    <span className="item-count">{getCount('industry', 'telecom')}</span>
                                 </li>
                                 <li className="d-flex align-items-center justify-content-between cursor-pointer mb-2">
                                     <label className="d-flex align-items-center text-secondary small">
@@ -385,10 +385,10 @@ const FilterPanel = ({ filters, setFilters }) => {
                                 </li>
                                 <li className="d-flex align-items-center justify-content-between cursor-pointer mb-2">
                                     <label className="d-flex align-items-center text-secondary small">
-                                        <input type="radio" name="industry" value="Design" checked={filters.industry === 'Design'} onChange={handleRadioChange} className="form-check-input me-2" />
+                                        <input type="radio" name="industry" value="design" checked={filters.industry === 'design'} onChange={handleRadioChange} className="form-check-input me-2" />
                                         Design
                                     </label>
-                                    <span className="item-count">{getCount('industry', 'Design')}</span>
+                                    <span className="item-count">{getCount('industry', 'design')}</span>
                                 </li>
                             </ul>
                         </div>

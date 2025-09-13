@@ -35,10 +35,10 @@ const TopFilterBar = ({ filters, setFilters }) => {
                             onChange={handleChange}     // state পরিবর্তন করার জন্য হ্যান্ডলার
                         >
                             <option value="">Experience level</option>
-                            <option value="No experience required">No experience required</option>
-                            <option value="1-2 years">1-2 years</option>
-                            <option value="3-5 years">3-5 years</option>
-                            <option value="5+ years">5+ years</option>
+                            <option value="fresh">No experience required</option>
+                            <option value="2-years">2 years</option>
+                            <option value="3-years">3 years</option>
+                            <option value="5-years+">5+ years</option>
                         </select>
                     </div>
                 </div>

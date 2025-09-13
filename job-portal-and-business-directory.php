@@ -29,8 +29,15 @@ function jpbd_activate_plugin()
     // আগের 'job_seeker' রোলটি মুছে ফেলা (যদি থাকে)
     remove_role('job_seeker');
 
+
+    $manage_applications_cap = 'manage_applications';
+
     // নতুন রোলগুলো তৈরি করা
-    add_role('employer', 'Employer', ['read' => true, 'create_opportunities' => true]);
+    add_role('employer', 'Employer', [
+        'read' => true,
+        'create_opportunities' => true,
+        $manage_applications_cap => true // <-- এমপ্লয়ারকে নতুন ক্ষমতা দেওয়া হলো
+    ]);
     add_role('candidate', 'Candidate', ['read' => true]);
     add_role('business', 'Business', ['read' => true]);
 
@@ -38,6 +45,7 @@ function jpbd_activate_plugin()
     $admin_role = get_role('administrator');
     if ($admin_role) {
         $admin_role->add_cap('create_opportunities', true);
+        $admin_role->add_cap($manage_applications_cap, true); // <-- অ্যাডমিনকেও নতুন ক্ষমতা দেওয়া হলো
     }
 
     // Rewrite rules flush করা

@@ -1,27 +1,27 @@
 {
-  "_index-BvHU-Na7.js": {
-    "file": "assets/index-BvHU-Na7.js",
+  "_index-BQE1JNve.js": {
+    "file": "assets/index-BQE1JNve.js",
     "name": "index"
   },
   "admin/main.jsx": {
-    "file": "assets/admin-CrFnlQCN.js",
+    "file": "assets/admin-D3FMHwDi.js",
     "name": "admin",
     "src": "admin/main.jsx",
     "isEntry": true,
     "imports": [
-      "_index-BvHU-Na7.js"
+      "_index-BQE1JNve.js"
     ],
     "css": [
       "assets/admin-jsJsBBcT.css"
     ]
   },
   "node_modules/canvg/lib/index.es.js": {
-    "file": "assets/index.es-lWL0bQpz.js",
+    "file": "assets/index.es-DTZDe3iu.js",
     "name": "index.es",
     "src": "node_modules/canvg/lib/index.es.js",
     "isDynamicEntry": true,
     "imports": [
-      "_index-BvHU-Na7.js",
+      "_index-BQE1JNve.js",
       "src/main.jsx"
     ]
   },
@@ -32,12 +32,12 @@
     "isDynamicEntry": true
   },
   "src/main.jsx": {
-    "file": "assets/frontend-BfxFYlco.js",
+    "file": "assets/frontend-CG44Yhya.js",
     "name": "frontend",
     "src": "src/main.jsx",
     "isEntry": true,
     "imports": [
-      "_index-BvHU-Na7.js"
+      "_index-BQE1JNve.js"
     ],
     "dynamicImports": [
       "node_modules/dompurify/dist/purify.es.mjs",

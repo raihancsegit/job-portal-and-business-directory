@@ -303,8 +303,6 @@ function jpbd_api_get_single_opportunity(WP_REST_Request $request)
         return new WP_Error('not_found', 'Opportunity not found.', ['status' => 404]);
     }
 
-
-
     $opportunity['has_applied'] = false;
     if (is_user_logged_in()) {
         $user_id = get_current_user_id();

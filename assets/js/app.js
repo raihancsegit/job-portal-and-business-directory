@@ -852,10 +852,10 @@
         btn.addEventListener("click", prevStep);
     });
 
-    document.getElementById("multiStepForm").addEventListener("submit", (e) => {
-        e.preventDefault();
-        alert("Form submitted!");
-    });
+    // document.getElementById("multiStepForm").addEventListener("submit", (e) => {
+    //     e.preventDefault();
+    //     alert("Form submitted!");
+    // });
 
     showStep(currentStep);
 

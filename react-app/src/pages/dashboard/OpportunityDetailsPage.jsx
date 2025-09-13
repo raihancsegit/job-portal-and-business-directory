@@ -182,6 +182,8 @@ function OpportunityDetailsPage() {
                      {activeTab === 'details' && (
                             <div className="job-details-content">
                                 <div className="row g-3">
+                                    {isOwner && (
+                                    <>
                                     <div className="col-lg-5">
                                         <div className="i-card-md bordered-card">
                                             <h5 className="mb-3">Overview</h5>
@@ -210,6 +212,9 @@ function OpportunityDetailsPage() {
                                             <div ref={chartRef} id="applicationsChart" style={{ height: '220px' }}></div>
                                         </div>
                                     </div>
+                                   </>
+                                )}
+
                                     <div className="col-12">
                                         <div className="i-card-md bordered-card">
                                             <div className="d-flex flex-wrap justify-content-between align-items-center mb-3">

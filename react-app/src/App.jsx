@@ -14,6 +14,7 @@ import SettingsPage from './pages/dashboard/SettingsPage';
 import OpportunityDetailsPage from './pages/dashboard/OpportunityDetailsPage';
 import OpportunitiesPage from './pages/dashboard/OpportunitiesPage';
 import UpdateOpportunityPage from './pages/dashboard/UpdateOpportunityPage';
+import CandidateDetailsPage from './pages/dashboard/employer/CandidateDetailsPage';
 // This is your ROUTER. It decides which page to show based on the URL.
 function App() {
   const basename = window.jpbd_object?.page_slug || ''; // Use optional chaining for safety
@@ -38,6 +39,7 @@ function App() {
           <Route path="opportunities-list" element={<OpportunitiesPage />}  handle={{ title: 'Opportunities List' }}/>
           <Route path="opportunities/:id" element={<OpportunityDetailsPage />} /> 
            <Route path="update-opportunity/:id" element={<UpdateOpportunityPage />} />
+           <Route path="/dashboard/candidate/:candidateId" element={<CandidateDetailsPage />} />
         </Route>
 
         {/* Default route should be the login page */}
