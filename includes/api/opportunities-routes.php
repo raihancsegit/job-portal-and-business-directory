@@ -248,15 +248,29 @@ function jpbd_api_get_opportunities(WP_REST_Request $request)
         $params[] = (int) $filters['maxSalary'];
     }
 
-    if (isset($filters['viewMode']) && $filters['viewMode'] === 'my_opportunities') {
+
+
+    if (isset($filters['viewMode'])) {
         $user_id = get_current_user_id();
-        // নিশ্চিত করুন যে ব্যবহারকারী লগইন করা আছে
         if ($user_id > 0) {
-            $sql .= " AND user_id = %d";
-            $params[] = $user_id;
+            switch ($filters['viewMode']) {
+                case 'my_opportunities':
+                    $sql .= " AND opp.user_id = %d";
+                    $params[] = $user_id;
+                    break;
+                case 'hired':
+                    // শুধুমাত্র সেই জবগুলো যেখানে এই এমপ্লয়ার حداقل একজনকে হায়ার করেছে
+                    $sql .= " AND opp.user_id = %d AND EXISTS (SELECT 1 FROM $applications_table WHERE opportunity_id = opp.id AND status = 'hired')";
+                    $params[] = $user_id;
+                    break;
+                case 'applied':
+                    // শুধুমাত্র সেই জবগুলো যেখানে ক্যান্ডিডেট আবেদন করেছে
+                    $sql .= " AND opp.id IN (SELECT opportunity_id FROM $applications_table WHERE candidate_id = %d)";
+                    $params[] = $user_id;
+                    break;
+            }
         } else {
-            // যদি লগইন করা না থাকে, তাহলে কোনো রেজাল্ট পাঠাবে না
-            $sql .= " AND 1=0";
+            return new WP_REST_Response([], 200); // লগইন না থাকলে খালি ফলাফল
         }
     }
 
@@ -293,6 +307,32 @@ function jpbd_api_get_opportunities(WP_REST_Request $request)
 
     if ($results === null) {
         return new WP_Error('db_error', 'Could not retrieve opportunities.', ['status' => 500]);
+    }
+
+    if (is_user_logged_in()) {
+        $user_id = get_current_user_id();
+        $user = get_userdata($user_id);
+
+        // শুধুমাত্র candidate বা business রোলের জন্য এই চেকটি চলবে
+        if (in_array('candidate', (array)$user->roles) || in_array('business', (array)$user->roles)) {
+
+            // সকল opportunity-র ID গুলো একটি অ্যারেতে নেওয়া হচ্ছে
+            $opportunity_ids = wp_list_pluck($results, 'id');
+            if (!empty($opportunity_ids)) {
+
+                // বর্তমানে লগইন করা ইউজারের করা আবেদনগুলো খুঁজে বের করা হচ্ছে
+                $applied_ids_query = $wpdb->prepare(
+                    "SELECT opportunity_id FROM $applications_table WHERE candidate_id = %d AND opportunity_id IN (" . implode(',', $opportunity_ids) . ")",
+                    $user_id
+                );
+                $applied_ids = $wpdb->get_col($applied_ids_query);
+
+                // প্রতিটি opportunity-র জন্য has_applied প্রপার্টি সেট করা হচ্ছে
+                foreach ($results as &$job) { // <-- & ব্যবহার করা হয়েছে যাতে সরাসরি অ্যারেটি মডিফাই করা যায়
+                    $job['has_applied'] = in_array($job['id'], $applied_ids);
+                }
+            }
+        }
     }
 
     return new WP_REST_Response($results, 200);
@@ -568,4 +608,62 @@ function jpbd_api_check_application_status(WP_REST_Request $request)
     ));
 
     return new WP_REST_Response(['applied' => !empty($application)], 200);
+}
+
+/**
+ * Register a route for candidates/businesses to get their applications.
+ */
+function jpbd_register_my_applications_route()
+{
+    register_rest_route('jpbd/v1', '/my-applications', [
+        'methods'  => 'GET',
+        'callback' => 'jpbd_api_get_my_applications',
+        'permission_callback' => function () {
+            // শুধুমাত্র লগইন করা ইউজাররাই তাদের আবেদন দেখতে পারবে
+            return is_user_logged_in();
+        },
+    ]);
+}
+add_action('rest_api_init', 'jpbd_register_my_applications_route');
+
+
+/**
+ * API Callback: Get all applications for the current candidate/business user.
+ */
+function jpbd_api_get_my_applications(WP_REST_Request $request)
+{
+    global $wpdb;
+    $user_id = get_current_user_id();
+
+    $opp_table = $wpdb->prefix . 'jpbd_opportunities';
+    $app_table = $wpdb->prefix . 'jpbd_applications';
+    $users_table = $wpdb->prefix . 'users';
+
+    // SQL কোয়েরি যা আবেদনের সকল তথ্য এবং সংশ্লিষ্ট কোম্পানির নাম ও লোকেশন নিয়ে আসে
+    $query = $wpdb->prepare(
+        "SELECT
+            app.id as application_id,
+            app.application_date,
+            app.status,
+            opp.id as opportunity_id,
+            opp.job_title,
+            opp.location,
+            emp.display_name as employer_name,
+            -- অন্য একটি সাব-কোয়েরি দিয়ে ঐ জবে মোট আবেদনকারীর সংখ্যা গণনা করা হচ্ছে
+            (SELECT COUNT(*) FROM $app_table WHERE opportunity_id = opp.id) as total_applicants
+         FROM $app_table as app
+         JOIN $opp_table as opp ON app.opportunity_id = opp.id
+         JOIN $users_table as emp ON opp.user_id = emp.ID
+         WHERE app.candidate_id = %d
+         ORDER BY app.application_date DESC",
+        $user_id
+    );
+
+    $results = $wpdb->get_results($query, ARRAY_A);
+
+    if (is_null($results)) {
+        return new WP_Error('db_error', 'Could not retrieve applications.', ['status' => 500]);
+    }
+
+    return new WP_REST_Response($results, 200);
 }

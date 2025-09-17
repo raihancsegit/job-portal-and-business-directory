@@ -62,9 +62,45 @@ function jpbd_activate_plugin()
     jpbd_create_opportunities_table();
     jpbd_create_applications_table();
     jpbd_create_businesses_table();
+    jpbd_create_community_tables();
 }
 register_activation_hook(__FILE__, 'jpbd_activate_plugin');
 
+function jpbd_create_community_tables()
+{
+    global $wpdb;
+    $charset_collate = $wpdb->get_charset_collate();
+
+    // Posts Table
+    $posts_table = $wpdb->prefix . 'jpbd_community_posts';
+    $sql_posts = "CREATE TABLE $posts_table (
+        id mediumint(9) NOT NULL AUTO_INCREMENT,
+        user_id bigint(20) UNSIGNED NOT NULL,
+        title varchar(255) NOT NULL,
+        content text NOT NULL,
+        category varchar(100) NOT NULL,
+        views int(11) DEFAULT 0 NOT NULL,
+        created_at datetime DEFAULT CURRENT_TIMESTAMP NOT NULL,
+        PRIMARY KEY  (id),
+        KEY user_id (user_id)
+    ) $charset_collate;";
+
+    // Replies Table
+    $replies_table = $wpdb->prefix . 'jpbd_community_replies';
+    $sql_replies = "CREATE TABLE $replies_table (
+        id mediumint(9) NOT NULL AUTO_INCREMENT,
+        post_id mediumint(9) NOT NULL,
+        user_id bigint(20) UNSIGNED NOT NULL,
+        content text NOT NULL,
+        created_at datetime DEFAULT CURRENT_TIMESTAMP NOT NULL,
+        PRIMARY KEY  (id),
+        KEY post_id (post_id)
+    ) $charset_collate;";
+
+    require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+    dbDelta($sql_posts);
+    dbDelta($sql_replies);
+}
 function jpbd_create_businesses_table()
 {
     global $wpdb;

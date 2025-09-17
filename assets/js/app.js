@@ -988,54 +988,88 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 
-// document.addEventListener("DOMContentLoaded", () => {
-//   new Swiper(".employ-tab-swiper", {
-//     slidesPerView: "auto",
-//     spaceBetween: 10,
-//     freeMode: true,
-//     navigation: {
-//       nextEl: ".employ-tab-next",
-//       prevEl: ".employ-tab-prev",
-//     },
+document.addEventListener("DOMContentLoaded", () => {
+  new Swiper(".employ-tab-swiper", {
+    slidesPerView: "auto",
+    spaceBetween: 10,
+    freeMode: true,
+    navigation: {
+      nextEl: ".employ-tab-next",
+      prevEl: ".employ-tab-prev",
+    },
     
-//   });
-// });
+  });
+});
 
 
-// document.addEventListener("DOMContentLoaded", () => {
-//   new Swiper(".category-slider", {
-//     slidesPerView: 1.2,
-//     spaceBetween: 12,
-//     navigation: {
-//       nextEl: ".category-button-next",
-//       prevEl: ".category-button-prev",
-//     },
-//     breakpoints: {
-//       480: { slidesPerView: 2 },
-//       768: { slidesPerView: 3 },
-//       991: { slidesPerView: 1 },
-//       1200: { slidesPerView: 2 },
-//       1440: { slidesPerView: 4},
-//       1500: { slidesPerView: 5},
-//     },
-//   });
-// });
+document.addEventListener("DOMContentLoaded", () => {
+  new Swiper(".business-tab-swiper", {
+    slidesPerView: "auto",
+    spaceBetween: 10,
+    freeMode: true,
+    navigation: {
+      nextEl: ".business-tab-next",
+      prevEl: ".business-tab-prev",
+    },
+    
+  });
+});
+
+
+document.addEventListener("DOMContentLoaded", () => {
+  new Swiper(".category-slider", {
+    slidesPerView: 1.2,
+    spaceBetween: 12,
+    navigation: {
+      nextEl: ".category-button-next",
+      prevEl: ".category-button-prev",
+    },
+    breakpoints: {
+      480: { slidesPerView: 2 },
+      768: { slidesPerView: 3 },
+      991: { slidesPerView: 1 },
+      1200: { slidesPerView: 2 },
+      1440: { slidesPerView: 4},
+      1500: { slidesPerView: 5},
+    },
+  });
+});
+
+
+document.addEventListener("DOMContentLoaded", () => {
+  new Swiper(".candidate-category-slider", {
+    slidesPerView: 1.2,
+    spaceBetween: 12,
+    navigation: {
+      nextEl: ".category-button-next",
+      prevEl: ".category-button-prev",
+    },
+    breakpoints: {
+      480: { slidesPerView: 2 },
+      768: { slidesPerView: 3 },
+      991: { slidesPerView: 1 },
+      1200: { slidesPerView: 2 },
+      1440: { slidesPerView: 4},
+      1500: { slidesPerView: 5},
+    },
+  });
+});
 
 
 
-// var swiper = new Swiper(".event-tab-swiper", {
-//   slidesPerView: "auto",
-//   spaceBetween: 10,
-//   centeredSlides: false, 
-//       navigation: {
-//       nextEl: ".event-tab-next",
-//       prevEl: ".event-tab-prev",
-//     },
-//   pagination: {
-//     el: ".swiper-pagination",
-//     clickable: true,
-//   },
-// });
+var swiper = new Swiper(".event-tab-swiper", {
+  slidesPerView: "auto",
+  spaceBetween: 10,
+  centeredSlides: false, 
+      navigation: {
+      nextEl: ".event-tab-next",
+      prevEl: ".event-tab-prev",
+    },
+  pagination: {
+    el: ".swiper-pagination",
+    clickable: true,
+  },
+});
 
 
  (function($){

@@ -4858,6 +4858,8 @@ select {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
 }
 .employ-comm-wrapper .employ-create-post {
   background: #8b5e3c;
@@ -4867,11 +4869,12 @@ select {
   border: none;
 }
 .employ-comm-wrapper .employ-post-item {
-  border-bottom: 1px solid #eee;
-  padding: 12px 0;
+  border: 1px solid var(--color-border);
+  padding: 20px;
+  border-radius: 32px;
 }
-.employ-comm-wrapper .employ-post-item h4 {
-  margin: 0;
+.employ-comm-wrapper .employ-post-item h6 {
+  margin: 4px;
 }
 .employ-comm-wrapper .employ-post-item p {
   font-size: 14px;

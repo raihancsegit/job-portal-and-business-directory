@@ -1,6 +1,9 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../../../../context/AuthContext';
 const JobList = ({ opportunities, onSelectOpportunity, selectedOpportunityId }) => {
+     const { user } = useAuth();
+    const isEmployer = user?.roles?.includes('employer') || user?.roles?.includes('administrator');
     return (
         <div id="job-listings" className="job-listings">
             <div className="row g-3">
@@ -26,7 +29,24 @@ const JobList = ({ opportunities, onSelectOpportunity, selectedOpportunityId }) 
                                 <div className="post-bottom mb-4">
                                     <span className="dot"></span><span>{job.salary_type} paid</span>
                                 </div>
-                                <Link to={`/dashboard/opportunities/${job.id}`} className="i-btn btn--lg btn--primary w-100">View Proposal</Link>
+                                
+                                {isEmployer ? (
+                                    <Link to={`/dashboard/opportunities/${job.id}`} className="i-btn btn--lg btn--primary w-100">
+                                        View Proposal
+                                    </Link>
+                                ) : (
+                                    // job অবজেক্টে 'has_applied' নামে একটি প্রপার্টি থাকতে হবে
+                                    // এই প্রপার্টিটি jpbd_api_get_opportunities ফাংশন থেকে পাঠাতে হবে
+                                    job.has_applied ? (
+                                        <button className="i-btn btn--lg btn--success w-100" disabled>
+                                            <i className="ri-check-line"></i> Applied
+                                        </button>
+                                    ) : (
+                                        <Link to={`/dashboard/opportunities/${job.id}`} className="i-btn btn--lg btn--primary w-100">
+                                            Apply Now
+                                        </Link>
+                                    )
+                                )}
                             </div>
                         </div>
                     ))

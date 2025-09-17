@@ -61,6 +61,24 @@ function Sidebar() {
                             <p>Directory</p>
                         </NavLink>
                     </li>
+
+                     <li className="sidebar-menu-item">
+                        <NavLink className="sidebar-menu-link" to="/dashboard/community">
+                            <span>
+                                        <svg width="20" height="15" viewBox="0 0 20 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                             <circle cx="3.0639" cy="3.0639" r="3.0639" transform="matrix(-1 0 0 1 13.2535 1)" stroke-width="1.25"></circle>
+                                             <path d="M4.82703 11.674C4.82703 11.015 5.24131 10.4271 5.86193 10.2055V10.2055C8.66 9.20618 11.7177 9.20618 14.5158 10.2055V10.2055C15.1364 10.4271 15.5507 11.015 15.5507 11.674V12.6817C15.5507 13.5912 14.7451 14.2899 13.8447 14.1613L13.5445 14.1184C11.3187 13.8004 9.05901 13.8004 6.83322 14.1184L6.53301 14.1613C5.63261 14.2899 4.82703 13.5912 4.82703 12.6817V11.674Z" stroke-width="1.25"></path>
+                                             <path d="M14.7859 7.21216C16.1154 7.21216 17.1932 6.13435 17.1932 4.80481C17.1932 3.47527 16.1154 2.39746 14.7859 2.39746" stroke-width="1.25" stroke-linecap="round"></path>
+                                             <path d="M17.4227 12.7049L17.6586 12.7386C18.366 12.8396 18.999 12.2907 18.999 11.576V10.7843C18.999 10.2665 18.6735 9.80462 18.1858 9.63046C17.6994 9.45674 17.203 9.32146 16.701 9.22461" stroke-width="1.25" stroke-linecap="round"></path>
+                                             <path d="M5.21094 7.21216C3.8814 7.21216 2.80359 6.13435 2.80359 4.80481C2.80359 3.47527 3.8814 2.39746 5.21094 2.39746" stroke-width="1.25" stroke-linecap="round"></path>
+                                             <path d="M2.57317 12.7049L2.33729 12.7386C1.62983 12.8396 0.996876 12.2907 0.996876 11.576V10.7843C0.996876 10.2665 1.32238 9.80462 1.81001 9.63046C2.29643 9.45674 2.79283 9.32146 3.2948 9.22461" stroke-width="1.25" stroke-linecap="round"></path>
+                                        </svg>
+
+                                   </span>
+                            <p>Community</p>
+                        </NavLink>
+                    </li>
+
                     <li className="sidebar-menu-item">
                         <NavLink className="sidebar-menu-link" to="/dashboard/settings">
                              <span><svg width="16" height="18" viewBox="0 0 16 18" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1 6.66228V11.3296C1 13.0445 1 13.0445 2.55556 14.1365L6.83333 16.7088C7.47889 17.0971 8.52889 17.0971 9.16667 16.7088L13.4444 14.1365C15 13.0445 15 13.0445 15 11.3377V6.66228C15 4.95551 15 4.95551 13.4444 3.8635L9.16667 1.2912C8.52889 0.902932 7.47889 0.902932 6.83333 1.2912L2.55556 3.8635C1 4.95551 1 4.95551 1 6.66228Z" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round" /><path d="M8 11C9.10457 11 10 10.1046 10 9C10 7.89543 9.10457 7 8 7C6.89543 7 6 7.89543 6 9C6 10.1046 6.89543 11 8 11Z" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round" /></svg></span>
