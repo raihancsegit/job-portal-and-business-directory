@@ -150,7 +150,12 @@ const OpportunityPostedTable = ({ filters, setFilters }) => {
                     <table>
                         <thead>
                             <tr>
-                                <th><input type="checkbox" onChange={handleSelectAll} checked={opportunities.length > 0 && selectedIds.length === opportunities.length} /></th>
+                                <th>
+                                    
+                                        <input type="radio" onChange={handleSelectAll} checked={opportunities.length > 0 && selectedIds.length === opportunities.length} />
+                                    
+                                    </th>
+
                                 <th>Opportunity Title</th>
                                 <th>Date Posted</th>
                                 <th>Applications</th>
@@ -164,7 +169,9 @@ const OpportunityPostedTable = ({ filters, setFilters }) => {
                             ) : opportunities.length > 0 ? (
                                 opportunities.map((job) => (
                                     <tr key={job.id}>
-                                        <td><input type="checkbox" checked={selectedIds.includes(job.id)} onChange={(e) => handleSelectSingle(e, job.id)} /></td>
+                                        <td>
+                                            
+                                            <input type="radio" checked={selectedIds.includes(job.id)} onChange={(e) => handleSelectSingle(e, job.id)} /></td>
                                         <td>{job.job_title}</td>
                                         <td>{new Date(job.publish_date || job.created_at).toLocaleDateString()}</td>
                                         <td>{job.applications || 0}</td>

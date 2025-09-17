@@ -852,10 +852,6 @@
         btn.addEventListener("click", prevStep);
     });
 
-    // document.getElementById("multiStepForm").addEventListener("submit", (e) => {
-    //     e.preventDefault();
-    //     alert("Form submitted!");
-    // });
 
     showStep(currentStep);
 
@@ -871,5 +867,297 @@
             });
         });
     });
+
+
+    // business logo upload
+
+    const fileInput = document.getElementById('logoUpload');
+    const logoPreview = document.getElementById('logoPreview');
+
+    if(fileInput) {
+        fileInput.addEventListener('change', function () {
+        const file = this.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+            logoPreview.innerHTML = `<img src="${e.target.result}" alt="Logo">`;
+            }
+            reader.readAsDataURL(file);
+        }
+        });
+
+    }
+
+
+
+    // add time date
+document.addEventListener("DOMContentLoaded", () => {
+  const addHourBtn = document.getElementById("addHour");
+  if (!addHourBtn) return; // safety check
+
+  addHourBtn.addEventListener("click", () => {
+    const day = document.getElementById("daySelect").value;
+    const start = document.getElementById("startTime").value;
+    const end = document.getElementById("endTime").value;
+    const fullDay = document.getElementById("fullDay").checked;
+
+    if (!day) {
+      alert("Please select a day");
+      return;
+    }
+
+    let timeText = fullDay ? "Full Day" : `${start || "??"} - ${end || "??"}`;
+
+    const list = document.getElementById("businessHourList");
+    const div = document.createElement("div");
+    div.classList.add("list-item");
+
+    div.innerHTML = `
+      <div class="day-name">${day}</div>
+      <div class="time-text">${timeText}</div>
+      <button class="remove-btn">&times;</button>
+    `;
+
+    div.querySelector(".remove-btn").addEventListener("click", () => {
+      div.remove();
+    });
+
+    list.appendChild(div);
+
+    // reset inputs
+    document.getElementById("daySelect").value = "";
+    document.getElementById("startTime").value = "";
+    document.getElementById("endTime").value = "";
+    document.getElementById("fullDay").checked = false;
+  });
+});
+
+
+// Social Profile inputs add
+document.addEventListener("DOMContentLoaded", () => {
+  const socialSelect = document.getElementById("socialSelect");
+  if (!socialSelect) return; 
+
+  socialSelect.addEventListener("change", () => {
+    const platform = socialSelect.value;
+    if (!platform) return;
+
+    const list = document.getElementById("socialProfileList");
+    const div = document.createElement("div");
+    div.classList.add("list-item", "row", "align-items-center", "g-3");
+
+    div.innerHTML = `
+      <div class="col-lg-2 col-12 social-name">
+        ${platform}
+      </div>
+      <div class="col-lg-10 col-12 d-flex align-items-center gap-2">
+        <input type="text" placeholder="Enter ${platform} URL" class="form-control bg-transparent" />
+        <button class="remove-btn">&times;</button>
+      </div>
+    `;
+
+    div.querySelector(".remove-btn").addEventListener("click", () => {
+      div.remove();
+    });
+
+    list.appendChild(div);
+
+    socialSelect.value = "";
+  });
+});
+
+
+
+
+document.addEventListener("DOMContentLoaded", () => {
+  const membersBtn = document.querySelector(".chat-cover-area .i-btn"); 
+  const chatInfo = document.querySelector(".chat-info");
+  const closeBtn = document.querySelector(".chat-close-btn");
+
+  if (membersBtn && chatInfo) {
+    membersBtn.addEventListener("click", () => {
+      chatInfo.classList.toggle("show-chat-info");
+    });
+
+    if (closeBtn) {
+      closeBtn.addEventListener("click", () => {
+        chatInfo.classList.remove("show-chat-info");
+      });
+    }
+  }
+});
+
+
+// document.addEventListener("DOMContentLoaded", () => {
+//   new Swiper(".employ-tab-swiper", {
+//     slidesPerView: "auto",
+//     spaceBetween: 10,
+//     freeMode: true,
+//     navigation: {
+//       nextEl: ".employ-tab-next",
+//       prevEl: ".employ-tab-prev",
+//     },
+    
+//   });
+// });
+
+
+// document.addEventListener("DOMContentLoaded", () => {
+//   new Swiper(".category-slider", {
+//     slidesPerView: 1.2,
+//     spaceBetween: 12,
+//     navigation: {
+//       nextEl: ".category-button-next",
+//       prevEl: ".category-button-prev",
+//     },
+//     breakpoints: {
+//       480: { slidesPerView: 2 },
+//       768: { slidesPerView: 3 },
+//       991: { slidesPerView: 1 },
+//       1200: { slidesPerView: 2 },
+//       1440: { slidesPerView: 4},
+//       1500: { slidesPerView: 5},
+//     },
+//   });
+// });
+
+
+
+// var swiper = new Swiper(".event-tab-swiper", {
+//   slidesPerView: "auto",
+//   spaceBetween: 10,
+//   centeredSlides: false, 
+//       navigation: {
+//       nextEl: ".event-tab-next",
+//       prevEl: ".event-tab-prev",
+//     },
+//   pagination: {
+//     el: ".swiper-pagination",
+//     clickable: true,
+//   },
+// });
+
+
+ (function($){
+    $(function(){
+      var map = L.map('map', {
+        center: [23.7806365, 90.2792371], 
+        zoom: 13,
+        zoomControl: false,
+        attributionControl: false
+      });
+
+   // Tile layer with beige filter
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        detectRetina: true,
+        className: 'beige-map' // <- important
+      }).addTo(map);
+
+      function createPinIcon(){
+        return L.divIcon({
+          className: 'custom-div-icon', 
+          html: '<div class="map-pin"></div>',
+          iconSize: [26, 26],
+          iconAnchor: [13, 26] 
+        });
+      }
+
+      var marker1 = L.marker([23.772, 90.292], {icon:createPinIcon()}).addTo(map);
+      var marker2 = L.marker([23.789, 90.315], {icon:createPinIcon()}).addTo(map);
+
+      marker1.bindPopup("<strong>Location A</strong>").closePopup();
+      marker2.bindPopup("<strong>Location B</strong>").closePopup();
+
+      $('#btnZoomIn').on('click', function(e){
+        e.preventDefault();
+        map.zoomIn();
+      });
+      $('#btnZoomOut').on('click', function(e){
+        e.preventDefault();
+        map.zoomOut();
+      });
+
+      var mapBox = document.getElementById('mapBox');
+      $('#btnFull').on('click', function(){
+        if (!document.fullscreenElement) {
+          mapBox.requestFullscreen?.();
+          $('#mapBox').addClass('is-fullscreen');
+        } else {
+          document.exitFullscreen?.();
+          $('#mapBox').removeClass('is-fullscreen');
+        }
+      });
+
+      document.addEventListener('fullscreenchange', function(){
+        setTimeout(function(){ map.invalidateSize(); }, 250);
+      });
+
+      $('#search').on('keydown', function(e){
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          doGeocode($(this).val());
+        }
+      });
+
+      function doGeocode(query){
+        if (!query || !query.trim()) return;
+        var url = 'https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(query);
+        fetch(url)
+          .then(function(r){ return r.json(); })
+          .then(function(results){
+            if (!results || results.length === 0) {
+              alert('No results found');
+              return;
+            }
+            var first = results[0];
+            var lat = parseFloat(first.lat), lon = parseFloat(first.lon);
+            map.setView([lat, lon], 15, { animate: true });
+            var m = L.marker([lat, lon], {icon: createPinIcon()}).addTo(map);
+            m.bindPopup(first.display_name).openPopup();
+          })
+          .catch(function(err){
+            console.error(err);
+            alert('Search error');
+          });
+      }
+
+      map.on('click', function(e){
+        var m = L.marker(e.latlng, {icon:createPinIcon()}).addTo(map);
+        m.bindPopup('Custom pin').openPopup();
+      });
+
+      $('#search').on('blur', function(){ $('#map').focus(); });
+
+      setTimeout(function(){ map.invalidateSize(); }, 200);
+    });
+  })(jQuery);
+
+
+//   rating
+
+document.addEventListener("DOMContentLoaded", () => {
+  const stars = document.querySelectorAll("#reviewModal .star-rating i");
+  let rating = 0;
+
+  stars.forEach((star, index) => {
+    star.addEventListener("click", () => {
+      rating = index + 1;
+
+      // update stars
+      stars.forEach((s, i) => {
+        if (i < rating) {
+          s.classList.add("ri-star-fill", "active");
+          s.classList.remove("ri-star-line");
+        } else {
+          s.classList.add("ri-star-line");
+          s.classList.remove("ri-star-fill", "active");
+        }
+      });
+    });
+  });
+
+});
+
 
 }())

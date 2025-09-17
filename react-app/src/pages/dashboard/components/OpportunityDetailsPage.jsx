@@ -147,7 +147,7 @@ function OpportunityDetailsPage() {
                             <div className="i-card-md bordered-card">
                                 <h5 className="mb-3">Overview</h5>
                                 <div className="row g-3">
-                                    <div className="col-6"><div className="card overview-card views"><div className="card-body text-start"><h6>Views</h6><h3>{opportunity.views || 0}</h3></div></div></div>
+                                    <div className="col-6"><div className="card overview-card views"><div className="card-body text-start"><h6>Views</h6><h3>{opportunity.views_count || 0}</h3></div></div></div>
                                     <div className="col-6"><div className="card overview-card applications"><div className="card-body text-start"><h6>Total Applications</h6><h3>{opportunity.applications || 0}</h3></div></div></div>
                                     <div className="col-6"><div className="card overview-card shortlisted"><div className="card-body text-start"><h6>Shortlisted</h6><h3>{opportunity.shortlisted || 0}</h3></div></div></div>
                                     <div className="col-6"><div className="card overview-card review"><div className="card-body text-start"><h6>Awaiting Review</h6><h3>{opportunity.awaiting_review || 0}</h3></div></div></div>

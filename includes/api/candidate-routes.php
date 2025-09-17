@@ -35,8 +35,8 @@ function jpbd_register_candidate_api_routes()
         'methods'  => 'GET',
         'callback' => 'jpbd_api_get_public_candidate_profile',
         'permission_callback' => function () {
-            // শুধুমাত্র লগইন করা employer বা admin-রাই প্রোফাইল দেখতে পারবে
-            return current_user_can('manage_applications');
+            // এখন যেকোনো লগইন করা ইউজারই এই ডেটা দেখতে পারবে
+            return is_user_logged_in();
         },
         'args' => [
             'id' => [
@@ -208,6 +208,10 @@ function jpbd_api_upload_candidate_cv(WP_REST_Request $request)
 function jpbd_api_get_public_candidate_profile(WP_REST_Request $request)
 {
     $user_id = (int) $request['id'];
+
+    $view_count_key = 'jpbd_profile_views';
+    $current_views = (int) get_user_meta($user_id, $view_count_key, true);
+    update_user_meta($user_id, $view_count_key, $current_views + 1);
 
     // WordPress ইউজার অবজেক্ট থেকে বেসিক তথ্য নেওয়া
     $user_data = get_userdata($user_id);

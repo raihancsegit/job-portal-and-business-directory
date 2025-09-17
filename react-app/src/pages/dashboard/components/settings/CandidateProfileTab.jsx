@@ -143,93 +143,97 @@ const CandidateProfileTab = ({ showNotice, notice }) => {
 
             <div className="multiFormContainer py-4">
                 <Stepper currentStep={currentStep} />
-                <form onSubmit={handleSave}>
-                    {/* Step 1: Basic Information */}
-                    <div className={`form-section ${currentStep === 1 ? 'active' : ''}`}>
-                        <div className="form-block">
-                            <h4 className="form-block-title">About Me</h4>
-                            <textarea className="form-control" rows="5" placeholder="Tell us about yourself..." value={profile.about || ''} onChange={(e) => setProfile({ ...profile, about: e.target.value })}></textarea>
+                <div className="row justify-content-center">
+                    <div className="col-lg-10">
+                    <form onSubmit={handleSave}>
+                        {/* Step 1: Basic Information */}
+                        <div className={`form-section ${currentStep === 1 ? 'active' : ''}`}>
+                            <div className="form-block">
+                                <h4 className="form-block-title">About Me</h4>
+                                <textarea className="form-control" rows="5" placeholder="Tell us about yourself..." value={profile.about || ''} onChange={(e) => setProfile({ ...profile, about: e.target.value })}></textarea>
+                            </div>
+                            <div className="form-block">
+                                <h4 className="form-block-title">Skills</h4>
+                                <input type="text" className="form-control" placeholder="Enter skills, separated by commas (e.g., React, PHP, CSS)" value={profile.skills || ''} onChange={(e) => setProfile({ ...profile, skills: e.target.value })} />
+                            </div>
+                            <div className="d-flex justify-content-end gap-2 mt-4">
+                                <button type="button" className="i-btn btn--lg btn--primary" onClick={nextStep}>Next</button>
+                            </div>
                         </div>
-                        <div className="form-block">
-                            <h4 className="form-block-title">Skills</h4>
-                            <input type="text" className="form-control" placeholder="Enter skills, separated by commas (e.g., React, PHP, CSS)" value={profile.skills || ''} onChange={(e) => setProfile({ ...profile, skills: e.target.value })} />
-                        </div>
-                        <div className="d-flex justify-content-end gap-2 mt-4">
-                            <button type="button" className="i-btn btn--lg btn--primary" onClick={nextStep}>Next</button>
-                        </div>
-                    </div>
 
-                    {/* Step 2: Experience & Education */}
-                    <div className={`form-section ${currentStep === 2 ? 'active' : ''}`}>
-                        <div className="form-block">
-                            <div className="d-flex justify-content-between align-items-center mb-3">
-                                <h4 className="form-block-title mb-0">Experience</h4>
-                                <button type="button" className="i-btn btn--sm btn--primary" onClick={() => handleAddItem('experience')}>+ Add Experience</button>
-                            </div>
-                            {profile.experience.map((item, index) => (
-                                <div key={index} className="repeater-item-box mb-3">
-                                    <div className="row g-3">
-                                        <div className="col-md-6"><label className="form-label">Job Title</label><input type="text" name="title" placeholder="e.g., Product Designer" value={item.title || ''} onChange={e => handleRepeaterChange(e, index, 'experience')} className="form-control" /></div>
-                                        <div className="col-md-6"><label className="form-label">Company</label><input type="text" name="company" placeholder="e.g., Twitter" value={item.company || ''} onChange={e => handleRepeaterChange(e, index, 'experience')} className="form-control" /></div>
-                                        <div className="col-md-6"><label className="form-label">Start Year</label><input type="text" name="startYear" placeholder="e.g., Jun 2022" value={item.startYear || ''} onChange={e => handleRepeaterChange(e, index, 'experience')} className="form-control" /></div>
-                                        <div className="col-md-6"><label className="form-label">End Year</label><input type="text" name="endYear" placeholder="e.g., Present" value={item.endYear || ''} onChange={e => handleRepeaterChange(e, index, 'experience')} className="form-control" /></div>
-                                        <div className="col-12"><label className="form-label">Location</label><input type="text" name="location" placeholder="e.g., Manchester, UK" value={item.location || ''} onChange={e => handleRepeaterChange(e, index, 'experience')} className="form-control" /></div>
-                                        <div className="col-12"><label className="form-label">Description</label><textarea name="description" rows="3" placeholder="Description..." value={item.description || ''} onChange={e => handleRepeaterChange(e, index, 'experience')} className="form-control"></textarea></div>
-                                    </div>
-                                    {profile.experience.length > 1 && <button type="button" className="btn-icon-danger mt-2" onClick={() => handleRemoveItem(index, 'experience')}><i className="ri-delete-bin-line"></i></button>}
+                        {/* Step 2: Experience & Education */}
+                        <div className={`form-section ${currentStep === 2 ? 'active' : ''}`}>
+                            <div className="form-block">
+                                <div className="d-flex justify-content-between align-items-center mb-3">
+                                    <h4 className="form-block-title mb-0">Experience</h4>
+                                    <button type="button" className="i-btn btn--sm btn--primary" onClick={() => handleAddItem('experience')}>+ Add Experience</button>
                                 </div>
-                            ))}
-                        </div>
-                        <div className="form-block">
-                            <div className="d-flex justify-content-between align-items-center mb-3">
-                                <h4 className="form-block-title mb-0">Education</h4>
-                                <button type="button" className="i-btn btn--sm btn--primary" onClick={() => handleAddItem('education')}>+ Add Education</button>
-                            </div>
-                            {profile.education.map((item, index) => (
-                                <div key={index} className="repeater-item-box mb-3">
-                                    <div className="row g-3">
-                                        <div className="col-md-6"><label className="form-label">Institution</label><input type="text" name="institution" placeholder="e.g., Harvard University" value={item.institution || ''} onChange={e => handleRepeaterChange(e, index, 'education')} className="form-control" /></div>
-                                        <div className="col-md-6"><label className="form-label">Degree</label><input type="text" name="degree" placeholder="e.g., Postgraduate degree" value={item.degree || ''} onChange={e => handleRepeaterChange(e, index, 'education')} className="form-control" /></div>
-                                        <div className="col-md-6"><label className="form-label">Start Year</label><input type="text" name="startYear" placeholder="e.g., 2014" value={item.startYear || ''} onChange={e => handleRepeaterChange(e, index, 'education')} className="form-control" /></div>
-                                        <div className="col-md-6"><label className="form-label">End Year</label><input type="text" name="endYear" placeholder="e.g., 2016 or Present" value={item.endYear || ''} onChange={e => handleRepeaterChange(e, index, 'education')} className="form-control" /></div>
-                                        <div className="col-12"><label className="form-label">Description</label><textarea name="description" rows="3" placeholder="Description..." value={item.description || ''} onChange={e => handleRepeaterChange(e, index, 'education')} className="form-control"></textarea></div>
+                                {profile.experience.map((item, index) => (
+                                    <div key={index} className="repeater-item-box mb-3">
+                                        <div className="row g-3">
+                                            <div className="col-md-6"><label className="form-label">Job Title</label><input type="text" name="title" placeholder="e.g., Product Designer" value={item.title || ''} onChange={e => handleRepeaterChange(e, index, 'experience')} className="form-control" /></div>
+                                            <div className="col-md-6"><label className="form-label">Company</label><input type="text" name="company" placeholder="e.g., Twitter" value={item.company || ''} onChange={e => handleRepeaterChange(e, index, 'experience')} className="form-control" /></div>
+                                            <div className="col-md-6"><label className="form-label">Start Year</label><input type="text" name="startYear" placeholder="e.g., Jun 2022" value={item.startYear || ''} onChange={e => handleRepeaterChange(e, index, 'experience')} className="form-control" /></div>
+                                            <div className="col-md-6"><label className="form-label">End Year</label><input type="text" name="endYear" placeholder="e.g., Present" value={item.endYear || ''} onChange={e => handleRepeaterChange(e, index, 'experience')} className="form-control" /></div>
+                                            <div className="col-12"><label className="form-label">Location</label><input type="text" name="location" placeholder="e.g., Manchester, UK" value={item.location || ''} onChange={e => handleRepeaterChange(e, index, 'experience')} className="form-control" /></div>
+                                            <div className="col-12"><label className="form-label">Description</label><textarea name="description" rows="3" placeholder="Description..." value={item.description || ''} onChange={e => handleRepeaterChange(e, index, 'experience')} className="form-control"></textarea></div>
+                                        </div>
+                                        {profile.experience.length > 1 && <button type="button" className="btn-icon-danger mt-2" onClick={() => handleRemoveItem(index, 'experience')}><i className="ri-delete-bin-line"></i></button>}
                                     </div>
-                                    {profile.education.length > 1 && <button type="button" className="btn-icon-danger mt-2" onClick={() => handleRemoveItem(index, 'education')}><i className="ri-delete-bin-line"></i></button>}
+                                ))}
+                            </div>
+                            <div className="form-block">
+                                <div className="d-flex justify-content-between align-items-center mb-3">
+                                    <h4 className="form-block-title mb-0">Education</h4>
+                                    <button type="button" className="i-btn btn--sm btn--primary" onClick={() => handleAddItem('education')}>+ Add Education</button>
                                 </div>
-                            ))}
+                                {profile.education.map((item, index) => (
+                                    <div key={index} className="repeater-item-box mb-3">
+                                        <div className="row g-3">
+                                            <div className="col-md-6"><label className="form-label">Institution</label><input type="text" name="institution" placeholder="e.g., Harvard University" value={item.institution || ''} onChange={e => handleRepeaterChange(e, index, 'education')} className="form-control" /></div>
+                                            <div className="col-md-6"><label className="form-label">Degree</label><input type="text" name="degree" placeholder="e.g., Postgraduate degree" value={item.degree || ''} onChange={e => handleRepeaterChange(e, index, 'education')} className="form-control" /></div>
+                                            <div className="col-md-6"><label className="form-label">Start Year</label><input type="text" name="startYear" placeholder="e.g., 2014" value={item.startYear || ''} onChange={e => handleRepeaterChange(e, index, 'education')} className="form-control" /></div>
+                                            <div className="col-md-6"><label className="form-label">End Year</label><input type="text" name="endYear" placeholder="e.g., 2016 or Present" value={item.endYear || ''} onChange={e => handleRepeaterChange(e, index, 'education')} className="form-control" /></div>
+                                            <div className="col-12"><label className="form-label">Description</label><textarea name="description" rows="3" placeholder="Description..." value={item.description || ''} onChange={e => handleRepeaterChange(e, index, 'education')} className="form-control"></textarea></div>
+                                        </div>
+                                        {profile.education.length > 1 && <button type="button" className="btn-icon-danger mt-2" onClick={() => handleRemoveItem(index, 'education')}><i className="ri-delete-bin-line"></i></button>}
+                                    </div>
+                                ))}
+                            </div>
+                            <div className="d-flex justify-content-end gap-2 mt-4">
+                                <button type="button" className="i-btn btn--lg btn--outline" onClick={prevStep}>Back</button>
+                                <button type="button" className="i-btn btn--lg btn--primary" onClick={nextStep}>Next</button>
+                            </div>
                         </div>
-                        <div className="d-flex justify-content-end gap-2 mt-4">
-                            <button type="button" className="i-btn btn--lg btn--outline" onClick={prevStep}>Back</button>
-                            <button type="button" className="i-btn btn--lg btn--primary" onClick={nextStep}>Next</button>
-                        </div>
-                    </div>
 
-                    {/* Step 3: CV / Resume */}
-                    <div className={`form-section ${currentStep === 3 ? 'active' : ''}`}>
-                        <div className="form-block">
-                            <div className="d-flex justify-content-between align-items-center mb-3">
-                                <h4 className="form-block-title mb-0">Manage Resumes/CVs</h4>
-                                {Array.isArray(profile.cvs) && profile.cvs.length < 4 && (
-                                    <button type="button" className="i-btn btn--sm btn--primary" onClick={() => handleAddItem('cvs')}>+ Add CV</button>
-                                )}
-                            </div>
-                            {Array.isArray(profile.cvs) && profile.cvs.map((cv, index) => (
-                                <div key={index} className="repeater-item-box mb-3">
-                                    <div className="row g-3 align-items-center">
-                                        <div className="col-md-5"><label className="form-label">CV Name</label><input type="text" name="name" placeholder="e.g., My Main CV" value={cv.name || ''} onChange={e => handleRepeaterChange(e, index, 'cvs')} className="form-control" /></div>
-                                        <div className="col-md-5"><label className="form-label">Upload File</label><input type="file" className="form-control" onChange={e => handleCvFileUpload(e, index)} />{uploading === index && <small className="text-muted d-block mt-1">Uploading...</small>}</div>
-                                        <div className="col-md-2 d-flex justify-content-end">{profile.cvs.length > 1 && <button type="button" className="btn-icon-danger mt-4" onClick={() => handleRemoveItem(index, 'cvs')}><i className="ri-delete-bin-line"></i></button>}</div>
-                                    </div>
-                                    {cv.file_url && <div className="mt-2"><small>Current file: <a href={cv.file_url} target="_blank" rel="noopener noreferrer">{cv.file_url.split('/').pop()}</a></small></div>}
+                        {/* Step 3: CV / Resume */}
+                        <div className={`form-section ${currentStep === 3 ? 'active' : ''}`}>
+                            <div className="form-block">
+                                <div className="d-flex justify-content-between align-items-center mb-3">
+                                    <h4 className="form-block-title mb-0">Manage Resumes/CVs</h4>
+                                    {Array.isArray(profile.cvs) && profile.cvs.length < 4 && (
+                                        <button type="button" className="i-btn btn--sm btn--primary" onClick={() => handleAddItem('cvs')}>+ Add CV</button>
+                                    )}
                                 </div>
-                            ))}
+                                {Array.isArray(profile.cvs) && profile.cvs.map((cv, index) => (
+                                    <div key={index} className="repeater-item-box mb-3">
+                                        <div className="row g-3 align-items-center">
+                                            <div className="col-md-5"><label className="form-label">CV Name</label><input type="text" name="name" placeholder="e.g., My Main CV" value={cv.name || ''} onChange={e => handleRepeaterChange(e, index, 'cvs')} className="form-control" /></div>
+                                            <div className="col-md-5"><label className="form-label">Upload File</label><input type="file" className="form-control" onChange={e => handleCvFileUpload(e, index)} />{uploading === index && <small className="text-muted d-block mt-1">Uploading...</small>}</div>
+                                            <div className="col-md-2 d-flex justify-content-end">{profile.cvs.length > 1 && <button type="button" className="btn-icon-danger mt-4" onClick={() => handleRemoveItem(index, 'cvs')}><i className="ri-delete-bin-line"></i></button>}</div>
+                                        </div>
+                                        {cv.file_url && <div className="mt-2"><small>Current file: <a href={cv.file_url} target="_blank" rel="noopener noreferrer">{cv.file_url.split('/').pop()}</a></small></div>}
+                                    </div>
+                                ))}
+                            </div>
+                            <div className="d-flex justify-content-end gap-2 mt-4">
+                                <button type="button" className="i-btn btn--lg btn--outline" onClick={prevStep}>Back</button>
+                                <button type="submit" className="i-btn btn--lg btn--primary" disabled={saving}>{saving ? 'Saving...' : 'Save Profile'}</button>
+                            </div>
                         </div>
-                        <div className="d-flex justify-content-end gap-2 mt-4">
-                            <button type="button" className="i-btn btn--lg btn--outline" onClick={prevStep}>Back</button>
-                            <button type="submit" className="i-btn btn--lg btn--primary" disabled={saving}>{saving ? 'Saving...' : 'Save Profile'}</button>
-                        </div>
+                    </form>
                     </div>
-                </form>
+                </div>
             </div>
         </div>
     );

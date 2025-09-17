@@ -47,10 +47,18 @@ function Sidebar() {
                             <p>Dashboard</p>
                         </NavLink>
                     </li>
-                    <li className="sidebar-menu-item">
+                     <li className="sidebar-menu-item">
                         <NavLink className="sidebar-menu-link" to="/dashboard/opportunities">
                             <span><svg width="20" height="19" viewBox="0 0 20 19" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M0.999756 6.00018C0.999756 4.89562 1.89519 4.00018 2.99976 4.00018H16.9998C18.1043 4.00018 18.9998 4.89561 18.9998 6.00018V8.28982C18.9998 9.12774 18.4774 9.87683 17.6912 10.1665L11.3826 12.4907C10.49 12.8196 9.50949 12.8196 8.61693 12.4907L2.30835 10.1665C1.52209 9.87683 0.999756 9.12774 0.999756 8.28982V6.00018Z" strokeWidth="1.25" /><path d="M9.99976 9.56993L9.99976 7.85565" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round" /><path d="M0.999756 8.00018L0.999756 14.0002C0.999756 16.2093 2.79062 18.0002 4.99976 18.0002H14.9998C17.2089 18.0002 18.9998 16.2093 18.9998 14.0002V8.00018" strokeWidth="1.25" /><path d="M13.3334 4.42873V3.00018C13.3334 1.89561 12.438 1.00018 11.3334 1.00018H8.66675C7.56218 1.00018 6.66675 1.89561 6.66675 3.00018L6.66675 4.42873" strokeWidth="1.25" /></svg></span>
                             <p>Opportunities</p>
+                        </NavLink>
+                    </li>
+                    <li className="sidebar-menu-item">
+                        <NavLink className="sidebar-menu-link" to="/dashboard/business-directory">
+                            <span><svg width="16" height="14" viewBox="0 0 16 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                             <path d="M4.88889 1H15M4.88889 7H15M4.88889 13H15M1 1H1.00778M1 7H1.00778M1 13H1.00778" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"></path>
+                                        </svg></span>
+                            <p>Directory</p>
                         </NavLink>
                     </li>
                     <li className="sidebar-menu-item">

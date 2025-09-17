@@ -161,6 +161,9 @@ ul, ol{
   padding: 0;
   margin: 0;
 }
+.fs-18{
+  font-size: 18px;
+}
 
 .fs-72{
   font-size: 72px !important;
@@ -252,6 +255,10 @@ ul, ol{
 
 .pb-100 {
   padding-bottom: 100px;
+}
+
+.p-20{
+  padding: 20px !important;
 }
 
 .small-select{
@@ -715,7 +722,12 @@ button {
   }
   &-100 {
     height: 100px;
-    width: 100px;
+    min-width: 100px;
+
+    @include lg-down-device{
+      height: 60px;
+      min-width: 60px;
+    }
   }
   &-title {
     -webkit-box-align: center;

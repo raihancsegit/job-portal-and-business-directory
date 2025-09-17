@@ -43,6 +43,8 @@ final class Job_Portal_Main
         require_once JPBD_PATH . 'includes/api/opportunities-routes.php';
         require_once JPBD_PATH . 'includes/api/candidate-routes.php';
         require_once JPBD_PATH . 'includes/api/application-routes.php';
+        require_once JPBD_PATH . 'includes/api/business-api.php';
+        require_once JPBD_PATH . 'includes/api/dashboard-api.php';
     }
 
     private function init_hooks()
@@ -82,6 +84,7 @@ final class Job_Portal_Main
             // এখন প্রতিটি স্থানীয় ফাইলের জন্য আমরা filemtime() ব্যবহার করে একটি ডাইনামিক ভার্সন তৈরি করব
             wp_enqueue_style('jpbd-bootstrap', JPBD_URL . 'assets/css/bootstrap.min.css', [], filemtime(JPBD_PATH . 'assets/css/bootstrap.min.css'));
             wp_enqueue_style('jpbd-remixicon', JPBD_URL . 'assets/css/remixicon.css', [], filemtime(JPBD_PATH . 'assets/css/remixicon.css'));
+            wp_enqueue_style('jpbd-leaflet', JPBD_URL . 'assets/css/leaflet.css', [], filemtime(JPBD_PATH . 'assets/css/leaflet.css'));
             wp_enqueue_style('jpbd-nouislider', JPBD_URL . 'template/nouislider.min.css', [], filemtime(JPBD_PATH . 'template/nouislider.min.css'));
             wp_enqueue_style('jpbd-main-style', JPBD_URL . 'assets/css/main.css', [], filemtime(JPBD_PATH . 'assets/css/main.css'));
 
@@ -101,7 +104,7 @@ final class Job_Portal_Main
             wp_enqueue_script('jpbd-apexcharts', JPBD_URL . 'assets/js/apexcharts.js', [], filemtime(JPBD_PATH . 'assets/js/apexcharts.js'), true);
             wp_enqueue_script('jpbd-chart', JPBD_URL . 'assets/js/chart-init.js', ['jpbd-jquery', 'jpbd-apexcharts'], filemtime(JPBD_PATH . 'assets/js/chart-init.js'), true);
             wp_enqueue_script('jpbd-nouislider', JPBD_URL . 'assets/js/nouislider.min.js', ['jpbd-jquery', 'jpbd-chart'], filemtime(JPBD_PATH . 'assets/js/nouislider.min.js'), true);
-
+            wp_enqueue_script('jpbd-leaflet', JPBD_URL . 'assets/js/leaflet.js', ['jpbd-jquery'], filemtime(JPBD_PATH . 'assets/js/leaflet.js'), true);
             wp_enqueue_script('jpbd-app', JPBD_URL . 'assets/js/app.js', ['jpbd-jquery'], filemtime(JPBD_PATH . 'assets/js/app.js'), true);
 
             // React App

@@ -153,13 +153,26 @@ add_action('rest_api_init', 'jpbd_register_get_opportunities_route');
 function jpbd_api_get_opportunities(WP_REST_Request $request)
 {
     global $wpdb;
+    $opportunities_table = $wpdb->prefix . 'jpbd_opportunities';
+    $applications_table = $wpdb->prefix . 'jpbd_applications';
     $table_name = $wpdb->prefix . 'jpbd_opportunities';
 
     // React থেকে পাঠানো ফিল্টার প্যারামিটারগুলো গ্রহণ করা
     $filters = $request->get_params();
 
     // SQL কোয়েরি তৈরি শুরু করা
-    $sql = "SELECT * FROM $table_name WHERE 1=1";
+    // $sql = "SELECT * FROM $table_name WHERE 1=1";
+
+    $sql = "
+        SELECT 
+            opp.*, 
+            COUNT(app.id) as applications 
+        FROM 
+            $opportunities_table as opp 
+        LEFT JOIN 
+            $applications_table as app ON opp.id = app.opportunity_id 
+        WHERE 1=1
+    ";
     $params = [];
 
     // জব টাইটেল দিয়ে সার্চ করার জন্য
@@ -270,7 +283,9 @@ function jpbd_api_get_opportunities(WP_REST_Request $request)
         }
     }
 
-    $sql .= " ORDER BY created_at DESC";
+    $sql .= " GROUP BY opp.id";
+
+    $sql .= " ORDER BY opp.created_at DESC";
 
     // সুরক্ষিতভাবে কোয়েরি চালানো
     $query = $wpdb->prepare($sql, $params);
@@ -294,6 +309,16 @@ function jpbd_api_get_single_opportunity(WP_REST_Request $request)
     $table_name = $wpdb->prefix . 'jpbd_opportunities';
     $id = (int) $request['id'];
 
+    // এটি $wpdb->update এর চেয়ে বেশি কার্যকরী।
+    $wpdb->query(
+        $wpdb->prepare(
+            "UPDATE $table_name SET views_count = views_count + 1 WHERE id = %d",
+            $id
+        )
+    );
+    // ==============================================================
+
+    // ভিউ কাউন্ট বাড়ানোর পর, আমরা আপডেটেড ডেটা নিয়ে আসব।
     $opportunity = $wpdb->get_row(
         $wpdb->prepare("SELECT * FROM $table_name WHERE id = %d", $id),
         ARRAY_A

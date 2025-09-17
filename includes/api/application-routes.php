@@ -40,20 +40,9 @@ function jpbd_register_application_api_routes()
     register_rest_route('jpbd/v1', '/opportunities/(?P<id>\d+)/applications', [
         'methods' => 'GET',
         'callback' => 'jpbd_api_get_applications_for_opportunity',
-        'permission_callback' => function ($request) {
-            // শুধুমাত্র ওই opportunity-র মালিকই আবেদনকারীদের দেখতে পারবে
-            $opportunity_id = (int) $request['id'];
-            $user_id = get_current_user_id();
-            if ($user_id === 0) {
-                return false; // লগইন করা না থাকলে অনুমতি নেই
-            }
-
-            global $wpdb;
-            $table_name = $wpdb->prefix . 'jpbd_opportunities';
-            $author_id = $wpdb->get_var($wpdb->prepare("SELECT user_id FROM $table_name WHERE id = %d", $opportunity_id));
-
-            // পোস্টের লেখক এবং বর্তমান ব্যবহারকারী একই কিনা তা চেক করা হচ্ছে
-            return (int) $author_id === $user_id;
+        'permission_callback' => function () {
+            // এখন যেকোনো লগইন করা ইউজারই এই ডেটা দেখতে পারবে
+            return is_user_logged_in();
         },
         'args' => [
             'id' => [
@@ -70,9 +59,9 @@ function jpbd_register_application_api_routes()
     register_rest_route('jpbd/v1', '/applications/(?P<app_id>\d+)/status', [
         'methods' => 'POST', // আপনার প্রোজেক্টে আপডেটের জন্য POST ব্যবহার করা হয়
         'callback' => 'jpbd_api_update_application_status',
-        'permission_callback' => function ($request) {
-            // শুধুমাত্র 'manage_applications' ক্ষমতা থাকলেই অনুমতি দেওয়া হবে
-            return current_user_can('manage_applications');
+        'permission_callback' => function () {
+            // এখন যেকোনো লগইন করা ইউজারই এই ডেটা দেখতে পারবে
+            return is_user_logged_in();
         },
         'args' => [
             'app_id' => [
