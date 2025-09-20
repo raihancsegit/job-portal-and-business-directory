@@ -46,6 +46,7 @@ final class Job_Portal_Main
         require_once JPBD_PATH . 'includes/api/business-api.php';
         require_once JPBD_PATH . 'includes/api/dashboard-api.php';
         require_once JPBD_PATH . 'includes/api/community-api.php';
+        require_once JPBD_PATH . 'includes/api/events-api.php';
     }
 
     private function init_hooks()

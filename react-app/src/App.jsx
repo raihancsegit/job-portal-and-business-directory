@@ -18,7 +18,8 @@ import CandidateDetailsPage from './pages/dashboard/employer/CandidateDetailsPag
 import AddBusiness from './pages/dashboard/business/AddBusinessPage';
 import BusinessDirectory from './pages/dashboard/business/BusinessDirectoryPage';
 import Community from './pages/dashboard/CommunityPage';
-
+import Event from './pages/dashboard/EventsPage';
+import EventDetailsPage from './pages/dashboard/EventDetailsPage';
 import 'leaflet/dist/leaflet.css';
 // This is your ROUTER. It decides which page to show based on the URL.
 function App() {
@@ -49,6 +50,8 @@ function App() {
            <Route path="add-business" element={<AddBusiness />} />
           <Route path="business-directory" element={<BusinessDirectory />} handle={{ title: 'Directory' }}/>
           <Route path="community" element={<Community />} handle={{ title: 'Community' }}/>
+          <Route path="event" element={<Event />} handle={{ title: 'Event' }}/>
+          <Route path="/dashboard/event-details/:eventId" element={<EventDetailsPage />} />
         </Route>
 
         {/* Default route should be the login page */}

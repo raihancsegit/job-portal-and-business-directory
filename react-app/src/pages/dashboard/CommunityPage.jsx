@@ -219,7 +219,25 @@ const CommunityPage = () => {
                                                    {categories.map(cat => ( <SwiperSlide key={cat} style={{ width: 'auto' }}><button className={`employ-tab-btn ${activeCategory === cat ? 'active' : ''}`} onClick={() => setActiveCategory(cat)}>{cat}</button></SwiperSlide> ))}
                                                </Swiper>
                                           </div>
-                                         {activeCategory === 'All' && !searchTerm && (<div className="i-card-md radius-30 card-bg-two bordered-card p-20 my-4"><div className="text-center"><h2>🎉 Welcome to the Community!</h2></div></div>)}
+                                         {activeCategory === 'All' && !searchTerm && (<div className="i-card-md radius-30 card-bg-two bordered-card p-20 my-4"><div className="text-center"><h2>🎉 Welcome to the Community!</h2></div>
+                                            <div className="card-body">
+                                                  <p className="mb-3">Hi everyone, and welcome aboard! 🚀</p>
+                                                  <p className="mb-3">We’re so excited to have you here. The BACC Community is a space
+                                                       designed to inspire creativity, spark collaboration, and empower
+                                                       you
+                                                       to make the most of this incredible platform.</p>
+                                                  <ul className="mb-4">
+                                                       <li>🌟 Share your wins: Got an amazing workflow or content idea? Let us know!</li>
+                                                       <li>💡 Ask questions: Need help or advice? The community is here to support you</li>
+                                                       <li>📚 Learn and grow: Explore tips, trending GPTs, and insights shared by  by others.</li>
+                                                       <li>🤝 Collaborate: Connect with creators, marketers, designers, and </li>
+                                                  </ul>
+                                                  <p class="mb-4">Don’t forget to introduce yourself in the comments below. Tell us
+                                                       what
+                                                       you’re working on, your goals! 👇</p>
+                                                  <h6 class="text-muted font-bold mb-0">💬 The BACC Team</h6>
+                                                  </div>
+                                         </div>)}
                                          <div className="i-card-md radius-30 card-bg-two p-20 employ-mt-20"><div className="employ-header-row mb-4"><h3>Community Posts ({posts.length})</h3>{isAuthenticated && <button className="i-btn btn--xl btn--primary" onClick={() => setShowModal(true)}>Create a Post</button>}</div>
                                               {loading ? <p>Loading posts...</p> : posts.length > 0 ? posts.map(post => (
                                                   <PostItem key={post.id} post={post} onReplyAdded={handleReplyAdded} />

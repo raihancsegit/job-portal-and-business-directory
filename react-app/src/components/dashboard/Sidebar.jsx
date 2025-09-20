@@ -80,6 +80,22 @@ function Sidebar() {
                     </li>
 
                     <li className="sidebar-menu-item">
+                        <NavLink className="sidebar-menu-link" to="/dashboard/event">
+                            <span>
+                                    <span>
+                                        <svg width="18" height="16" viewBox="0 0 18 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                             <path d="M15 8.39979C15 7.29579 15.896 6.39979 17 6.39979V5.59979C17 2.39979 16.2 1.59979 13 1.59979H5C1.8 1.59979 1 2.39979 1 5.59979V5.99979C2.104 5.99979 3 6.89579 3 7.99979C3 9.10379 2.104 9.99979 1 9.99979V10.3998C1 13.5998 1.8 14.3998 5 14.3998H13C16.2 14.3998 17 13.5998 17 10.3998C15.896 10.3998 15 9.50379 15 8.39979Z" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"></path>
+                                             <path d="M7.40015 1.59979L7.40015 14.3998" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="5 5"></path>
+                                        </svg>
+
+                                   </span>
+
+                                   </span>
+                            <p>Event</p>
+                        </NavLink>
+                    </li>
+
+                    <li className="sidebar-menu-item">
                         <NavLink className="sidebar-menu-link" to="/dashboard/settings">
                              <span><svg width="16" height="18" viewBox="0 0 16 18" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1 6.66228V11.3296C1 13.0445 1 13.0445 2.55556 14.1365L6.83333 16.7088C7.47889 17.0971 8.52889 17.0971 9.16667 16.7088L13.4444 14.1365C15 13.0445 15 13.0445 15 11.3377V6.66228C15 4.95551 15 4.95551 13.4444 3.8635L9.16667 1.2912C8.52889 0.902932 7.47889 0.902932 6.83333 1.2912L2.55556 3.8635C1 4.95551 1 4.95551 1 6.66228Z" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round" /><path d="M8 11C9.10457 11 10 10.1046 10 9C10 7.89543 9.10457 7 8 7C6.89543 7 6 7.89543 6 9C6 10.1046 6.89543 11 8 11Z" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round" /></svg></span>
                              <p>Settings</p>

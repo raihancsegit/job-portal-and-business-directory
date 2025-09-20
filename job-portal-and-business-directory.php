@@ -63,9 +63,34 @@ function jpbd_activate_plugin()
     jpbd_create_applications_table();
     jpbd_create_businesses_table();
     jpbd_create_community_tables();
+    jpbd_create_events_table();
 }
 register_activation_hook(__FILE__, 'jpbd_activate_plugin');
 
+function jpbd_create_events_table()
+{
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'jpbd_events';
+    $charset_collate = $wpdb->get_charset_collate();
+
+    $sql = "CREATE TABLE $table_name (
+        id mediumint(9) NOT NULL AUTO_INCREMENT,
+        user_id bigint(20) UNSIGNED NOT NULL,
+        title varchar(255) NOT NULL,
+        description text,
+        image_url varchar(255),
+        category varchar(100) NOT NULL,
+        event_date datetime NOT NULL,
+        location varchar(255),
+        created_at datetime DEFAULT CURRENT_TIMESTAMP NOT NULL,
+        PRIMARY KEY  (id),
+        KEY user_id (user_id),
+        KEY category (category)
+    ) $charset_collate;";
+
+    require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+    dbDelta($sql);
+}
 function jpbd_create_community_tables()
 {
     global $wpdb;
