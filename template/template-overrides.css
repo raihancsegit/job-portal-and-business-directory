@@ -207,3 +207,72 @@ body.full-width-app {
    
     background: transparent !important;
 }
+/* ============================================= */
+/*  Leaflet Map Search Control Styles
+/* ============================================= */
+.map-search-wrapper {
+    /* Leaflet-এর ডিফল্ট z-index এর উপরে রাখার জন্য */
+    z-index: 1001 !important; 
+    top: 15px;
+    left: 50%; /* মাঝখানে আনার জন্য */
+    transform: translateX(-50%); /* সঠিকভাবে মাঝখানে আনা */
+    width: 90%;
+    max-width: 400px;
+}
+
+.map-search-form {
+    display: flex;
+    align-items: center;
+    background-color: #fff;
+    border-radius: 8px; /* অথবা আপনার থিমের বর্ডার রেডিয়াস */
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    overflow: hidden;
+}
+
+.map-search-input.form-control {
+    border: none !important; /* ইনপুটের ডিফল্ট বর্ডার রিমুভ করা */
+    box-shadow: none !important; /* ইনপুটের ডিফল্ট শ্যাডো রিমুভ করা */
+    flex-grow: 1; /* ইনপুটকে পুরো জায়গা নিতে সাহায্য করা */
+    height: 44px; /* বাটনের সাথে উচ্চতা মেলানো */
+}
+
+.map-search-btn {
+    border-radius: 0 !important;
+    border-top-right-radius: 8px !important;
+    border-bottom-right-radius: 8px !important;
+    height: 44px;
+    width: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+}
+
+/* Add this to your main CSS file, e.g., style.css or App.css */
+
+.chat-list-tabs {
+  display: flex;
+  border-bottom: 1px solid #C18544;
+  margin-bottom: 10px;
+}
+
+.chat-list-tabs button {
+  flex: 1;
+  background: none;
+  border: none;
+  padding: 12px 10px;
+  cursor: pointer;
+  font-weight: 500;
+  color: #6c757d; /* Muted color */
+  border-bottom: 3px solid transparent;
+  transition: all 0.2s ease-in-out;
+}
+
+.chat-list-tabs button.active {
+  color: #C18544; /* Your primary theme color */
+  border-bottom-color: #C18544; /* Your primary theme color */
+}
+
+.chat-list-tabs button:hover {
+  background-color: rgba(0, 0, 0, 0.03);
+}

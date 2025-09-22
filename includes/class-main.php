@@ -47,6 +47,9 @@ final class Job_Portal_Main
         require_once JPBD_PATH . 'includes/api/dashboard-api.php';
         require_once JPBD_PATH . 'includes/api/community-api.php';
         require_once JPBD_PATH . 'includes/api/events-api.php';
+        require_once JPBD_PATH . 'includes/api/chat-api.php';
+        require_once JPBD_PATH . 'includes/api/notifications-api.php';
+        require_once JPBD_PATH . 'includes/api/saved-items-api.php';
     }
 
     private function init_hooks()
@@ -134,6 +137,8 @@ final class Job_Portal_Main
                         'api_base_url'   => rest_url('jpbd/v1/'),
                         'nonce'          => wp_create_nonce('wp_rest'),
                         'page_slug'      => get_post_field('post_name', get_post()),
+                        'pusher_key'     => defined('PUSHER_APP_KEY') ? PUSHER_APP_KEY : '',
+                        'pusher_cluster' => defined('PUSHER_APP_CLUSTER') ? PUSHER_APP_CLUSTER : '',
                     ]);
                 }
             }

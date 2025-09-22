@@ -155,129 +155,123 @@ function jpbd_api_get_opportunities(WP_REST_Request $request)
     global $wpdb;
     $opportunities_table = $wpdb->prefix . 'jpbd_opportunities';
     $applications_table = $wpdb->prefix . 'jpbd_applications';
-    $table_name = $wpdb->prefix . 'jpbd_opportunities';
 
-    // React থেকে পাঠানো ফিল্টার প্যারামিটারগুলো গ্রহণ করা
     $filters = $request->get_params();
+    $user_id = get_current_user_id();
 
     // SQL কোয়েরি তৈরি শুরু করা
-    // $sql = "SELECT * FROM $table_name WHERE 1=1";
-
-    $sql = "
-        SELECT 
-            opp.*, 
-            COUNT(app.id) as applications 
-        FROM 
-            $opportunities_table as opp 
-        LEFT JOIN 
-            $applications_table as app ON opp.id = app.opportunity_id 
-        WHERE 1=1
-    ";
+    $select_sql = "SELECT opp.*, COUNT(app.id) as applications";
+    $from_sql = " FROM $opportunities_table as opp LEFT JOIN $applications_table as app ON opp.id = app.opportunity_id";
+    $where_sql = " WHERE 1=1";
     $params = [];
+
+    // ================== পরিবর্তন ১: Application ID সিলেক্ট করা ==================
+    // যদি 'applied' ট্যাবে থাকি, তাহলে application ID-ও সিলেক্ট করতে হবে
+    if (isset($filters['viewMode']) && $filters['viewMode'] === 'applied' && $user_id > 0) {
+        $select_sql .= ", app.id as application_id";
+    }
+    // =====================================================================
 
     // জব টাইটেল দিয়ে সার্চ করার জন্য
     if (!empty($filters['searchTitle'])) {
-        $sql .= " AND job_title LIKE %s";
+        $where_sql .= " AND opp.job_title LIKE %s";
         $params[] = '%' . $wpdb->esc_like($filters['searchTitle']) . '%';
     }
 
     // লোকেশন দিয়ে সার্চ করার জন্য
     if (!empty($filters['searchLocation'])) {
-        $sql .= " AND location LIKE %s";
+        $where_sql .= " AND opp.location LIKE %s";
         $params[] = '%' . $wpdb->esc_like($filters['searchLocation']) . '%';
     }
 
     // জব টাইপ দিয়ে ফিল্টার করার জন্য
     if (!empty($filters['jobType'])) {
-        $sql .= " AND job_type = %s";
+        $where_sql .= " AND opp.job_type = %s";
         $params[] = $filters['jobType'];
     }
 
     // Experience দিয়ে ফিল্টার করার জন্য
     if (!empty($filters['experience'])) {
-        $sql .= " AND experience = %s";
+        $where_sql .= " AND opp.experience = %s";
         $params[] = $filters['experience'];
     }
 
     // Workplace দিয়ে ফিল্টার করার জন্য
     if (!empty($filters['workplace'])) {
-        $sql .= " AND workplace = %s";
+        $where_sql .= " AND opp.workplace = %s";
         $params[] = $filters['workplace'];
     }
 
     if (!empty($filters['industry'])) {
-        $sql .= " AND industry = %s";
+        $where_sql .= " AND opp.industry = %s";
         $params[] = $filters['industry'];
     }
 
     if (!empty($filters['datePosted']) && $filters['datePosted'] !== 'all') {
         $date_posted_filter = $filters['datePosted'];
-        $current_time = current_time('mysql'); // WordPress-এর বর্তমান সময়
+        $current_time = current_time('mysql');
 
         switch ($date_posted_filter) {
             case 'last-hour':
-                $sql .= " AND created_at >= %s";
+                $where_sql .= " AND opp.created_at >= %s";
                 $params[] = date('Y-m-d H:i:s', strtotime('-1 hour', strtotime($current_time)));
                 break;
             case 'last-24-hours':
-                $sql .= " AND created_at >= %s";
+                $where_sql .= " AND opp.created_at >= %s";
                 $params[] = date('Y-m-d H:i:s', strtotime('-24 hours', strtotime($current_time)));
                 break;
             case 'last-week':
-                $sql .= " AND created_at >= %s";
+                $where_sql .= " AND opp.created_at >= %s";
                 $params[] = date('Y-m-d H:i:s', strtotime('-7 days', strtotime($current_time)));
                 break;
             case 'last-2-weeks':
-                $sql .= " AND created_at >= %s";
+                $where_sql .= " AND opp.created_at >= %s";
                 $params[] = date('Y-m-d H:i:s', strtotime('-14 days', strtotime($current_time)));
                 break;
             case 'last-month':
-                $sql .= " AND created_at >= %s";
+                $where_sql .= " AND opp.created_at >= %s";
                 $params[] = date('Y-m-d H:i:s', strtotime('-1 month', strtotime($current_time)));
                 break;
         }
     }
 
-    // আমরা salary_amount কলামটিকে সংখ্যা হিসেবে তুলনা করব
     if (isset($filters['minSalary']) && is_numeric($filters['minSalary'])) {
-        $sql .= " AND CAST(salary_amount AS UNSIGNED) >= %d";
+        $where_sql .= " AND CAST(opp.salary_amount AS UNSIGNED) >= %d";
         $params[] = (int) $filters['minSalary'];
     }
     if (isset($filters['maxSalary']) && is_numeric($filters['maxSalary'])) {
-        $sql .= " AND CAST(salary_amount AS UNSIGNED) <= %d";
+        $where_sql .= " AND CAST(opp.salary_amount AS UNSIGNED) <= %d";
         $params[] = (int) $filters['maxSalary'];
     }
 
-
-
     if (isset($filters['viewMode'])) {
-        $user_id = get_current_user_id();
         if ($user_id > 0) {
             switch ($filters['viewMode']) {
                 case 'my_opportunities':
-                    $sql .= " AND opp.user_id = %d";
+                    $where_sql .= " AND opp.user_id = %d";
                     $params[] = $user_id;
                     break;
                 case 'hired':
-                    // শুধুমাত্র সেই জবগুলো যেখানে এই এমপ্লয়ার حداقل একজনকে হায়ার করেছে
-                    $sql .= " AND opp.user_id = %d AND EXISTS (SELECT 1 FROM $applications_table WHERE opportunity_id = opp.id AND status = 'hired')";
+                    $where_sql .= " AND opp.user_id = %d AND EXISTS (SELECT 1 FROM $applications_table WHERE opportunity_id = opp.id AND status = 'hired')";
                     $params[] = $user_id;
                     break;
                 case 'applied':
-                    // শুধুমাত্র সেই জবগুলো যেখানে ক্যান্ডিডেট আবেদন করেছে
-                    $sql .= " AND opp.id IN (SELECT opportunity_id FROM $applications_table WHERE candidate_id = %d)";
+                    // ================== পরিবর্তন ২: IN(...) এর পরিবর্তে JOIN ব্যবহার ==================
+                    // এটি application_id সিলেক্ট করার জন্য ضروری
+                    $from_sql = " FROM $opportunities_table as opp JOIN $applications_table as app ON opp.id = app.opportunity_id";
+                    $where_sql .= " AND app.candidate_id = %d";
                     $params[] = $user_id;
                     break;
+                    // ========================================================================
             }
         } else {
-            return new WP_REST_Response([], 200); // লগইন না থাকলে খালি ফলাফল
+            return new WP_REST_Response([], 200);
         }
     }
 
     if (!empty($filters['dateRange'])) {
         $date_range = $filters['dateRange'];
         $current_time = current_time('mysql');
-
         $from_date = '';
         switch ($date_range) {
             case 'this-week':
@@ -290,18 +284,15 @@ function jpbd_api_get_opportunities(WP_REST_Request $request)
                 $from_date = date('Y-m-d H:i:s', strtotime('first day of january this year', strtotime($current_time)));
                 break;
         }
-
         if ($from_date) {
-            $sql .= " AND created_at >= %s";
+            $where_sql .= " AND opp.created_at >= %s";
             $params[] = $from_date;
         }
     }
 
-    $sql .= " GROUP BY opp.id";
+    // সব অংশ একসাথে করে ফাইনাল SQL কোয়েরি তৈরি করা
+    $sql = $select_sql . $from_sql . $where_sql . " GROUP BY opp.id ORDER BY opp.created_at DESC";
 
-    $sql .= " ORDER BY opp.created_at DESC";
-
-    // সুরক্ষিতভাবে কোয়েরি চালানো
     $query = $wpdb->prepare($sql, $params);
     $results = $wpdb->get_results($query, ARRAY_A);
 
@@ -309,78 +300,151 @@ function jpbd_api_get_opportunities(WP_REST_Request $request)
         return new WP_Error('db_error', 'Could not retrieve opportunities.', ['status' => 500]);
     }
 
-    if (is_user_logged_in()) {
-        $user_id = get_current_user_id();
+    // ================== পরিবর্তন ৩: has_applied এবং application_id যোগ করার উন্নত লজিক ==================
+    if ($user_id > 0 && !empty($results)) {
         $user = get_userdata($user_id);
-
-        // শুধুমাত্র candidate বা business রোলের জন্য এই চেকটি চলবে
         if (in_array('candidate', (array)$user->roles) || in_array('business', (array)$user->roles)) {
-
-            // সকল opportunity-র ID গুলো একটি অ্যারেতে নেওয়া হচ্ছে
             $opportunity_ids = wp_list_pluck($results, 'id');
-            if (!empty($opportunity_ids)) {
 
-                // বর্তমানে লগইন করা ইউজারের করা আবেদনগুলো খুঁজে বের করা হচ্ছে
-                $applied_ids_query = $wpdb->prepare(
-                    "SELECT opportunity_id FROM $applications_table WHERE candidate_id = %d AND opportunity_id IN (" . implode(',', $opportunity_ids) . ")",
-                    $user_id
-                );
-                $applied_ids = $wpdb->get_col($applied_ids_query);
+            // ইউজারের সব আবেদন একটি কোয়েরিতে আনা (ID এবং Opportunity ID সহ)
+            $applications_query = $wpdb->prepare(
+                "SELECT id, opportunity_id FROM $applications_table WHERE candidate_id = %d AND opportunity_id IN (" . implode(',', array_fill(0, count($opportunity_ids), '%d')) . ")",
+                array_merge([$user_id], $opportunity_ids)
+            );
+            $user_applications = $wpdb->get_results($applications_query, OBJECT_K); // opportunity_id কে associative array-এর কী হিসেবে ব্যবহার করা
 
-                // প্রতিটি opportunity-র জন্য has_applied প্রপার্টি সেট করা হচ্ছে
-                foreach ($results as &$job) { // <-- & ব্যবহার করা হয়েছে যাতে সরাসরি অ্যারেটি মডিফাই করা যায়
-                    $job['has_applied'] = in_array($job['id'], $applied_ids);
+            foreach ($results as &$job) {
+                $is_applied = isset($user_applications[$job['id']]);
+                $job['has_applied'] = $is_applied;
+
+                // যদি আবেদন করা থাকে, তাহলে application_id যোগ করা
+                if ($is_applied) {
+                    // viewMode 'applied' না হলেও যাতে application_id পাওয়া যায়
+                    $job['application_id'] = $user_applications[$job['id']]->id;
                 }
             }
+        }
+    }
+    // =========================================================================================
+
+    if ($user_id > 0 && !empty($results)) {
+        // সেভ করা আইটেমগুলোর জন্য ডেটাবেস টেবিলের নাম
+        $saved_table = $wpdb->prefix . 'jpbd_saved_items';
+
+        // বর্তমান পেজে দেখানো সব opportunity-র ID গুলো একটি অ্যারেতে নেওয়া হচ্ছে
+        $opportunity_ids = wp_list_pluck($results, 'id');
+
+        // ডেটাবেস থেকে শুধুমাত্র সেই opportunity ID-গুলো খুঁজে বের করা হচ্ছে যা বর্তমান ইউজার সেভ করেছে
+        $saved_ids_query = $wpdb->prepare(
+            "SELECT item_id FROM $saved_table WHERE user_id = %d AND item_type = 'opportunity' AND item_id IN (" . implode(',', array_fill(0, count($opportunity_ids), '%d')) . ")",
+            array_merge([$user_id], $opportunity_ids)
+        );
+        $saved_ids = $wpdb->get_col($saved_ids_query);
+
+        // প্রতিটি opportunity ($job) -এর জন্য is_saved প্রপার্টি সেট করা হচ্ছে
+        foreach ($results as &$job) { // <-- & ব্যবহার করা হয়েছে যাতে সরাসরি অ্যারেটি মডিফাই করা যায়
+            $job['is_saved'] = in_array($job['id'], $saved_ids);
         }
     }
 
     return new WP_REST_Response($results, 200);
 }
 
-
-
 /**
- * API: Get a single opportunity by its ID.
+ * API: Get a single opportunity by its ID, including dynamic overview and chart data for the owner.
+ * This is the complete and final version with the dynamic chart dropdown logic.
  */
 function jpbd_api_get_single_opportunity(WP_REST_Request $request)
 {
     global $wpdb;
-    $table_name = $wpdb->prefix . 'jpbd_opportunities';
+    $opp_table = $wpdb->prefix . 'jpbd_opportunities';
+    $app_table = $wpdb->prefix . 'jpbd_applications';
     $id = (int) $request['id'];
+    $user_id = get_current_user_id();
 
-    // এটি $wpdb->update এর চেয়ে বেশি কার্যকরী।
-    $wpdb->query(
-        $wpdb->prepare(
-            "UPDATE $table_name SET views_count = views_count + 1 WHERE id = %d",
-            $id
-        )
-    );
-    // ==============================================================
+    $owner_id = (int) $wpdb->get_var($wpdb->prepare("SELECT user_id FROM $opp_table WHERE id = %d", $id));
 
-    // ভিউ কাউন্ট বাড়ানোর পর, আমরা আপডেটেড ডেটা নিয়ে আসব।
-    $opportunity = $wpdb->get_row(
-        $wpdb->prepare("SELECT * FROM $table_name WHERE id = %d", $id),
-        ARRAY_A
-    );
+    // ভিউ কাউন্ট শুধুমাত্র তখনই বাড়ানো হবে যখন কোনো রেজিস্টার্ড ইউজার দেখবে এবং সে মালিক না হয়
+    if ($user_id > 0 && $user_id !== $owner_id) {
+        $wpdb->query($wpdb->prepare("UPDATE $opp_table SET views_count = views_count + 1 WHERE id = %d", $id));
+    }
+
+    $opportunity = $wpdb->get_row($wpdb->prepare("SELECT * FROM $opp_table WHERE id = %d", $id), ARRAY_A);
 
     if (empty($opportunity)) {
         return new WP_Error('not_found', 'Opportunity not found.', ['status' => 404]);
     }
 
+    // --- আবেদন স্ট্যাটাস এবং ID যোগ করা ---
     $opportunity['has_applied'] = false;
-    if (is_user_logged_in()) {
-        $user_id = get_current_user_id();
-        $app_table_name = $wpdb->prefix . 'jpbd_applications';
-        $application = $wpdb->get_var($wpdb->prepare(
-            "SELECT id FROM $app_table_name WHERE opportunity_id = %d AND candidate_id = %d",
-            $id, // Use the ID from the request
+    $opportunity['application_id'] = null;
+    if ($user_id > 0) {
+        $application = $wpdb->get_row($wpdb->prepare(
+            "SELECT id FROM $app_table WHERE opportunity_id = %d AND candidate_id = %d",
+            $id,
             $user_id
         ));
         if ($application) {
             $opportunity['has_applied'] = true;
+            $opportunity['application_id'] = (int) $application->id;
         }
     }
+
+    // ================== Overview এবং ডাইনামিক Chart ডেটা যোগ করা ==================
+    // শুধুমাত্র opportunity-র মালিক (owner) এই অতিরিক্ত ডেটা দেখতে পাবে
+    if ($user_id > 0 && (int)$opportunity['user_id'] === $user_id) {
+
+        // --- Overview Counts ---
+        $opportunity['views'] = (int)$opportunity['views_count'];
+        $opportunity['applications'] = (int)$wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM $app_table WHERE opportunity_id = %d", $id));
+        $opportunity['shortlisted'] = (int)$wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM $app_table WHERE opportunity_id = %d AND status = 'shortlisted'", $id));
+        $opportunity['awaiting_review'] = (int)$wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM $app_table WHERE opportunity_id = %d AND status = 'new'", $id));
+
+        // --- Chart Data (ফ্রন্টেন্ড থেকে পাঠানো রেঞ্জ অনুযায়ী) ---
+        $chart_range = $request->get_param('chart_range') ?: 'last-7-days'; // ডিফল্ট 'last-7-days'
+
+        $date_interval_sql = "DATE_SUB(CURDATE(), INTERVAL 7 DAY)";
+        $start_date_loop_str = "-6 days"; // 7 দিন আগে (আজ সহ)
+
+        if ($chart_range === 'last-30-days') {
+            $date_interval_sql = "DATE_SUB(CURDATE(), INTERVAL 30 DAY)";
+            $start_date_loop_str = "-29 days"; // 30 দিন আগে (আজ সহ)
+        } elseif ($chart_range === 'this-month') {
+            $date_interval_sql = "DATE_FORMAT(CURDATE() ,'%Y-%m-01')";
+            $start_date_loop_str = "first day of this month";
+        }
+
+        $chart_data_raw = $wpdb->get_results(
+            $wpdb->prepare(
+                "SELECT DATE(application_date) as date, COUNT(*) as count 
+                 FROM $app_table 
+                 WHERE opportunity_id = %d AND application_date >= $date_interval_sql
+                 GROUP BY DATE(application_date)
+                 ORDER BY DATE(application_date) ASC",
+                $id
+            ),
+            OBJECT_K // তারিখকে associative array-এর কী হিসেবে ব্যবহার করা
+        );
+
+        $chart_labels = [];
+        $chart_series = [];
+
+        $start_date_ts = strtotime($start_date_loop_str);
+        $end_date_ts = current_time('timestamp');
+
+        // শুরু থেকে শেষ পর্যন্ত প্রতিদিনের জন্য লুপ চালানো
+        for ($current_ts = $start_date_ts; $current_ts <= $end_date_ts; $current_ts = strtotime('+1 day', $current_ts)) {
+            $date_key = date('Y-m-d', $current_ts);
+            $chart_labels[] = date('M d', $current_ts);
+            $chart_series[] = isset($chart_data_raw[$date_key]) ? (int)$chart_data_raw[$date_key]->count : 0;
+        }
+
+        $opportunity['chart'] = [
+            'labels' => $chart_labels,
+            'series' => $chart_series,
+        ];
+    }
+    // ====================================================================
 
     return new WP_REST_Response($opportunity, 200);
 }

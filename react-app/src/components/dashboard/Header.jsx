@@ -27,7 +27,7 @@ const getPageTitle = (pathname) => {
 
 
 function Header() {
-    const { user, logout } = useAuth();
+    const { user, logout, notifications, unreadNotifCount, markNotificationsAsRead,clearAllNotifications  } = useAuth();
     const location = useLocation(); // Get the current location object
     // Get the dynamic page title using our helper function
     const pageTitle = getPageTitle(location.pathname);
@@ -36,6 +36,21 @@ function Header() {
     const handleLogout = (e) => {
         e.preventDefault();
         logout();
+    };
+
+    const handleNotificationClick = () => {
+        // ড্রপডাউন খোলার সাথে সাথে নোটিফিকেশনগুলো 'পড়া হয়েছে' হিসেবে মার্ক করা
+        if (unreadNotifCount > 0) {
+            markNotificationsAsRead();
+        }
+    };
+
+    const handleClearAll = (e) => {
+        e.preventDefault();
+        e.stopPropagation(); // ড্রপডাউন বন্ধ হওয়া থেকে বিরত রাখা
+        if (window.confirm('Are you sure you want to clear all notifications?')) {
+            clearAllNotifications();
+        }
     };
 
     return (
@@ -51,36 +66,41 @@ function Header() {
             <div className="d-flex align-items-center gap-lg-3 gap-2">
                 <div className="header-icon">
                     <div className="notification-dropdown">
-                        <span>5</span>
-                        <div className="btn-icon dropdown-toggle ripple-dark" anim="ripple" data-bs-toggle="dropdown" aria-expanded="false">
+                        {unreadNotifCount > 0 && <span>{unreadNotifCount}</span>}
+                        <div className="btn-icon dropdown-toggle ripple-dark" anim="ripple" data-bs-toggle="dropdown" aria-expanded="false" onClick={handleNotificationClick}>
                             <i className="ri-notification-3-line"></i>
                         </div>
                         <div className="dropdown-menu dropdown-menu-end">
                             <div className="dropdown-menu-title">
                                 <h6>Notification</h6>
-                                <button className="i-badge danger">Clear All</button>
+                                <button className="i-badge danger" onClick={handleClearAll}>Clear All</button>
                             </div>
                             <div className="notification-items" data-simplebar>
-                                <div className="notification-item">
-                                    <span>Today</span>
-                                    <ul>
-                                        <li>
-                                            <a href="#">
-                                                <div className="notify-icon">
-                                                    <img src="https://coderthemes.com/ubold/layouts/default/assets/images/users/avatar-2.jpg" alt="" />
-                                                </div>
-                                                <div className="notification-item-content">
-                                                    <h5>Cristina Pride <small>1 min ago</small></h5>
-                                                    <p>A handful of model sentence structures, to generate Lorem Ipsum which looks reasonable.</p>
-                                                </div>
-                                                <span><i className="las la-times"></i></span>
-                                            </a>
-                                        </li>
-                                    </ul>
-                                </div>
+                                {notifications.length > 0 ? (
+                                    notifications.map(notif => (
+                                        <div key={notif.id} className="notification-item">
+                                            <ul>
+                                                <li>
+                                                    <Link to={notif.link}>
+                                                        <div className="notify-icon">
+                                                            <img src={notif.sender_avatar || 'default-avatar.png'} alt="" />
+                                                        </div>
+                                                        <div className="notification-item-content">
+                                                            <p>{notif.message}</p>
+                                                            <small className="text-muted">{notif.time_ago}</small>
+                                                        </div>
+                                                    </Link>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <p className="text-center p-3 text-muted">No new notifications</p>
+                                )}
                             </div>
+
                             <div className="dropdown-menu-footer">
-                                <a href="#">View All</a>
+                                <Link to="/dashboard/inbox">View All</Link>
                             </div>
                         </div>
                     </div>

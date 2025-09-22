@@ -71,10 +71,12 @@ function jpbd_api_get_profile_data()
 function jpbd_api_update_profile_data(WP_REST_Request $request)
 {
     $user_id = get_current_user_id();
+
     if (0 === $user_id) {
         return new WP_Error('no_user', 'You must be logged in to update your profile.', ['status' => 401]);
     }
-    $params = $request->get_json_params();
+    $params = $request->get_params();
+    $files = $request->get_file_params();
 
     $user_data = [
         'ID' => $user_id,
@@ -83,6 +85,17 @@ function jpbd_api_update_profile_data(WP_REST_Request $request)
     ];
     wp_update_user($user_data);
 
+    $updated_user_info = get_userdata($user_id);
+
+    $new_profile_data = [
+        'success' => true,
+        'message' => 'Profile updated successfully.',
+        'user' => [
+            'user_display_name' => $updated_user_info->display_name,
+            'avatar_url' => get_avatar_url($user_id) // get_avatar_url আপনার কাস্টম অ্যাভাটার ফিল্টার থেকে নতুন ছবিটি আনবে
+        ]
+    ];
+
     $meta_fields = ['gender', 'birth_date', 'phone_code', 'phone_number', 'country', 'city', 'address'];
     foreach ($meta_fields as $field) {
         if (isset($params[$field])) {
@@ -90,7 +103,24 @@ function jpbd_api_update_profile_data(WP_REST_Request $request)
         }
     }
 
-    return new WP_REST_Response(['success' => true, 'message' => 'Profile updated successfully.'], 200);
+    if (!empty($files['profile_picture'])) {
+        // These files are needed for media handling
+        require_once(ABSPATH . 'wp-admin/includes/image.php');
+        require_once(ABSPATH . 'wp-admin/includes/file.php');
+        require_once(ABSPATH . 'wp-admin/includes/media.php');
+
+        // Handle the file upload and get the attachment ID
+        $attachment_id = media_handle_upload('profile_picture', 0);
+
+        if (is_wp_error($attachment_id)) {
+            return new WP_Error('upload_error', $attachment_id->get_error_message(), ['status' => 500]);
+        }
+
+        // Save the attachment ID as user meta. This is our custom avatar link.
+        update_user_meta($user_id, 'jpbd_profile_picture_id', $attachment_id);
+    }
+
+    return new WP_REST_Response($new_profile_data, 200);
 }
 
 /**

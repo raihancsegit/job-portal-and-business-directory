@@ -7,6 +7,10 @@ import LocationMap from '../components/LocationMap';
 import { businessCategories } from '../../../data/businessCategories'; 
 import { businessStatuses } from '../../../data/businessStatuses';
 const AddBusinessPage = () => {
+
+    const [mapSearchQuery, setMapSearchQuery] = useState('');
+    const [searchingLocation, setSearchingLocation] = useState(false);
+    const [searchedPosition, setSearchedPosition] = useState(null);
     // Main form state
     const [formData, setFormData] = useState({
         logoUrl: '',
@@ -49,6 +53,33 @@ const AddBusinessPage = () => {
     // ===================================================================
     // Handlers
     // ===================================================================
+
+      const handleMapSearch = async (e) => {
+        e.preventDefault();
+        if (!mapSearchQuery) return;
+        setSearchingLocation(true);
+        try {
+            const response = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(mapSearchQuery)}&format=json&limit=1`);
+            const data = await response.json();
+            if (data && data.length > 0) {
+                const { lat, lon } = data[0];
+                const newPos = { lat: parseFloat(lat), lng: parseFloat(lon) };
+                
+                // ১. সার্চের ফলাফল state-এ সেট করুন, যা ম্যাপে পাস করা হবে
+                setSearchedPosition(newPos); 
+                
+                // ২. ফর্মের মূল লোকেশন ডেটাও আপডেট করুন
+                handleMapSelect(newPos);
+            } else {
+                alert('Location not found!');
+            }
+        } catch (error) {
+            console.error("Geocoding API error:", error);
+            alert('Failed to search for location.');
+        } finally {
+            setSearchingLocation(false);
+        }
+    };
 
     // Handles changes for simple input fields
     const handleChange = e => {
@@ -266,12 +297,48 @@ const AddBusinessPage = () => {
 
                 {/* Map Section (UI Only) */}
                 <div className="i-card-md radius-30 mb-3">
-                    <div className="card-body">
-                         <h3 className="mb-4">Mapss</h3>
-                         {/* ম্যাপ ইন্টিগ্রেশনের জন্য আলাদা লাইব্রেরি প্রয়োজন হবে (e.g., react-leaflet) */}
-                           <LocationMap onLocationSelect={handleMapSelect} />
+                <div className="card-body">
+                    <div className="d-flex justify-content-between align-items-center mb-4">
+                        <h3>Map Location</h3>
+                        
+                        {/* ================== মূল পরিবর্তন এখানে ================== */}
+                        {/* <form> ট্যাগের পরিবর্তে <div> ট্যাগ ব্যবহার করা হচ্ছে */}
+                        <div className="d-flex" style={{ minWidth: '300px' }}>
+                            <input
+                                type="text"
+                                className="form-control"
+                                placeholder="Search on map..."
+                                value={mapSearchQuery}
+                                onChange={(e) => setMapSearchQuery(e.target.value)}
+                                // ইনপুটে Enter চাপলে সার্চ করার জন্য onKeyDown যোগ করা হয়েছে
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter') {
+                                        e.preventDefault(); // Enter চাপলে মূল ফর্ম সাবমিট হওয়া থেকে বিরত রাখা
+                                        handleMapSearch(e); 
+                                    }
+                                }}
+                                disabled={searchingLocation}
+                            />
+                            <button 
+                                type="button" // খুবই গুরুত্বপূর্ণ: type="submit" এর পরিবর্তে type="button"
+                                className="i-btn btn--dark" 
+                                disabled={searchingLocation} 
+                                style={{ borderTopLeftRadius: 0, borderBottomLeftRadius: 0 }}
+                                // onSubmit এর পরিবর্তে onClick ব্যবহার করা হচ্ছে
+                                onClick={handleMapSearch}
+                            >
+                                {searchingLocation ? <i className="ri-loader-4-line ri-spin"></i> : <i className="ri-search-line"></i>}
+                            </button>
+                        </div>
+                        {/* ========================================================= */}
                     </div>
+                    
+                    <LocationMap 
+                        onLocationSelect={handleMapSelect}
+                        searchResultPosition={searchedPosition} 
+                    />
                 </div>
+            </div>
 
                 {/* Action Buttons */}
                 <div className="text-end d-flex justify-content-end align-items-center gap-3 pb-4">

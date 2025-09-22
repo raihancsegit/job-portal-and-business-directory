@@ -73,6 +73,19 @@ function jpbd_register_application_api_routes()
             ],
         ],
     ]);
+
+    register_rest_route('jpbd/v1', '/applications/(?P<app_id>\d+)', [
+        'methods' => 'DELETE',
+        'callback' => 'jpbd_api_withdraw_application',
+        'permission_callback' => 'is_user_logged_in',
+    ]);
+
+    // এমপ্লয়ারকে মেসেজ পাঠানোর জন্য POST রুট
+    register_rest_route('jpbd/v1', '/contact-employer', [
+        'methods' => 'POST',
+        'callback' => 'jpbd_api_contact_employer',
+        'permission_callback' => 'is_user_logged_in',
+    ]);
 }
 add_action('rest_api_init', 'jpbd_register_application_api_routes');
 
@@ -83,14 +96,25 @@ function jpbd_api_submit_application(WP_REST_Request $request)
 {
     $user_id = get_current_user_id();
 
-    // শুধুমাত্র 'candidate' রোলের ব্যবহারকারীরাই আবেদন করতে পারবে
-    if (!user_can($user_id, 'read')) { // read capability is a basic check for candidates
-        return new WP_Error('permission_denied', 'Only candidates can apply for jobs.', ['status' => 403]);
+    $user = get_userdata($user_id);
+    if (!in_array('candidate', (array)$user->roles) && !in_array('business', (array)$user->roles)) {
+        return new WP_Error('permission_denied', 'Only candidates or businesses can apply for jobs.', ['status' => 403]);
     }
 
     global $wpdb;
     $table_name = $wpdb->prefix . 'jpbd_applications';
     $params = $request->get_json_params();
+
+    $opportunity_id = isset($params['opportunity_id']) ? (int) $params['opportunity_id'] : 0;
+    $existing_application = $wpdb->get_var($wpdb->prepare(
+        "SELECT id FROM $table_name WHERE opportunity_id = %d AND candidate_id = %d",
+        $opportunity_id,
+        $user_id
+    ));
+
+    if ($existing_application) {
+        return new WP_Error('already_applied', 'You have already applied for this opportunity.', ['status' => 409]); // 409 Conflict
+    }
 
     // ডেটা গ্রহণ এবং sanitize করা
     $data = [
@@ -105,6 +129,16 @@ function jpbd_api_submit_application(WP_REST_Request $request)
 
     if ($result === false) {
         return new WP_Error('application_failed', 'Could not submit your application.', ['status' => 500]);
+    }
+
+    $opp_table = $wpdb->prefix . 'jpbd_opportunities';
+    $opportunity = $wpdb->get_row($wpdb->prepare("SELECT user_id, job_title FROM $opp_table WHERE id = %d", $opportunity_id));
+
+    if ($opportunity) {
+        $employer_id = $opportunity->user_id;
+        $notification_message = $user->display_name . ' applied for your opportunity: ' . $opportunity->job_title;
+        $notification_link = '/dashboard/opportunities/' . $opportunity_id; // Applicants tab-এ নিয়ে যাওয়া যেতে পারে
+        jpbd_create_notification($employer_id, $user_id, 'new_application', $notification_message, $notification_link);
     }
 
     // ভবিষ্যতে এমপ্লয়ারকে নোটিফিকেশন পাঠানো যেতে পারে
@@ -195,4 +229,129 @@ function jpbd_api_update_application_status(WP_REST_Request $request)
 
     // যদি $result > 0 হয়, তার মানে সফলভাবে আপডেট হয়েছে
     return new WP_REST_Response(['success' => true, 'message' => 'Status updated successfully.'], 200);
+}
+
+
+function jpbd_api_withdraw_application(WP_REST_Request $request)
+{
+    global $wpdb;
+    $application_id = (int) $request['app_id'];
+    $candidate_id = get_current_user_id();
+    $table_name = $wpdb->prefix . 'jpbd_applications';
+
+    // নিশ্চিত করা হচ্ছে যে শুধুমাত্র নিজের আবেদনই ডিলেট করা যাচ্ছে
+    $application = $wpdb->get_row($wpdb->prepare(
+        "SELECT * FROM $table_name WHERE id = %d AND candidate_id = %d",
+        $application_id,
+        $candidate_id
+    ));
+
+    if (!$application) {
+        return new WP_Error('not_found_or_forbidden', 'Application not found or you do not have permission to delete it.', ['status' => 404]);
+    }
+
+    $result = $wpdb->delete($table_name, ['id' => $application_id]);
+
+    if ($result === false) {
+        return new WP_Error('db_error', 'Could not withdraw the application.', ['status' => 500]);
+    }
+
+    return new WP_REST_Response(['success' => true, 'message' => 'Application withdrawn successfully.'], 200);
+}
+
+
+
+/**
+ * API Callback: Send a message to the employer (via email and chat system).
+ * This is the corrected and complete version.
+ */
+function jpbd_api_contact_employer(WP_REST_Request $request)
+{
+    $sender_id = get_current_user_id();
+    $sender_data = get_userdata($sender_id);
+    $params = $request->get_json_params();
+
+    $opportunity_id = isset($params['opportunity_id']) ? (int) $params['opportunity_id'] : 0;
+    $message = isset($params['message']) ? sanitize_textarea_field($params['message']) : '';
+
+    if (empty($opportunity_id) || empty($message)) {
+        return new WP_Error('bad_request', 'Opportunity ID and message are required.', ['status' => 400]);
+    }
+
+    // Opportunity থেকে employer-এর ID এবং job title বের করা
+    global $wpdb;
+    $opp_table = $wpdb->prefix . 'jpbd_opportunities';
+    $opportunity = $wpdb->get_row($wpdb->prepare("SELECT user_id, job_title FROM $opp_table WHERE id = %d", $opportunity_id));
+
+    if (!$opportunity) {
+        // SYNTAX FIX HERE
+        return new WP_Error('not_found', 'Opportunity not found.', ['status' => 404]);
+    }
+
+    $employer_id = $opportunity->user_id;
+    $employer_data = get_userdata($employer_id);
+
+    if (!$employer_data) {
+        return new WP_Error('not_found', 'Employer for this opportunity not found.', ['status' => 404]);
+    }
+
+    // --- ইমেল পাঠানো ---
+    $to = $employer_data->user_email;
+    $subject = 'New Message regarding your opportunity: "' . $opportunity->job_title . '"';
+
+    // ইমেলের বডি তৈরি করা
+    $body  = "Hello " . $employer_data->display_name . ",\n\n";
+    $body .= "You have received a new message from a candidate regarding your posted opportunity: '" . $opportunity->job_title . "'.\n\n";
+    $body .= "----------------------------------------\n";
+    $body .= "Candidate Name: " . $sender_data->display_name . "\n";
+    $body .= "Candidate Email: " . $sender_data->user_email . "\n\n";
+    $body .= "Message:\n";
+    $body .= $message . "\n";
+    $body .= "----------------------------------------\n\n";
+    $body .= "You can reply to them directly via email or check your inbox on the platform.\n\n";
+    $body .= "Thank you,\n";
+    $body .= get_bloginfo('name');
+
+    // ইমেলের হেডার সেট করা
+    $headers = [
+        'Content-Type: text/plain; charset=UTF-8',
+        'Reply-To: ' . $sender_data->display_name . ' <' . $sender_data->user_email . '>',
+    ];
+
+    // WordPress-এর wp_mail() ফাংশন ব্যবহার করে ইমেল পাঠানো
+    $sent = wp_mail($to, $subject, $body, $headers);
+
+    if (!$sent) {
+        error_log('Failed to send contact employer email for opportunity ID: ' . $opportunity_id);
+        return new WP_Error('email_failed', 'Could not send the message to the employer. Please check server email configuration.', ['status' => 500]);
+    }
+
+    // --- প্ল্যাটফর্মের চ্যাট সিস্টেমে মেসেজ সেভ করা ---
+    if (function_exists('jpbd_get_conversation')) {
+        $conv_table = $wpdb->prefix . 'jpbd_chat_conversations';
+        $msg_table = $wpdb->prefix . 'jpbd_chat_messages';
+
+        $conversation = jpbd_get_conversation($sender_id, $employer_id);
+        if (!$conversation) {
+            $user1 = min($sender_id, $employer_id);
+            $user2 = max($sender_id, $employer_id);
+            $wpdb->insert($conv_table, ['user1_id' => $user1, 'user2_id' => $user2]);
+            $conversation_id = $wpdb->insert_id;
+        } else {
+            $conversation_id = $conversation->id;
+        }
+
+        $wpdb->insert($msg_table, ['conversation_id' => $conversation_id, 'sender_id' => $sender_id, 'receiver_id' => $employer_id, 'message' => $message]);
+        $new_message_id = $wpdb->insert_id;
+
+        $unread_col = ($conversation && $conversation->user1_id == $employer_id) ? 'user1_unread_count' : 'user2_unread_count';
+        $wpdb->query($wpdb->prepare("UPDATE $conv_table SET last_message_id = %d, $unread_col = $unread_col + 1, updated_at = NOW() WHERE id = %d", $new_message_id, $conversation_id));
+
+        if (function_exists('jpbd_create_notification')) {
+            $notification_message = wp_trim_words($sender_data->display_name, 2, '...') . ' sent you a message about "' . wp_trim_words($opportunity->job_title, 4, '...') . '"';
+            jpbd_create_notification($employer_id, $sender_id, 'new_message', $notification_message, '/dashboard/inbox/' . $sender_id);
+        }
+    }
+
+    return new WP_REST_Response(['success' => true, 'message' => 'Message sent successfully!'], 201);
 }

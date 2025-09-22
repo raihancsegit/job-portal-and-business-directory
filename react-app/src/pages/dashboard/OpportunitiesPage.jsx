@@ -21,9 +21,16 @@ function OpportunitiesPage() {
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('all');
     const [filters, setFilters] = useState({});
+     const [notice, setNotice] = useState({ message: '', type: '' });
     
     const location = useLocation();
     const isListView = location.pathname.includes('opportunities-list');
+
+    const showNoticeMessage = (message, type = 'success') => {
+        setNotice({ message, type });
+        // কয়েক সেকেন্ড পর নোটিশটি মুছে ফেলা হবে
+        setTimeout(() => setNotice({ message: '', type: '' }), 4000); 
+    };
 
     const fetchOpportunities = useCallback(async () => {
         setLoading(true);
@@ -78,6 +85,20 @@ function OpportunitiesPage() {
         }
     };
 
+     // After applying, show a notice and RE-FETCH the data from the server.
+    const handleApplicationSuccess = (appliedOpportunityId) => {
+        showNoticeMessage('Application submitted! You can see it in the "Applied" tab.', 'success');
+        // THIS IS THE FIX. Re-fetch from the server. The server is the single source of truth.
+        fetchOpportunities();
+    };
+
+    // After withdrawing, show a notice and RE-FETCH the data from the server.
+    const handleWithdrawSuccess = (withdrawnOpportunityId) => {
+        showNoticeMessage('Application withdrawn successfully!', 'success');
+        // THIS IS THE FIX. Re-fetch from the server.
+        fetchOpportunities(); 
+    };
+
     return (
         <div className="i-card-md radius-30 card-bg-two">
             <div className="card-body">
@@ -106,17 +127,27 @@ function OpportunitiesPage() {
                         <div className="descrition-content">
                             <div className="d-flex justify-content-between flex-wrap gap-3 align-items-center mb-4 mt-3">
                                 <OpportunityTabs activeTab={activeTab} setActiveTab={setActiveTab} />
+                                <DateRangeDropdown filters={filters} setFilters={setFilters} />
                             </div>
                             <div className="row g-3">
                                 <div className="col-xxl-4">
                                     <JobList 
                                         opportunities={opportunities} 
                                         onSelectOpportunity={setSelectedOpportunity} 
-                                        selectedOpportunityId={selectedOpportunity?.id} 
+                                        selectedOpportunityId={selectedOpportunity?.id}
+                                         activeTab={activeTab}
+                                        onWithdrawSuccess={handleWithdrawSuccess} 
+                                        
                                     />
                                 </div>
                                 <div className="col-xxl-8">
-                                    <JobDetails opportunity={selectedOpportunity} />
+                                    <JobDetails 
+                                        opportunity={selectedOpportunity} 
+                                        showNotice={showNoticeMessage} 
+                                        activeTab={activeTab}
+                                        onApplySuccess={handleApplicationSuccess}
+                                        onWithdrawSuccess={handleWithdrawSuccess}
+                                    />
                                 </div>
                             </div>
                         </div>

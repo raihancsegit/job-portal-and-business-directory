@@ -38,8 +38,97 @@ function jpbd_register_business_api_routes()
         'callback' => 'jpbd_api_get_business_filter_counts',
         'permission_callback' => '__return_true',
     ]);
+
+    register_rest_route('jpbd/v1', '/businesses/(?P<id>\d+)/reviews', [
+        'methods'  => 'GET',
+        'callback' => 'jpbd_api_get_business_reviews',
+        'permission_callback' => '__return_true',
+    ]);
+
+    // একটি নতুন রিভিউ যোগ করার রুট
+    register_rest_route('jpbd/v1', '/businesses/(?P<id>\d+)/reviews', [
+        'methods'  => 'POST',
+        'callback' => 'jpbd_api_add_business_review',
+        'permission_callback' => 'is_user_logged_in',
+    ]);
+
+    register_rest_route('jpbd/v1', '/businesses/(?P<id>\d+)/reviews/count', [
+        'methods'  => 'GET',
+        'callback' => 'jpbd_api_get_business_review_count',
+        'permission_callback' => '__return_true',
+    ]);
 }
 add_action('rest_api_init', 'jpbd_register_business_api_routes');
+
+function jpbd_api_get_business_review_count(WP_REST_Request $request)
+{
+    global $wpdb;
+    $business_id = (int)$request['id'];
+    $reviews_table = $wpdb->prefix . 'jpbd_business_reviews';
+
+    $count = (int) $wpdb->get_var($wpdb->prepare(
+        "SELECT COUNT(*) FROM $reviews_table WHERE business_id = %d",
+        $business_id
+    ));
+
+    return new WP_REST_Response(['count' => $count], 200);
+}
+
+function jpbd_api_get_business_reviews(WP_REST_Request $request)
+{
+    global $wpdb;
+    $business_id = (int)$request['id'];
+    $reviews_table = $wpdb->prefix . 'jpbd_business_reviews';
+
+    $reviews = $wpdb->get_results($wpdb->prepare(
+        "SELECT * FROM $reviews_table WHERE business_id = %d ORDER BY created_at DESC",
+        $business_id
+    ));
+
+    // রিভিউ ডেটা ফরম্যাট করা
+    $formatted_reviews = [];
+    foreach ($reviews as $review) {
+        $user_data = get_userdata($review->user_id);
+        $formatted_reviews[] = [
+            'id' => $review->id,
+            'rating' => (int)$review->rating,
+            'review_text' => $review->review_text,
+            'created_at' => $review->created_at,
+            'user' => [
+                'display_name' => $user_data->display_name,
+                'avatar_letter' => strtoupper(substr($user_data->display_name, 0, 1)),
+            ],
+        ];
+    }
+
+    return new WP_REST_Response($formatted_reviews, 200);
+}
+
+function jpbd_api_add_business_review(WP_REST_Request $request)
+{
+    global $wpdb;
+    $business_id = (int)$request['id'];
+    $user_id = get_current_user_id();
+    $params = $request->get_json_params();
+
+    $rating = isset($params['rating']) ? (int)$params['rating'] : 0;
+    $review_text = isset($params['review_text']) ? sanitize_textarea_field($params['review_text']) : '';
+
+    if ($rating < 1 || $rating > 5) {
+        return new WP_Error('invalid_rating', 'Rating must be between 1 and 5.', ['status' => 400]);
+    }
+
+    $reviews_table = $wpdb->prefix . 'jpbd_business_reviews';
+
+    $wpdb->insert($reviews_table, [
+        'business_id' => $business_id,
+        'user_id' => $user_id,
+        'rating' => $rating,
+        'review_text' => $review_text,
+    ]);
+
+    return new WP_REST_Response(['success' => true, 'message' => 'Review submitted successfully.'], 201);
+}
 
 /**
  * API Callback: Create a new business profile.

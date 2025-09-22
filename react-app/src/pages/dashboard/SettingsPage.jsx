@@ -15,6 +15,7 @@ const GeneralTabContent = ({ profile, setProfile, handleSaveProfile, notice, ass
     const fileInputRef = useRef(null);
 
     const handleProfilePicChange = (e) => {
+          console.log("main");
         const file = e.target.files[0];
         if (file) {
             console.log("Selected file:", file);
@@ -40,9 +41,24 @@ const GeneralTabContent = ({ profile, setProfile, handleSaveProfile, notice, ass
                         <div className="col-lg-3 d-lg-block d-none"><h6>Profile Picture</h6><p>Upload a profile image.</p></div>
                         <div className="col-lg-9 col-12">
                             <div className="d-flex align-items-center gap-3">
-                                <img src={profile.profile_picture_url || `${assets_url}images/bg/settings-profile.png`} alt="profile" className="rounded-circle" style={{ width: '80px', height: '80px', objectFit: 'cover' }} />
-                                <input type="file" ref={fileInputRef} className="d-none" accept="image/*" onChange={handleProfilePicChange} />
-                                <button type="button" className="i-btn btn--lg btn--outline rounded-pill px-4" onClick={() => fileInputRef.current.click()}>Change</button>
+                                <img 
+                                    src={profile.profile_picture_url || `${assets_url}images/bg/settings-profile.png`} 
+                                    alt="profile" 
+                                    className="rounded-circle" 
+                                    style={{ width: '80px', height: '80px', objectFit: 'cover' }} 
+                                />
+
+                                {/* Hidden file input with an ID */}
+                                <input 
+                                    type="file" 
+                                    id="profilePicInput" // Add an ID
+                                    className="d-none" 
+                                    accept="image/*" 
+                                    onChange={handleProfilePicChange} 
+                                />
+                                <label htmlFor="profilePicInput" className="i-btn btn--lg btn--outline rounded-pill px-4" style={{ cursor: 'pointer' }}>
+                                    Change
+                                </label>
                             </div>
                         </div>
                     </div>
@@ -400,7 +416,10 @@ function SettingsPage() {
 
      const { user } = useAuth(); // Get the current user
      const isCandidate = user?.roles?.includes('candidate'); // Check if user has 'candidate' role
+     const allowedRoles = ['candidate', 'business'];
+    const canViewCandidateTab = user?.roles?.some(role => allowedRoles.includes(role));
 
+    const { updateUserContext } = useAuth(); 
     const showNotice = (message, status = 'success', type = 'general') => {
         setNotice({ message, status, type });
         setTimeout(() => setNotice({ message: '', status: '', type: '' }), 4000);
@@ -426,11 +445,39 @@ function SettingsPage() {
     const handleSaveProfile = async (e) => {
         e.preventDefault();
         setSaving(true);
+
+        const formData = new FormData();
+        // ... (আপনার FormData তৈরির কোড অপরিবর্তিত থাকবে) ...
+        Object.keys(profile).forEach(key => {
+            if (key !== 'newProfilePic' && key !== 'profile_picture_url' && profile[key] !== null) {
+                formData.append(key, profile[key]);
+            }
+        });
+        if (profile.newProfilePic) {
+            formData.append('profile_picture', profile.newProfilePic);
+        }
+        
         try {
-            const response = await axios.post(`${api_base_url}profile`, profile, {
-                headers: { 'Authorization': `Bearer ${token}` }
+            // FormData পাঠানো ঠিক আছে
+            const response = await axios.post(`${api_base_url}profile`, formData, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                }
             });
+
             showNotice(response.data.message, 'success', 'general');
+
+            // ================== নতুন পরিবর্তন এখানে (ধাপ ৫) ==================
+            // API থেকে পাওয়া নতুন ইউজার ডেটা দিয়ে সরাসরি Context আপডেট করুন
+            if (response.data.success && response.data.user) {
+                const updatedUserData = {
+                    user_display_name: response.data.user.user_display_name,
+                    avatar_url: response.data.user.avatar_url,
+                };
+                updateUserContext(updatedUserData);
+            }
+            // ==============================================================
+
         } catch (error) {
             showNotice(error.response?.data?.message || 'Failed to save profile', 'danger', 'general');
         } finally {
@@ -461,7 +508,7 @@ function SettingsPage() {
                             <li className="nav-item">
                                 <button className={`nav-link ${activeTab === 'general' ? 'active' : ''}`} onClick={() => setActiveTab('general')}>General</button>
                             </li>
-                            {isCandidate && (
+                            {canViewCandidateTab && (
                                 <li className="nav-item candidate-tab">
                                     <button className={`nav-link ${activeTab === 'candidate' ? 'active' : ''}`} onClick={() => setActiveTab('candidate')}>Candidate Profile</button>
                                 </li>
@@ -487,7 +534,7 @@ function SettingsPage() {
                                         />
                                     )}
 
-                                    {isCandidate && activeTab === 'candidate' && (
+                                    {canViewCandidateTab && activeTab === 'candidate' && (
                                         <CandidateProfileTab showNotice={showNotice} notice={notice} />
                                     )}
 

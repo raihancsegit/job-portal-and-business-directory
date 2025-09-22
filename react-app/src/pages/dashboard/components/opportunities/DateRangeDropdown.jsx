@@ -18,7 +18,7 @@ const DateRangeDropdown = ({ filters, setFilters }) => {
         <div className="d-flex justify-content-end flex-grow-1">
             <div className="i-badge big-badge soft">
                 {/* state থেকে বর্তমান সিলেক্টেড অপশনের টেক্সট দেখানো হচ্ছে */}
-                {dateRangeOptions[filters.dateRange]}
+               {dateRangeOptions[filters.dateRange] || 'All-time'}
             </div>
             <div className="dropdown">
                 <button className="icon-btn-lg" type="button" data-bs-toggle="dropdown" aria-expanded="false">

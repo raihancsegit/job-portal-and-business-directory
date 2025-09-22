@@ -62,6 +62,20 @@ function Sidebar() {
                         </NavLink>
                     </li>
 
+                    <li className="sidebar-menu-item">
+                              <NavLink to="/dashboard/inbox" className="sidebar-menu-link" anim="ripple" href="candidate-inbox.html" aria-expanded="false">
+                                   <span>
+                                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                             <path d="M10 1.375C14.7635 1.375 18.625 5.23654 18.625 10C18.625 14.7635 14.7635 18.625 10 18.625C8.52307 18.625 7.13195 18.252 5.91602 17.5967C5.78673 17.5271 5.6557 17.52 5.55469 17.5557L4.09863 18.0703C2.65238 18.5811 1.25952 17.1887 1.77051 15.7422L2.31543 14.1982C2.34979 14.101 2.34532 13.9748 2.28223 13.8486C1.70281 12.6897 1.375 11.3828 1.375 10C1.375 5.23654 5.23654 1.375 10 1.375Z" stroke-width="1.25"></path>
+                                             <circle cx="6.03979" cy="10.0399" r="1" fill="#241907"></circle>
+                                             <circle cx="10.0398" cy="10.0399" r="1" fill="#241907"></circle>
+                                             <circle cx="14.0398" cy="10.0399" r="1" fill="#241907"></circle>
+                                        </svg>
+                                   </span>
+                                   <p>Inbox</p>
+                              </NavLink>
+                         </li>
+
                      <li className="sidebar-menu-item">
                         <NavLink className="sidebar-menu-link" to="/dashboard/community">
                             <span>
@@ -94,6 +108,18 @@ function Sidebar() {
                             <p>Event</p>
                         </NavLink>
                     </li>
+
+                    <li className="sidebar-menu-item">
+                              <NavLink className="sidebar-menu-link" anim="ripple" to="/dashboard/saved" aria-expanded="false">
+                                   <span>
+                                        <svg width="14" height="16" viewBox="0 0 14 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                             <path d="M10.3819 1H3.61114C2.11511 1 0.900024 2.21761 0.900024 3.70113V13.5609C0.900024 14.8205 1.80607 15.3524 2.9158 14.7436L6.34332 12.8472C6.70854 12.6442 7.29853 12.6442 7.65673 12.8472L11.0843 14.7436C12.194 15.3594 13.1 14.8275 13.1 13.5609V3.70113C13.093 2.21761 11.8779 1 10.3819 1Z" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"></path>
+                                        </svg>
+
+                                   </span>
+                                   <p>Saved</p>
+                              </NavLink>
+                         </li>
 
                     <li className="sidebar-menu-item">
                         <NavLink className="sidebar-menu-link" to="/dashboard/settings">
