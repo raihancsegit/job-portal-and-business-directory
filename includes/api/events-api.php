@@ -39,6 +39,27 @@ function jpbd_register_events_api_routes()
             ]
         ]
     ]);
+
+    // ক্যাটাগরি অনুযায়ী ইভেন্টের সংখ্যা আনার জন্য নতুন রুট
+    register_rest_route('jpbd/v1', '/events/category-counts', [
+        'methods'  => 'GET',
+        'callback' => 'jpbd_api_get_event_category_counts',
+        'permission_callback' => '__return_true',
+    ]);
+
+    // একটি ইভেন্ট আপডেট করার জন্য
+    register_rest_route('jpbd/v1', '/events/(?P<id>\d+)', [
+        'methods'  => 'POST', // WordPress-এ আপডেটের জন্য POST ব্যবহার করা সহজ
+        'callback' => 'jpbd_api_update_event',
+        'permission_callback' => 'is_user_logged_in',
+    ]);
+
+    // একটি ইভেন্ট ডিলেট করার জন্য
+    register_rest_route('jpbd/v1', '/events/(?P<id>\d+)', [
+        'methods'  => 'DELETE',
+        'callback' => 'jpbd_api_delete_event',
+        'permission_callback' => 'is_user_logged_in',
+    ]);
 }
 add_action('rest_api_init', 'jpbd_register_events_api_routes');
 
@@ -53,20 +74,43 @@ function jpbd_api_get_events(WP_REST_Request $request)
 
     // পেজিনেশনের জন্য প্যারামিটার গ্রহণ করা
     $page = isset($filters['page']) ? (int)$filters['page'] : 1;
-    $per_page = isset($filters['per_page']) ? (int)$filters['per_page'] : 9; // প্রতি পেজে ৯টি ইভেন্ট
+    $per_page = isset($filters['per_page']) ? (int)$filters['per_page'] : 9;
     $offset = ($page - 1) * $per_page;
 
-    // WHERE ক্লজ তৈরি করা
+    // WHERE ক্লজ এবং প্যারামিটার তৈরি করা
     $where_sql = " WHERE 1=1";
     $params = [];
 
+    // ================== মূল সমাধান এখানে ==================
+    // React থেকে পাঠানো category slug ('product-launches') অনুযায়ী ফিল্টার করা
     if (!empty($filters['category']) && $filters['category'] !== 'all') {
-        $where_sql .= " AND e.category = %s";
-        $params[] = $filters['category'];
-    }
+        $category_slug = sanitize_title($filters['category']);
 
-    // প্রথমে মোট ইভেন্টের সংখ্যা গণনা করা (ফিল্টার সহ)
-    $total_query = "SELECT COUNT(*) FROM $events_table e" . $where_sql;
+        // ডেটাবেস থেকে সব ইউনিক ক্যাটাগরির নাম আনা হচ্ছে
+        $all_categories = $wpdb->get_col("SELECT DISTINCT category FROM $events_table WHERE category != ''");
+
+        $category_name_to_match = '';
+        foreach ($all_categories as $name) {
+            // প্রতিটি নামের জন্য slug তৈরি করে React থেকে আসা slug-এর সাথে মেলানো হচ্ছে
+            if (sanitize_title($name) === $category_slug) {
+                $category_name_to_match = $name;
+                break;
+            }
+        }
+
+        // যদি ম্যাচিং ক্যাটাগরি নাম পাওয়া যায়, তাহলে WHERE ক্লজে যোগ করা
+        if (!empty($category_name_to_match)) {
+            $where_sql .= " AND e.category = %s";
+            $params[] = $category_name_to_match;
+        } else {
+            // যদি কোনো কারণে ম্যাচ না পাওয়া যায়, তাহলে কোনো ফলাফল না পাঠানোর জন্য
+            $where_sql .= " AND 1=0";
+        }
+    }
+    // =======================================================
+
+    // প্রথমে ফিল্টার সহ মোট ইভেন্টের সংখ্যা গণনা করা
+    $total_query = "SELECT COUNT(e.id) FROM $events_table e" . $where_sql;
     $total_events = (int) $wpdb->get_var($wpdb->prepare($total_query, $params));
 
     // বর্তমান পেজের জন্য ইভেন্টগুলো নিয়ে আসা
@@ -76,13 +120,18 @@ function jpbd_api_get_events(WP_REST_Request $request)
         JOIN $users_table u ON e.user_id = u.ID
         " . $where_sql . " ORDER BY e.event_date DESC LIMIT %d OFFSET %d";
 
-    array_push($params, $per_page, $offset);
-    $events = $wpdb->get_results($wpdb->prepare($events_query, $params), ARRAY_A);
+    // LIMIT এবং OFFSET প্যারামিটারগুলো শেষে যোগ করা
+    $query_params = array_merge($params, [$per_page, $offset]);
+    $events = $wpdb->get_results($wpdb->prepare($events_query, $query_params), ARRAY_A);
 
-    foreach ($events as &$event) { // '&' ব্যবহার করা হয়েছে সরাসরি অ্যারে মডিফাই করার জন্য
-        $event['organizer_avatar_url'] = get_avatar_url($event['organizer_id']);
+    // প্রতিটি ইভেন্টের সাথে অর্গানাইজারের অ্যাভাটার URL যোগ করা
+    if (!empty($events)) {
+        foreach ($events as &$event) {
+            $event['organizer_avatar_url'] = get_avatar_url($event['organizer_id']);
+        }
     }
-    // হেডার-এ মোট পেজের সংখ্যা পাঠানো
+
+    // রেসপন্স তৈরি করা এবং হেডার-এ মোট পেজের সংখ্যা পাঠানো
     $response = new WP_REST_Response($events, 200);
     $response->header('X-WP-TotalPages', ceil($total_events / $per_page));
     $response->header('X-WP-Total', $total_events);
@@ -190,4 +239,113 @@ function jpbd_api_get_single_event(WP_REST_Request $request)
     ];
 
     return new WP_REST_Response($response_data, 200);
+}
+
+function jpbd_api_get_event_category_counts()
+{
+    global $wpdb;
+    $events_table = $wpdb->prefix . 'jpbd_events';
+
+    // সব ইভেন্টের মোট সংখ্যা গণনা
+    $total_events = (int) $wpdb->get_var("SELECT COUNT(*) FROM $events_table");
+
+    // প্রতিটি ক্যাটাগরির জন্য ইভেন্টের সংখ্যা গণনা
+    $category_counts = $wpdb->get_results(
+        "SELECT category as name, COUNT(*) as count FROM $events_table WHERE category != '' AND category IS NOT NULL GROUP BY category",
+        ARRAY_A
+    );
+
+    // React অ্যাপের ব্যবহারের জন্য প্রতিটি ক্যাটাগরির নামের জন্য একটি slug তৈরি করা
+    if (!empty($category_counts)) {
+        foreach ($category_counts as &$cat) { // '&' ব্যবহার করে সরাসরি অ্যারে মডিফাই করা হচ্ছে
+            $cat['slug'] = sanitize_title($cat['name']);
+        }
+    }
+
+    // তালিকার শুরুতে 'All' অপশন যোগ করা
+    array_unshift($category_counts, [
+        'slug' => 'all',
+        'name' => 'All',
+        'count' => $total_events
+    ]);
+
+    return new WP_REST_Response($category_counts, 200);
+}
+
+function jpbd_api_update_event(WP_REST_Request $request)
+{
+    global $wpdb;
+    $event_id = (int)$request['id'];
+    $user_id = get_current_user_id();
+    $events_table = $wpdb->prefix . 'jpbd_events';
+
+    // ধাপ ১: ওনারশিপ ভেরিফাই করা
+    $owner_id = (int)$wpdb->get_var($wpdb->prepare("SELECT user_id FROM $events_table WHERE id = %d", $event_id));
+
+    // যদি ইভেন্টটি খুঁজে না পাওয়া যায় বা বর্তমান ইউজার ইভেন্টের মালিক না হয়
+    if (!$owner_id || $owner_id !== $user_id) {
+        return new WP_Error('forbidden', 'You do not have permission to edit this event.', ['status' => 403]);
+    }
+
+    $params = $request->get_json_params();
+    $data = []; // একটি খালি অ্যারে তৈরি করা হচ্ছে, যাতে শুধুমাত্র পাঠানো ডেটা আপডেট করা হয়
+
+    // ধাপ ২: React থেকে পাঠানো প্রতিটি ফিল্ড চেক এবং sanitize করা
+    if (isset($params['title'])) {
+        $data['title'] = sanitize_text_field($params['title']);
+    }
+    if (isset($params['category'])) {
+        $data['category'] = sanitize_text_field($params['category']);
+    }
+    if (isset($params['event_date'])) {
+        // datetime-local থেকে আসা 'YYYY-MM-DDTHH:MM' ফরম্যাটকে MySQL-এর জন্য 'YYYY-MM-DD HH:MM:SS' ফরম্যাটে রূপান্তর
+        $data['event_date'] = sanitize_text_field(str_replace('T', ' ', $params['event_date']));
+    }
+    if (isset($params['location'])) {
+        $data['location'] = sanitize_text_field($params['location']);
+    }
+    if (isset($params['description'])) {
+        $data['description'] = sanitize_textarea_field($params['description']);
+    }
+    if (isset($params['image_url'])) {
+        $data['image_url'] = esc_url_raw($params['image_url']);
+    }
+
+    // ধাপ ৩: যদি কোনো ডেটা না পাঠানো হয়, তাহলে এরর রিটার্ন করা
+    if (empty($data)) {
+        return new WP_Error('bad_request', 'No data provided to update.', ['status' => 400]);
+    }
+
+    // ধাপ ৪: ডাটাবেস আপডেট করা
+    $result = $wpdb->update(
+        $events_table,
+        $data, // যে ডেটাগুলো আপডেট করতে হবে
+        ['id' => $event_id] // কোন রো-টি আপডেট করতে হবে (WHERE id = ?)
+    );
+
+    // ডাটাবেস আপডেটে কোনো এরর হয়েছে কিনা তা চেক করা
+    if ($result === false) {
+        return new WP_Error('db_error', 'Could not update the event in the database.', ['status' => 500]);
+    }
+
+    // সফলভাবে আপডেট হলে একটি সফলতার মেসেজ পাঠানো
+    return new WP_REST_Response(['success' => true, 'message' => 'Event updated successfully.'], 200);
+}
+
+function jpbd_api_delete_event(WP_REST_Request $request)
+{
+    global $wpdb;
+    $event_id = (int)$request['id'];
+    $user_id = get_current_user_id();
+    $events_table = $wpdb->prefix . 'jpbd_events';
+
+    // ওনারশিপ ভেরিফাই করা
+    $owner_id = (int)$wpdb->get_var($wpdb->prepare("SELECT user_id FROM $events_table WHERE id = %d", $event_id));
+    if (!$owner_id || $owner_id !== $user_id) {
+        return new WP_Error('forbidden', 'You do not have permission to delete this event.', ['status' => 403]);
+    }
+
+    $wpdb->delete($events_table, ['id' => $event_id]);
+
+    return new WP_REST_Response(['success' => true, 'message' => 'Event deleted successfully.'], 200);
 }

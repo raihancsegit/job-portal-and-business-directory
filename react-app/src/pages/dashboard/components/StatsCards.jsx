@@ -13,8 +13,14 @@ const StatsCards = () => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        // যদি authLoading হয় বা ইউজার না থাকে, তাহলে API কল না করা
         if (authLoading || !user || !token) {
-            setLoading(false);
+            // authLoading শেষ না হওয়া পর্যন্ত লোডিং দেখানো
+            if (authLoading) {
+                setLoading(true);
+            } else {
+                setLoading(false);
+            }
             setStats(null);
             return;
         }
@@ -34,60 +40,66 @@ const StatsCards = () => {
             }
         };
         fetchStats();
-    }, [user, token, authLoading]);
+    }, [user, token, authLoading, api_base_url]);
     
-    // User role check
+    // ইউজার রোল চেক
     const isCandidate = user?.roles?.includes('candidate');
     const isBusiness = user?.roles?.includes('business');
 
     // =====================================================================
-    // Candidate's View
+    // Candidate & Business View (নতুন ডিজাইন)
     // =====================================================================
-    const renderCandidateView = () => (
+    const renderCandidateOrBusinessView = () => (
         <div className="row g-2">
             <div className="col-lg-6 col-md-6">
                 <div className="i-card-md min-h-176">
-                    <div className="card-header"><h4 className="card-title">Times Hired</h4></div>
+                    <div className="card-header">
+                        <h4 className="card-title">Saved</h4>
+                        <Link to="/dashboard/saved" className="icon-btn-lg"><i className="ri-arrow-right-up-line"></i></Link>
+                    </div>
                     <div className="card-body pt-0">
-                        {loading ? <h3 className="fs-72 placeholder-glow"><span className="placeholder col-3"></span></h3> : <h3 className="fs-72">{stats?.hired_count || 0}</h3>}
+                        {loading ? <h3 className="fs-72 placeholder-glow"><span className="placeholder col-3"></span></h3> : <h3 className="fs-72">{stats?.saved_opportunities_count ?? 0}</h3>}
                     </div>
                 </div>
             </div>
-            <div className="col-lg-6 col-md-6">
+            {/* <div className="col-lg-6 col-md-6">
                 <div className="i-card-md min-h-176">
-                    <div className="card-header"><h4 className="card-title">Saved Jobs</h4><button className="icon-btn-lg"><i className="ri-arrow-right-up-line"></i></button></div>
+                    <div className="card-header">
+                        <h4 className="card-title">Saved Businesses</h4>
+                        <Link to="/dashboard/saved" className="icon-btn-lg"><i className="ri-arrow-right-up-line"></i></Link>
+                    </div>
                     <div className="card-body pt-0">
-                        <h3 className="fs-72">{stats?.saved_jobs_count || 0}</h3>
+                         {loading ? <h3 className="fs-72 placeholder-glow"><span className="placeholder col-3"></span></h3> : <h3 className="fs-72">{stats?.saved_businesses_count ?? 0}</h3>}
                     </div>
                 </div>
-            </div>
+            </div> */}
+            
+            {/* Candidate-দের জন্য "Times Hired" কার্ড */}
+            {isCandidate && (
+                 <div className="col-lg-6 col-md-6">
+                    <div className="i-card-md min-h-176">
+                        <div className="card-header"><h4 className="card-title">Times Hired</h4></div>
+                        <div className="card-body pt-0">
+                            {loading ? <h3 className="fs-72 placeholder-glow"><span className="placeholder col-2"></span></h3> : <h3 className="fs-72">{stats?.hired_count ?? 0}</h3>}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Business-দের জন্য "My Listings" কার্ড */}
+            {isBusiness && (
+                <div className="col-lg-6 col-md-6">
+                    <div className="i-card-md min-h-176">
+                        <div className="card-header"><h4 className="card-title">My Listings</h4></div>
+                        <div className="card-body pt-0">
+                            {loading ? <h3 className="fs-72 placeholder-glow"><span className="placeholder col-2"></span></h3> : <h3 className="fs-72">{stats?.my_listings_count ?? 0}</h3>}
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
     
-    // =====================================================================
-    // Business's View
-    // =====================================================================
-    const renderBusinessView = () => (
-         <div className="row g-2">
-            <div className="col-lg-6 col-md-6">
-                <div className="i-card-md min-h-176">
-                    <div className="card-header"><h4 className="card-title">My Business Listings</h4></div>
-                    <div className="card-body pt-0">
-                        {loading ? <h3 className="fs-72 placeholder-glow"><span className="placeholder col-4"></span></h3> : <h3 className="fs-72">{stats?.business_listings_count || 0}</h3>}
-                    </div>
-                </div>
-            </div>
-            <div className="col-lg-6 col-md-6">
-                <div className="i-card-md min-h-176">
-                    <div className="card-header"><h4 className="card-title">Saved Items</h4><button className="icon-btn-lg"><i className="ri-arrow-right-up-line"></i></button></div>
-                    <div className="card-body pt-0">
-                        <h3 className="fs-72">{stats?.saved_items_count || 0}</h3>
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
-
     // =====================================================================
     // Employer's View (Default)
     // =====================================================================
@@ -96,13 +108,18 @@ const StatsCards = () => {
             <div className="col-lg-6 col-md-6">
                 <div className="i-card-md min-h-176">
                     <div className="card-header"><h4 className="card-title">Total Business Listing</h4></div>
-                    <div className="card-body pt-0">{(authLoading || loading) ? (<h3 className="fs-72 placeholder-glow"><span className="placeholder col-4"></span></h3>) : (<h3 className="fs-72">{stats?.total_businesses || 0}</h3>)}</div>
+                    <div className="card-body pt-0">{(loading) ? (<h3 className="fs-72 placeholder-glow"><span className="placeholder col-4"></span></h3>) : (<h3 className="fs-72">{stats?.total_businesses || 0}</h3>)}</div>
                 </div>
             </div>
             <div className="col-lg-6 col-md-6">
                 <div className="i-card-md min-h-176">
-                    <div className="card-header"><h4 className="card-title">Candidate Hired</h4><Link to="/dashboard/applicants?status=hired" className="icon-btn-lg"><i className="ri-arrow-right-up-line"></i></Link></div>
-                    <div className="card-body pt-0">{(authLoading || loading) ? (<h3 className="fs-72 placeholder-glow"><span className="placeholder col-3"></span></h3>) : (<h3 className="fs-72">{stats?.total_hired || 0}</h3>)}</div>
+                    <div className="card-header"><h4 className="card-title">Candidate Hired</h4>
+                    <Link 
+                            to="/dashboard/opportunities" 
+                            state={{ defaultTab: 'hired' }} 
+                            className="icon-btn-lg">
+                         <i className="ri-arrow-right-up-line"></i></Link></div>
+                    <div className="card-body pt-0">{(loading) ? (<h3 className="fs-72 placeholder-glow"><span className="placeholder col-3"></span></h3>) : (<h3 className="fs-72">{stats?.total_hired || 0}</h3>)}</div>
                 </div>
             </div>
         </div>
@@ -112,21 +129,17 @@ const StatsCards = () => {
     // Final Rendering Logic
     // =====================================================================
     if (authLoading) {
-        // Auth লোড হওয়া পর্যন্ত একটি সাধারণ লোডিং স্টেট দেখানো যেতে পারে
+        // AuthContext থেকে ইউজার লোড না হওয়া পর্যন্ত লোডিং দেখানো
         return (
              <div className="row g-2">
-                <div className="col-lg-6 col-md-6"><div className="i-card-md min-h-176"><div className="card-body pt-0"><h3 className="fs-72 placeholder-glow"><span className="placeholder col-4"></span></h3></div></div></div>
-                <div className="col-lg-6 col-md-6"><div className="i-card-md min-h-176"><div className="card-body pt-0"><h3 className="fs-72 placeholder-glow"><span className="placeholder col-3"></span></h3></div></div></div>
+                <div className="col-lg-6 col-md-6"><div className="i-card-md min-h-176"><div className="card-header"><h4 className="card-title placeholder-glow"><span className="placeholder col-6"></span></h4></div><div className="card-body pt-0"><h3 className="fs-72 placeholder-glow"><span className="placeholder col-4"></span></h3></div></div></div>
+                <div className="col-lg-6 col-md-6"><div className="i-card-md min-h-176"><div className="card-header"><h4 className="card-title placeholder-glow"><span className="placeholder col-5"></span></h4></div><div className="card-body pt-0"><h3 className="fs-72 placeholder-glow"><span className="placeholder col-3"></span></h3></div></div></div>
             </div>
         );
     }
     
-    if (isCandidate) {
-        return renderCandidateView();
-    }
-    
-    if (isBusiness) {
-        return renderBusinessView();
+    if (isCandidate || isBusiness) {
+        return renderCandidateOrBusinessView();
     }
     
     // ডিফল্ট হিসেবে এমপ্লয়ার ভিউ

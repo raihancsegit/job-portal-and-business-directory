@@ -71,6 +71,12 @@ function jpbd_register_auth_routes()
         'permission_callback' => '__return_true',
     ]);
 
+    register_rest_route('jpbd/v1', '/auth/complete-social-registration', [
+        'methods' => 'POST',
+        'callback' => 'jpbd_api_complete_social_registration',
+        'permission_callback' => '__return_true',
+    ]);
+
     // ভবিষ্যতে এখানে /auth/forget-password ইত্যাদি যোগ হবে
 }
 add_action('rest_api_init', 'jpbd_register_auth_routes');
@@ -171,24 +177,22 @@ function jpbd_api_login_user(WP_REST_Request $request)
 
 function jpbd_api_initiate_google_login()
 {
-    // সেটিংস পেজ থেকে Client ID সেভ করা ডেটা থেকে আনতে হবে
-    // $client_id = get_option('jpbd_google_client_id');
-    $client_id = 'YOUR_GOOGLE_CLIENT_ID'; // আপাতত হার্ডকোড করা হলো
+    // সেটিংস থেকে ডেটা আনা
+    $settings = get_option('jpbd_settings', []);
+    $client_id = isset($settings['googleClientId']) ? $settings['googleClientId'] : '';
+
+    if (empty($client_id) || !isset($settings['googleEnabled']) || !$settings['googleEnabled']) {
+        return new WP_Error('not_configured', 'Google Login is not configured or enabled.', ['status' => 500]);
+    }
 
     $redirect_uri = rest_url('jpbd/v1/auth/google/callback');
-    $scope = 'email profile';
-
-    // Google-এর অথেনটিকেশন URL তৈরি করা
+    // ... বাকি কোড অপরিবর্তিত ...
     $google_auth_url = 'https://accounts.google.com/o/oauth2/v2/auth?' . http_build_query([
-        'client_id' => $client_id,
+        'client_id' => $client_id, // <-- এখন ডাইনামিক
         'redirect_uri' => $redirect_uri,
-        'response_type' => 'code',
-        'scope' => $scope,
-        'access_type' => 'offline',
-        'prompt' => 'consent'
+        // ...
     ]);
 
-    // React-কে এই URL-টি পাঠানো
     return new WP_REST_Response(['auth_url' => $google_auth_url], 200);
 }
 
@@ -197,40 +201,91 @@ function jpbd_api_handle_google_callback(WP_REST_Request $request)
     $code = $request->get_param('code');
 
     if (empty($code)) {
-        // এরর হ্যান্ডেল করা এবং ব্যবহারকারীকে লগইন পেজে রিডাইরেক্ট করা
+        // যদি Google কোনো কোড না পাঠায়, তাহলে এররসহ লগইন পেজে ফেরত পাঠানো
         wp_redirect(site_url('/job-portal/login?error=google_auth_failed'));
         exit;
     }
 
-    // --- টোকেন এক্সচেঞ্জ (আগের উত্তরের মতো) ---
-    // $client_id = get_option('jpbd_google_client_id');
-    // $client_secret = get_option('jpbd_google_client_secret');
-    $client_id = 'YOUR_GOOGLE_CLIENT_ID';
-    $client_secret = 'YOUR_GOOGLE_CLIENT_SECRET';
+    // ================== মূল এবং সম্পূর্ণ কোড এখানে ==================
+
+    // --- ধাপ ১: টোকেন এক্সচেঞ্জ (Authorization Code -> Access Token) ---
+    $settings = get_option('jpbd_settings', []);
+    $client_id = isset($settings['googleClientId']) ? $settings['googleClientId'] : '';
+    $client_secret = isset($settings['googleClientSecret']) ? $settings['googleClientSecret'] : '';
     $redirect_uri = rest_url('jpbd/v1/auth/google/callback');
 
-    // cURL বা wp_remote_post ব্যবহার করে গুগলের কাছে অ্যাক্সেস টোকেনের জন্য রিকোয়েস্ট পাঠানো
-    // ...
-
-    // অ্যাক্সেস টোকেন পাওয়ার পর, ব্যবহারকারীর প্রোফাইল ডেটা আনা
-    // ... (https://www.googleapis.com/oauth2/v1/userinfo?alt=json&access_token=...)
-
-    // --- ইউজার হ্যান্ডলিং ---
-    $email = $user_data['email'];
-    $user = get_user_by('email', $email);
-
-    if (!$user) {
-        // নতুন ইউজার তৈরি করা (job_seeker রোলে)
-        // ... (wp_create_user)
+    if (empty($client_id) || empty($client_secret)) {
+        wp_redirect(site_url('/job-portal/login?error=google_not_configured'));
+        exit;
     }
 
-    // --- ইউজারকে লগইন করানো এবং JWT টোকেন তৈরি ---
-    // ... (wp_set_current_user, wp_set_auth_cookie)
-    // অথবা WP-JWT-Auth প্লাগইন ব্যবহার করে টোকেন তৈরি করা
+    // Google-এর টোকেন এন্ডপয়েন্টে POST রিকোয়েস্ট পাঠানো
+    $response = wp_remote_post('https://oauth2.googleapis.com/token', [
+        'method'    => 'POST',
+        'timeout'   => 45,
+        'headers'   => ['Content-Type' => 'application/x-www-form-urlencoded'],
+        'body'      => [
+            'code'          => $code,
+            'client_id'     => $client_id,
+            'client_secret' => $client_secret,
+            'redirect_uri'  => $redirect_uri,
+            'grant_type'    => 'authorization_code',
+        ],
+    ]);
 
-    // --- ব্যবহারকারীকে ড্যাশবোর্ডে রিডাইরেক্ট করা ---
-    wp_redirect(site_url('/job-portal/dashboard'));
-    exit;
+    if (is_wp_error($response) || wp_remote_retrieve_response_code($response) !== 200) {
+        // যদি টোকেন পেতে ব্যর্থ হই
+        wp_redirect(site_url('/job-portal/login?error=google_token_exchange_failed'));
+        exit;
+    }
+
+    $token_data = json_decode(wp_remote_retrieve_body($response), true);
+    $access_token = $token_data['access_token'];
+
+    // --- ধাপ ২: Access Token ব্যবহার করে ইউজারের তথ্য আনা ---
+    $user_info_response = wp_remote_get('https://www.googleapis.com/oauth2/v3/userinfo', [
+        'headers' => [
+            'Authorization' => 'Bearer ' . $access_token,
+        ],
+    ]);
+
+    if (is_wp_error($user_info_response) || wp_remote_retrieve_response_code($user_info_response) !== 200) {
+        // যদি ইউজারের তথ্য পেতে ব্যর্থ হই
+        wp_redirect(site_url('/job-portal/login?error=google_userinfo_failed'));
+        exit;
+    }
+
+    $google_user_data = json_decode(wp_remote_retrieve_body($user_info_response), true);
+    $email = sanitize_email($google_user_data['email']);
+    $full_name = sanitize_text_field($google_user_data['name']);
+
+    // --- ধাপ ৩: ইউজার হ্যান্ডলিং (আগে থেকে আছে কিনা চেক করা) ---
+    $user = get_user_by('email', $email);
+
+    if ($user) {
+        // --- ইউজার আগে থেকেই আছে: সরাসরি লগইন এবং ড্যাশবোর্ডে রিডাইরেক্ট ---
+        wp_set_current_user($user->ID, $user->user_login);
+        wp_set_auth_cookie($user->ID, true); // true প্যারামিটারটি "remember me" হিসেবে কাজ করে
+        do_action('wp_login', $user->user_login, $user);
+
+        wp_redirect(site_url('/job-portal/dashboard'));
+        exit;
+    } else {
+        // --- নতুন ইউজার: রোল সিলেকশন পেজে রিডাইরেক্ট ---
+
+        // Google থেকে পাওয়া তথ্য base64 এনকোড করে URL-এ যোগ করা
+        $user_info_payload = json_encode([
+            'email'     => $email,
+            'full_name' => $full_name,
+            'source'    => 'google'
+        ]);
+        $user_info_encoded = base64_encode($user_info_payload);
+
+        // React রুট `/select-role`-এ রিডাইরেক্ট করা
+        wp_redirect(site_url('/job-portal/select-role?user_info=' . urlencode($user_info_encoded)));
+        exit;
+    }
+    // =============================================================
 }
 
 /**
@@ -435,4 +490,64 @@ function jpbd_api_set_new_password(WP_REST_Request $request)
     delete_user_meta($user->ID, 'jpbd_reset_token_expires');
 
     return new WP_REST_Response(['success' => true, 'message' => 'Password has been reset successfully. You can now log in.'], 200);
+}
+
+function jpbd_api_complete_social_registration(WP_REST_Request $request)
+{
+    $params = $request->get_json_params();
+
+    $email = isset($params['email']) ? sanitize_email($params['email']) : '';
+    $full_name = isset($params['full_name']) ? sanitize_text_field($params['full_name']) : '';
+    $role = isset($params['role']) ? sanitize_key($params['role']) : '';
+
+    // ভ্যালিডেশন
+    if (empty($email) || empty($full_name) || empty($role)) {
+        return new WP_Error('missing_data', 'Required user data is missing.', ['status' => 400]);
+    }
+    if (email_exists($email)) {
+        return new WP_Error('email_exists', 'This email is already registered.', ['status' => 409]);
+    }
+    $allowed_roles = ['employer', 'candidate', 'business'];
+    if (!in_array($role, $allowed_roles)) {
+        return new WP_Error('invalid_role', 'An invalid role was selected.', ['status' => 400]);
+    }
+
+    // নতুন ইউজার তৈরি করা
+    $username = explode('@', $email)[0] . '_' . bin2hex(random_bytes(2));
+    $password = wp_generate_password(12, true, true);
+
+    $user_id = wp_create_user($username, $password, $email);
+
+    if (is_wp_error($user_id)) {
+        return new WP_Error('user_creation_failed', $user_id->get_error_message(), ['status' => 500]);
+    }
+
+    // Full name এবং রোল সেট করা
+    wp_update_user([
+        'ID' => $user_id,
+        'display_name' => $full_name,
+        'role' => $role,
+    ]);
+
+    // ইউজারকে ইমেলের মাধ্যমে তার পাসওয়ার্ড জানানো যেতে পারে (ঐচ্ছিক কিন্তু ভালো)
+    // wp_new_user_notification($user_id, null, 'user');
+
+    // ইউজারকে লগইন করানো এবং JWT টোকেন তৈরি করে পাঠানো
+    $user = get_user_by('id', $user_id);
+
+    $login_request = new WP_REST_Request('POST', '/jwt-auth/v1/token');
+    $login_request->set_body_params(['username' => $user->user_login, 'password' => $password]);
+    $response = rest_do_request($login_request);
+    $data = rest_get_server()->response_to_data($response, false);
+
+    if ($response->is_error()) {
+        return new WP_Error('token_failed', 'Could not log in the new user.', ['status' => 500]);
+    }
+
+    $data['id'] = $user->ID;
+    $data['roles'] = array_values($user->roles);
+    $data['avatar_url'] = get_avatar_url($user->ID);
+    $data['user_display_name'] = $user->display_name;
+
+    return new WP_REST_Response($data, 201);
 }

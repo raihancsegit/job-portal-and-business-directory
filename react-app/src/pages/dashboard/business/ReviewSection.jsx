@@ -138,7 +138,7 @@ const ReviewSection = ({ businessId ,onReviewCountChange }) => {
     return (
         <>
             <div className="review-section container my-4">
-                <div className="d-flex justify-content-between align-items-center mb-3">
+                <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-3">
                     <div className="dropdown">
                         <button className="btn btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                             {sortOptions[sortBy]}

@@ -4,7 +4,7 @@
     "name": "index"
   },
   "admin/main.jsx": {
-    "file": "assets/admin-D3FMHwDi.js",
+    "file": "assets/admin-ByPMGHbt.js",
     "name": "admin",
     "src": "admin/main.jsx",
     "isEntry": true,
@@ -16,7 +16,7 @@
     ]
   },
   "node_modules/canvg/lib/index.es.js": {
-    "file": "assets/index.es-Bx3n1XYe.js",
+    "file": "assets/index.es-Du-33OeE.js",
     "name": "index.es",
     "src": "node_modules/canvg/lib/index.es.js",
     "isDynamicEntry": true,
@@ -32,7 +32,7 @@
     "isDynamicEntry": true
   },
   "src/main.jsx": {
-    "file": "assets/frontend-w4KYyfkR.js",
+    "file": "assets/frontend-B9-EagDw.js",
     "name": "frontend",
     "src": "src/main.jsx",
     "isEntry": true,

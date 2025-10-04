@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../../../../context/AuthContext'; // নিশ্চিত করুন এই pathটি সঠিক
-
+import { Link } from 'react-router-dom';
 // ======================================================
 // ApplyModal Component
 // এই কম্পোনেন্টটি JobDetails ফাইলের ভেতরেই থাকবে।
@@ -223,7 +223,7 @@ const ContactModal = ({ opportunity, onClose, showNotice }) => {
 // ======================================================
 // JobDetails Component (সম্পূর্ণ এবং ফাইনাল সংস্করণ)
 // ======================================================
-const JobDetails = ({ opportunity, showNotice, activeTab,onApplySuccess,onWithdrawSuccess  }) => {
+const JobDetails = ({ opportunity, showNotice, activeTab,onApplySuccess,onWithdrawSuccess,onDeleteSuccess   }) => {
     const [showApplyModal, setShowApplyModal] = useState(false);
     const [showContactModal, setShowContactModal] = useState(false);
     const { user, token } = useAuth(); // token is needed for withdraw
@@ -267,6 +267,27 @@ const JobDetails = ({ opportunity, showNotice, activeTab,onApplySuccess,onWithdr
             }
         }
     };
+
+     const handleDelete = async () => {
+        if (window.confirm('Are you sure you want to delete this opportunity?')) {
+            try {
+                await axios.delete(`${api_base_url}opportunities/${opportunity.id}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                showNotice('Opportunity deleted successfully!', 'success');
+                // You might want to navigate away or call a parent function to refresh the list
+                // navigate('/dashboard/opportunities'); 
+                 if (onDeleteSuccess) {
+                    onDeleteSuccess(opportunity.id);
+                }
+            } catch (error) {
+                alert(error.response?.data?.message || 'Failed to delete opportunity.');
+            }
+        }
+    };
+    
+    // Check for ownership
+    const isOwner = user && opportunity && parseInt(user.id, 10) === parseInt(opportunity.user_id, 10);
     const renderActionButtons = () => {
         if (!canApply) return null;
 
@@ -301,7 +322,26 @@ const JobDetails = ({ opportunity, showNotice, activeTab,onApplySuccess,onWithdr
                     <div className="icon"><i className="ri-briefcase-line"></i></div>
                     <div className="text">
                         <div className="d-flex justify-content-start align-items-center gap-2">
-                            <h3>{opportunity.job_title}</h3> <span><i className="ri-edit-line"></i></span>
+                            <h3>{opportunity.job_title}</h3> 
+                            {isOwner && (
+                        <div className="dropdown ms-auto me-0">
+                            <button className="icon-btn-xl" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i className="ri-more-2-fill"></i>
+                            </button>
+                            <ul className="dropdown-menu dropdown-menu-end">
+                                <li>
+                                    <Link className="dropdown-item" to={`/dashboard/update-opportunity/${opportunity.id}`}>
+                                        <i className="ri-edit-box-line me-2"></i> Edit
+                                    </Link>
+                                </li>
+                                <li>
+                                    <a className="dropdown-item text-danger" href="#" onClick={(e) => { e.preventDefault(); handleDelete(); }}>
+                                        <i className="ri-delete-bin-line me-2"></i> Delete
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    )}
                         </div>
                         <p className="mb-0">{opportunity.location}</p>
                     </div>

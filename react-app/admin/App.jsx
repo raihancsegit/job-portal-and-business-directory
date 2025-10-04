@@ -61,11 +61,23 @@ const SocialLoginSettings = ({ settings, setSettings, handleSave }) => {
                             <>
                                 <tr>
                                     <th scope="row"><label htmlFor="googleClientId">Google Client ID</label></th>
-                                    <td><input type="text" id="googleClientId" name="googleClientId" value={settings.googleClientId} onChange={handleChange} className="regular-text" placeholder="Enter your Google Client ID" /></td>
+                                    <td>
+                                        <input type="text" id="googleClientId" name="googleClientId" value={settings.googleClientId} onChange={handleChange} className="regular-text" placeholder="Enter your Google Client ID" />
+                                        <p className="description">
+                                            You can get your Client ID from the <a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener noreferrer">Google Cloud Console</a>.
+                                        </p>
+                                        </td>
+                                    
                                 </tr>
                                 <tr>
                                     <th scope="row"><label htmlFor="googleClientSecret">Google Client Secret</label></th>
-                                    <td><input type="password" id="googleClientSecret" name="googleClientSecret" value={settings.googleClientSecret} onChange={handleChange} className="regular-text" placeholder="Enter your Google Client Secret" /></td>
+                                    <td>
+                                        <input type="password" id="googleClientSecret" name="googleClientSecret" value={settings.googleClientSecret} onChange={handleChange} className="regular-text" placeholder="Enter your Google Client Secret" />
+                                         <p className="description">
+                                            Make sure to add the following URL to your "Authorized redirect URIs":<br />
+                                            <code>{`${window.jpbd_admin_object.home_url}/wp-json/jpbd/v1/auth/google/callback`}</code>
+                                        </p>
+                                        </td>
                                 </tr>
                             </>
                         )}
@@ -88,11 +100,22 @@ const SocialLoginSettings = ({ settings, setSettings, handleSave }) => {
                             <>
                                 <tr>
                                     <th scope="row"><label htmlFor="linkedinClientId">LinkedIn Client ID</label></th>
-                                    <td><input type="text" id="linkedinClientId" name="linkedinClientId" value={settings.linkedinClientId} onChange={handleChange} className="regular-text" placeholder="Enter your LinkedIn Client ID" /></td>
+                                    <td>
+                                        <input type="text" id="linkedinClientId" name="linkedinClientId" value={settings.linkedinClientId} onChange={handleChange} className="regular-text" placeholder="Enter your LinkedIn Client ID" />
+                                    <p className="description">
+                                            You can get your Client ID from the <a href="https://www.linkedin.com/developers/apps" target="_blank" rel="noopener noreferrer">LinkedIn Developer Portal</a>.
+                                        </p>
+                                    </td>
                                 </tr>
                                 <tr>
                                     <th scope="row"><label htmlFor="linkedinClientSecret">LinkedIn Client Secret</label></th>
-                                    <td><input type="password" id="linkedinClientSecret" name="linkedinClientSecret" value={settings.linkedinClientSecret} onChange={handleChange} className="regular-text" placeholder="Enter your LinkedIn Client Secret" /></td>
+                                    <td>
+                                        <input type="password" id="linkedinClientSecret" name="linkedinClientSecret" value={settings.linkedinClientSecret} onChange={handleChange} className="regular-text" placeholder="Enter your LinkedIn Client Secret" />
+                                        <p className="description">
+                                            Make sure to add the following URL to your "Authorized redirect URIs":<br />
+                                            <code>{`${window.jpbd_admin_object.home_url}/wp-json/jpbd/v1/auth/linkedin/callback`}</code>
+                                        </p>
+                                        </td>
                                 </tr>
                             </>
                         )}

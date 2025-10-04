@@ -6,7 +6,7 @@ const { assets_url } = window.jpbd_object || { assets_url: '' };
 
 // ক্যাটাগরিগুলোর একটি বেস তালিকা তৈরি করুন, যেখানে শুধুমাত্র ফাইলের নাম থাকবে।
 const categoriesData = [
-    { slug: 'all', name: 'All Categories', imageName: '' }, // 필্টারের জন্য
+    { slug: 'all', name: 'All Categories', imageName: 'directory/dir-slider-1.png' }, // 필্টারের জন্য
     { slug: 'agency', name: 'Agency', imageName: 'directory/dir-slider-1.png' },
     { slug: 'auto-services', name: 'Auto Services', imageName: 'directory/dir-slider-2.png' },
     { slug: 'beauty-care', name: 'Beauty & Care', imageName: 'directory/dir-slider-3.png' },

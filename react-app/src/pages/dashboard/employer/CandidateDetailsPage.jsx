@@ -103,9 +103,9 @@ const CandidateDetailsPage = () => {
                                     {profile_details.experience.map((exp, index) => (
                                         <div key={index}>
                                             <div className="d-flex">
-                                                <div className="me-3 flex-shrink-0">
+                                                {/* <div className="me-3 flex-shrink-0">
                                                     <img src="/assets/images/candidate/experience-2.png" className="rounded-circle" width="50" height="50" alt={exp.company} />
-                                                </div>
+                                                </div> */}
                                                 <div>
                                                     <h5 className="mb-1">{exp.title}</h5>
                                                     <p className="text-muted mb-1">{exp.company} • {exp.startYear} - {exp.endYear || 'Present'}</p>
@@ -128,9 +128,9 @@ const CandidateDetailsPage = () => {
                                     {profile_details.education.map((edu, index) => (
                                         <div key={index}>
                                             <div className="d-flex">
-                                                 <div className="me-3 flex-shrink-0">
+                                                 {/* <div className="me-3 flex-shrink-0">
                                                       <img src="/assets/images/candidate/edu-1.jpg" className="rounded-0" width="50" height="50" alt={edu.institution} />
-                                                 </div>
+                                                 </div> */}
                                                  <div>
                                                       <h5 className="mb-1">{edu.institution}</h5>
                                                       <p className="text-muted mb-1 font-bold">{edu.degree}</p>

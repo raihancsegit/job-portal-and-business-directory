@@ -195,12 +195,12 @@ function SignupPage() {
                                 ></i>
                             </div>
                             <div className="d-flex justify-content-start align-items-center mb-4">
-                                <div>
+                                
                                     <input type="checkbox" className="form-check-input" id="remember" required/>
-                                    <label htmlFor="remember" className="form-check-label text--accent">
+                                    <label htmlFor="remember" className="form-check-label text--accent ms-2">
                                         Agree with <a href="#" className="text--primary-dark fw-semibold">Terms and conditions?</a>
                                     </label>
-                                </div>
+                                
                             </div>
                             {/* এই বাটনটি ঠিক করা হয়েছে */}
                             <button type={loading ? 'button' : 'submit'} className="i-btn btn--primary btn--xl w-100 rounded-pill" disabled={loading}>

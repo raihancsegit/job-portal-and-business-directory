@@ -447,18 +447,21 @@ function SettingsPage() {
         setSaving(true);
 
         const formData = new FormData();
-        // ... (আপনার FormData তৈরির কোড অপরিবর্তিত থাকবে) ...
+
+        // profile state থেকে সব টেক্সট ডেটা FormData-তে যোগ করা
         Object.keys(profile).forEach(key => {
+            // newProfilePic এবং profile_picture_url বাদ দিয়ে বাকি সব যোগ করা
             if (key !== 'newProfilePic' && key !== 'profile_picture_url' && profile[key] !== null) {
                 formData.append(key, profile[key]);
             }
         });
+        
+        // যদি নতুন ছবি সিলেক্ট করা হয়ে থাকে, তবে সেটি FormData-তে যোগ করা
         if (profile.newProfilePic) {
             formData.append('profile_picture', profile.newProfilePic);
         }
         
         try {
-            // FormData পাঠানো ঠিক আছে
             const response = await axios.post(`${api_base_url}profile`, formData, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -467,16 +470,21 @@ function SettingsPage() {
 
             showNotice(response.data.message, 'success', 'general');
 
-            // ================== নতুন পরিবর্তন এখানে (ধাপ ৫) ==================
-            // API থেকে পাওয়া নতুন ইউজার ডেটা দিয়ে সরাসরি Context আপডেট করুন
+            // সফলভাবে সেভ হওয়ার পর UI এবং Context আপডেট করা
             if (response.data.success && response.data.user) {
-                const updatedUserData = {
+                // ১. AuthContext আপডেট করা, যা Sidebar এবং Header আপডেট করবে
+                updateUserContext({
                     user_display_name: response.data.user.user_display_name,
                     avatar_url: response.data.user.avatar_url,
-                };
-                updateUserContext(updatedUserData);
+                });
+
+                // ২. লোকাল profile স্টেট আপডেট করা
+                setProfile(prevProfile => ({
+                    ...prevProfile,
+                    profile_picture_url: response.data.user.avatar_url, // নতুন URL দিয়ে প্রিভিউ আপডেট
+                    newProfilePic: null, // <-- এটিই মূল ফিক্স: newProfilePic-কে রিসেট করে দেওয়া
+                }));
             }
-            // ==============================================================
 
         } catch (error) {
             showNotice(error.response?.data?.message || 'Failed to save profile', 'danger', 'general');

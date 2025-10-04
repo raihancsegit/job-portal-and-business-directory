@@ -330,8 +330,11 @@
         border-radius: 50%;
         img {
           @include square(56px, 50%);
+          min-width: 56px;
+          object-fit: cover;
           @include lg-down-device{
             @include square(34px, 50%);
+            min-width: 34px;
           }
         }
       }

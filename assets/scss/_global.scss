@@ -108,6 +108,7 @@ $color-info-light: var(--color-info-light);
   box-sizing: border-box;
 }
 
+
 h1,
 h2,
 h3,
@@ -122,6 +123,10 @@ h6 {
 p {
   color: $text-secondary;
   margin-bottom: 0;
+  font-size: 17px;
+  @include lg-down-device{
+    font-size: 15px;
+  }
 }
 r a,
 a:active,
@@ -139,8 +144,26 @@ body {
   font-weight: 400;
   background-color: $site-bg;
   color: $text-secondary;
-  font-size: 15px;
+  font-size: 17px;
+  @include lg-down-device{
+    font-size: 15px;
+  }
 }
+
+@media (min-width: 1360px) {
+  
+  .col-xxl-4 {
+      flex: 0 0 auto;
+      width: 35%;
+  }
+  
+  .col-xxl-8 {
+      flex: 0 0 auto;
+      width: 65%;
+  }
+  
+}
+
 img {
   max-width: 100%;
   height: auto;
@@ -166,17 +189,39 @@ ul, ol{
 }
 
 .fs-72{
-  font-size: 72px !important;
+  font-size: 72px;
   line-height: 1.2;
-}
 
+    @include lg-device{
+    font-size: 50px;
+  }
+
+  @include lg-down-device{
+    font-size: 36px;
+  }
+}
+.small, small {
+    font-size: 16px;
+    color: $text-accent !important;
+    @include lg-down-device{
+      font-size: 14px;
+    }
+}
 .fs-100{
   font-size: 100px;
   line-height: 1;
+
+  @include lg-device{
+    font-size: 70px;
+  }
+
+  @include lg-down-device{
+    font-size: 50px;
+  }
 }
 
 .min-h-176{
-  min-height: 176px !important; 
+  min-height: 190px !important; 
 }
 
 .text--primary{
@@ -259,6 +304,10 @@ ul, ol{
 
 .p-20{
   padding: 20px !important;
+
+  @include lg-down-device{
+    padding: 10px !important;
+  }
 }
 
 .small-select{
@@ -295,6 +344,9 @@ ul, ol{
     justify-content: center;
     align-items: center;
     font-size: 16px;
+    @include lg-down-device{
+      height: 42px;
+    }
   }
 
   @at-root {
@@ -397,7 +449,7 @@ ul, ol{
 }
 
 .simplebar-scrollbar:before {
-  background: #5a5a5a9c;
+  background: #8383839c;
 }
 
 .icon-btn {
@@ -440,8 +492,8 @@ ul, ol{
   font-size: 14px;
 }
 .icon-btn-lg {
-  @include square(40px, 4px);
-  min-width: 40px;
+  @include square(56px, 4px);
+  min-width: 56px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -452,6 +504,13 @@ ul, ol{
   @include transition-4;
   i{
     color: $text-icon;
+  }
+
+    @include lg-down-device{
+      @include square(42px, 4px);
+      min-width: 42px;
+      font-size: 16px;
+      border-radius: 50%;
   }
 
   &:hover{
@@ -466,16 +525,23 @@ ul, ol{
 .icon-btn-xl {
   @include square(56px, 4px);
   min-width: 56px;
+  font-size: 22px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 22px;
   border-radius: 50%;
   border: 1px solid $color-border;
   background-color: $card-bg;
   @include transition-4;
   i{
     color: $text-icon;
+  }
+
+  @include lg-down-device{
+      @include square(42px, 4px);
+      min-width: 42px;
+      font-size: 16px;
+      border-radius: 50%;
   }
 
   &:hover{
@@ -611,8 +677,16 @@ button {
   }
 
   &.btn--lg {
-    padding: 14px 20px;
+    padding: 10px 20px 10px 20px;
     font-size: 16px;
+    height: 56px;
+    display: inline-flex;
+    align-items: center;
+    @include lg-down-device{
+      height: 42px;
+      font-size: 14px;
+      padding: 10px 16px 10px 16px;
+    }
   }
 
     &.btn--xl {
@@ -625,6 +699,8 @@ button {
     @include lg-down-device{
       height: 42px;
       font-size: 14px;
+      padding: 10px 16px 10px 16px;
+
     }
   }
 }
@@ -635,6 +711,10 @@ button {
 
 .mb-40 {
   margin-bottom: 40px;
+
+  @include lg-down-device{
+    margin-bottom: 25px;
+  }
 }
 
 .mb-35 {
@@ -969,8 +1049,11 @@ button {
     border-bottom: none;
     background-color: $color-white;
     .card-title {
-      font-size: 16px !important;
+      font-size: 16px;
       margin-bottom: 0;
+      @include lg-down-device{
+            font-size: 16px;
+        }
     }
   }
   .card-body {

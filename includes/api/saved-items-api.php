@@ -15,6 +15,12 @@ add_action('rest_api_init', function () {
         'callback' => 'jpbd_api_get_saved_items',
         'permission_callback' => 'is_user_logged_in',
     ]);
+
+    register_rest_route('jpbd/v1', '/saved-items/filter-counts', [
+        'methods'  => 'GET',
+        'callback' => 'jpbd_api_get_saved_items_filter_counts',
+        'permission_callback' => 'is_user_logged_in',
+    ]);
 });
 
 function jpbd_api_toggle_saved_item(WP_REST_Request $request)
@@ -84,4 +90,77 @@ function jpbd_api_get_saved_items(WP_REST_Request $request)
     }
 
     return new WP_REST_Response($results, 200);
+}
+
+function jpbd_api_get_saved_items_filter_counts(WP_REST_Request $request)
+{
+    global $wpdb;
+    $user_id = get_current_user_id();
+    $item_type = $request->get_param('type'); // 'opportunity' or 'business'
+
+    if (empty($item_type) || !in_array($item_type, ['opportunity', 'business'])) {
+        return new WP_Error('bad_request', 'A valid item type is required.', ['status' => 400]);
+    }
+
+    $saved_table = $wpdb->prefix . 'jpbd_saved_items';
+    $main_table = $wpdb->prefix . 'jpbd_' . ($item_type === 'opportunity' ? 'opportunities' : 'businesses');
+
+    // Get the IDs of all saved items of the specified type for the user
+    $saved_item_ids = $wpdb->get_col($wpdb->prepare(
+        "SELECT item_id FROM $saved_table WHERE user_id = %d AND item_type = %s",
+        $user_id,
+        $item_type
+    ));
+
+    if (empty($saved_item_ids)) {
+        return new WP_REST_Response([
+            'category' => [['name' => 'all', 'count' => 0]],
+            'status' => [['name' => 'all', 'count' => 0]],
+            'certifications' => [['name' => 'all', 'count' => 0]],
+        ], 200);
+    }
+
+    $ids_placeholder = implode(',', array_map('intval', $saved_item_ids));
+    $total_saved = count($saved_item_ids);
+
+    $counts = [];
+
+    if ($item_type === 'business') {
+        // --- Category Counts ---
+        $category_counts = $wpdb->get_results("SELECT category as name, COUNT(*) as count FROM $main_table WHERE id IN ($ids_placeholder) AND category != '' GROUP BY category", ARRAY_A);
+        array_unshift($category_counts, ['name' => 'all', 'count' => $total_saved]);
+
+        // --- Status Counts ---
+        $status_counts = $wpdb->get_results("SELECT status as name, COUNT(*) as count FROM $main_table WHERE id IN ($ids_placeholder) AND status != '' GROUP BY status", ARRAY_A);
+        array_unshift($status_counts, ['name' => 'all', 'count' => $total_saved]);
+
+        $all_certifications_raw = $wpdb->get_col("SELECT certifications FROM $main_table WHERE id IN ($ids_placeholder) AND certifications IS NOT NULL AND certifications != ''");
+        $cert_counts = [];
+        foreach ($all_certifications_raw as $row_certs) {
+            $certs_in_row = array_map('trim', explode(',', $row_certs));
+            foreach ($certs_in_row as $cert) {
+                if (!empty($cert)) {
+                    if (!isset($cert_counts[$cert])) {
+                        $cert_counts[$cert] = 0;
+                    }
+                    $cert_counts[$cert]++;
+                }
+            }
+        }
+        $formatted_cert_counts = [];
+        foreach ($cert_counts as $name => $count) {
+            $formatted_cert_counts[] = ['name' => $name, 'count' => $count];
+        }
+        array_unshift($formatted_cert_counts, ['name' => 'all', 'count' => $total_saved]);
+        // =======================================================
+
+        $counts = [
+            'category' => $category_counts,
+            'status' => $status_counts,
+            'certifications' => $formatted_cert_counts, // <-- রেসপন্সে যোগ করা
+        ];
+    }
+    // You can add logic for 'opportunity' here if needed later
+
+    return new WP_REST_Response($counts, 200);
 }

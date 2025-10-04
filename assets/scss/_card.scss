@@ -131,12 +131,15 @@
       .card-title {
             font-size: 18px;
             color: $text-primary;
+            @include lg-down-device{
+                font-size: 16px;
+            }
         }
     .card-body {
         padding: 30px;
 
         @include lg-down-device{
-            padding: 12px;
+            padding: 20px;
         }
     }
 }

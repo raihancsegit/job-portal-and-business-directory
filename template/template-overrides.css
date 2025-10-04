@@ -276,3 +276,166 @@ body.full-width-app {
 .chat-list-tabs button:hover {
   background-color: rgba(0, 0, 0, 0.03);
 }
+
+/* Chrome, Safari, Edge autofill background reset */
+input:-webkit-autofill {
+    -webkit-box-shadow: 0 0 0px 1000px white inset !important;
+    box-shadow: 0 0 0px 1000px white inset !important;
+    -webkit-text-fill-color: #000 !important; /* টেক্সট কালার ঠিক রাখার জন্য */
+    transition: background-color 5000s ease-in-out 0s;
+}
+
+/* Dark mode হলে background dark করে নিতে পারেন */
+.dark-mode input:-webkit-autofill {
+    -webkit-box-shadow: 0 0 0px 1000px #1e1e1e inset !important;
+    box-shadow: 0 0 0px 1000px #1e1e1e inset !important;
+    -webkit-text-fill-color: #fff !important;
+}
+
+input:-moz-autofill {
+    box-shadow: 0 0 0px 1000px white inset !important;
+    -moz-text-fill-color: #000 !important;
+}
+
+#postTitle, #eventDescription,#title,#event_date ,#location,#description{
+    background-color: rgba(var(--bs-white-rgb), var(--bs-bg-opacity)) !important;
+}
+
+.text-primary {
+    color: #C18544 !important;
+}
+
+ .topbar-profile {
+        background-color: $color-primary-light;
+        border-radius: 50%;
+        img {
+          @include square(56px, 50%);
+          min-width: 56px;
+          object-fit: cover !important;
+          @include lg-down-device{
+            @include square(34px, 50%);
+            min-width: 34px;
+          }
+        }
+      }
+
+.review-section .dropdown-toggle::after {
+    display: inline-block;
+    margin-left: 0.35em;
+    vertical-align: middle;
+    content: "\ea4e";
+    font-family: "remixicon" !important;
+    font-style: normal;
+    font-weight: normal;
+    font-size: 1rem; 
+    border: none !important;
+  }
+
+  /* Add this to your main CSS file */
+
+.role-selection-wrapper {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+}
+
+.role-card {
+    border: 2px solid #e0e0e0;
+    padding: 1.5rem;
+    border-radius: 12px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+}
+
+.role-card:hover {
+    border-color: #a0a0a0;
+}
+
+.role-card.selected {
+    border-color: var(--primary-color, #0d6efd); /* আপনার থিমের প্রাইমারি কালার */
+    background-color: rgba(13, 110, 253, 0.05); /* হালকা প্রাইমারি কালার */
+    box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.2);
+}
+
+.role-card h5 {
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.role-card p {
+    color: #6c757d;
+    margin-bottom: 0;
+}
+
+a:visited {
+    color: #C18544;
+}
+
+a, a:active, a:visited, a:link {
+    text-decoration: none;
+    color: #C18544;
+}
+
+/* ============================================= */
+/*  Event Card Actions (Edit/Delete) Styles
+/* ============================================= */
+
+/* 1. মূল কন্টেইনার */
+.event-card-wrapper {
+  position: relative; /* এটি খুবই গুরুত্বপূর্ণ, কারণ actions div-টি এর সাপেক্ষে পজিশন হবে */
+  height: 100%;
+  overflow: hidden; /* অপশনাল: কার্ডের বাইরে কিছু চলে গেলে লুকিয়ে ফেলবে */
+  border-radius: 1rem; /* .rounded-4 এর সমতুল্য */
+}
+
+/* 2. অ্যাকশন বাটনগুলোর কন্টেইনার */
+.event-card-actions {
+  position: absolute;
+  top: 10px;
+  left: 10px; /* বাম দিকে পজিশন করা হলো */
+  z-index: 10;
+  display: flex;
+  gap: 8px;
+  
+  /* প্রাথমিকভাবে বাটনগুলো লুকানো থাকবে */
+  opacity: 0;
+  transform: translateY(-10px); /* একটি ছোট অ্যানিমেশন */
+  transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out;
+}
+
+/* 3. হোভার করলে বাটনগুলো দেখানো হবে */
+.event-card-wrapper:hover .event-card-actions {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* 4. প্রতিটি অ্যাকশন বাটন */
+.event-card-actions .action-btn {
+  background-color: rgba(0, 0, 0, 0.6); /* একটি সেমি-ট্রান্সপারেন্ট কালো ব্যাকগ্রাউন্ড */
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  font-size: 16px; /* আইকনের সাইজ */
+}
+
+/* 5. বাটন হোভার স্টাইল */
+.event-card-actions .action-btn:hover {
+  background-color: rgba(0, 0, 0, 0.8);
+}
+
+/* 6. কার্ডের ইমেজের উপর একটি হালকা ওভারলে (ঐচ্ছিক কিন্তু সুন্দর) */
+.event-card-wrapper:hover .event-card .card-img-top {
+  transform: scale(1.05); /* হোভারে হালকা জুম ইফেক্ট */
+}
+
+.event-card .card-img-top {
+  transition: transform 0.3s ease-in-out;
+}

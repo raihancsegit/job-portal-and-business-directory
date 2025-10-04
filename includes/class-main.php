@@ -139,6 +139,7 @@ final class Job_Portal_Main
                         'page_slug'      => get_post_field('post_name', get_post()),
                         'pusher_key'     => defined('PUSHER_APP_KEY') ? PUSHER_APP_KEY : '',
                         'pusher_cluster' => defined('PUSHER_APP_CLUSTER') ? PUSHER_APP_CLUSTER : '',
+                        'home_url' => home_url(),
                     ]);
                 }
             }
@@ -183,7 +184,8 @@ final class Job_Portal_Main
                     'jpbd_admin_object', // একটি নতুন এবং নির্ভরযোগ্য অবজেক্ট
                     [
                         'api_url' => rest_url('jpbd/v1/'),
-                        'nonce'   => wp_create_nonce('wp_rest') // wp_rest Nonce তৈরি করা হচ্ছে
+                        'nonce'   => wp_create_nonce('wp_rest'),
+                        'home_url' => home_url(),
                     ]
                 );
 

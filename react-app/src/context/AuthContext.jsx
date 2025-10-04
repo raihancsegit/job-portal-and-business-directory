@@ -177,6 +177,7 @@ export const AuthProvider = ({ children }) => {
         notifications,
         unreadNotifCount,
         markNotificationsAsRead,
+        clearAllNotifications
     };
 
     return (

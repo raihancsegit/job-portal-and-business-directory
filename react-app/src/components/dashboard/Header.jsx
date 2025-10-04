@@ -56,11 +56,11 @@ function Header() {
     return (
         <header className="header">
             <div className="d-flex align-items-center justify-content-start gap-lg-3 gap-2">
-                <div className="header-icon d-lg-none d-flex">
-                    <button className="btn-icon vertical-menu-btn ripple-dark" anim="ripple">
-                        <i className="ri-menu-2-line lh-1"></i>
+                <div class="header-icon d-lg-none d-flex">
+                    <button class="btn-icon vertical-menu-btn ripple-dark" anim="ripple">
+                         <i class="ri-menu-2-line lh-1"></i>
                     </button>
-                </div>
+               </div>
                 <h4 className="page-title">{pageTitle}</h4>
             </div>
             <div className="d-flex align-items-center gap-lg-3 gap-2">

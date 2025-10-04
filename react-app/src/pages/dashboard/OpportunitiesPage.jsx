@@ -16,14 +16,15 @@ const { api_base_url } = window.jpbd_object || {};
 
 function OpportunitiesPage() {
     const { user, token } = useAuth();
+     const location = useLocation();
     const [opportunities, setOpportunities] = useState([]);
     const [selectedOpportunity, setSelectedOpportunity] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState('all');
+    const [activeTab, setActiveTab] = useState(location.state?.defaultTab || 'all');
     const [filters, setFilters] = useState({});
      const [notice, setNotice] = useState({ message: '', type: '' });
     
-    const location = useLocation();
+    
     const isListView = location.pathname.includes('opportunities-list');
 
     const showNoticeMessage = (message, type = 'success') => {
@@ -99,6 +100,18 @@ function OpportunitiesPage() {
         fetchOpportunities(); 
     };
 
+    const handleDeleteSuccess = (deletedOpportunityId) => {
+        // 1. Remove the deleted opportunity from the main list
+        const updatedOpps = opportunities.filter(opp => opp.id !== deletedOpportunityId);
+        setOpportunities(updatedOpps);
+
+        // 2. Clear the details panel if the deleted item was selected
+        if (selectedOpportunity?.id === deletedOpportunityId) {
+            // Select the next item in the list, or null if the list is empty
+            setSelectedOpportunity(updatedOpps.length > 0 ? updatedOpps[0] : null);
+        }
+    };
+
     return (
         <div className="i-card-md radius-30 card-bg-two">
             <div className="card-body">
@@ -147,6 +160,7 @@ function OpportunitiesPage() {
                                         activeTab={activeTab}
                                         onApplySuccess={handleApplicationSuccess}
                                         onWithdrawSuccess={handleWithdrawSuccess}
+                                         onDeleteSuccess={handleDeleteSuccess}
                                     />
                                 </div>
                             </div>

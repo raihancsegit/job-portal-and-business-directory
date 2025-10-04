@@ -2,33 +2,30 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { businessCategories } from '../../../data/businessCategories';
 import { useAuth } from '../../../context/AuthContext';
 
 // Child Components
-import FilterPanel from './FilterPanel';
+import BusinessFilterPanel from './FilterPanel';
 import BusinessList from './BusinessList';
 import BusinessDetails from './BusinessDetails';
 import CategorySlider from './CategorySlider';
 
 const { api_base_url } = window.jpbd_object || {};
 const token = localStorage.getItem('authToken');
-const authHeader = { headers: { 'Authorization': `Bearer ${token}` } };
+const authHeader = token ? { headers: { 'Authorization': `Bearer ${token}` } } : {};
 
-
-
-// ===================================================================
 // Main BusinessDirectoryPage Component
-// ===================================================================
 const BusinessDirectoryPage = () => {
-     const { user, loading: authLoading } = useAuth();
+    const { user, loading: authLoading } = useAuth();
     const [businesses, setBusinesses] = useState([]);
     const [selectedBusiness, setSelectedBusiness] = useState(null);
     const [filters, setFilters] = useState({ viewMode: 'all' });
     const [loading, setLoading] = useState(true);
     const [filterCounts, setFilterCounts] = useState(null);
-    
+    const [loadingCounts, setLoadingCounts] = useState(true);
+
     const fetchBusinesses = useCallback(async () => {
         setLoading(true);
         setSelectedBusiness(null);
@@ -39,8 +36,11 @@ const BusinessDirectoryPage = () => {
             if (filters.viewMode) {
                 activeFilters.viewMode = filters.viewMode;
             }
-            const params = new URLSearchParams(activeFilters).toString();
-            const response = await axios.get(`${api_base_url}businesses?${params}`, authHeader);
+            
+            const response = await axios.get(`${api_base_url}businesses`, {
+                params: activeFilters,
+                ...authHeader // 헤더 যোগ করা হয়েছে
+            });
             
             setBusinesses(response.data);
             if (response.data.length > 0) {
@@ -57,46 +57,55 @@ const BusinessDirectoryPage = () => {
         fetchBusinesses();
     }, [fetchBusinesses]);
 
+    // ফিল্টার কাউন্ট আনার জন্য useEffect
     useEffect(() => {
         const fetchCounts = async () => {
+            setLoadingCounts(true);
             try {
-                const response = await axios.get(`${api_base_url}businesses/filter-counts`, authHeader);
+                const response = await axios.get(`${api_base_url}businesses/filter-counts`);
                 setFilterCounts(response.data);
             } catch (error) { 
                 console.error("Failed to fetch filter counts", error);
+            } finally {
+                setLoadingCounts(false);
             }
         };
         fetchCounts();
     }, []);
-
-     const handleFilterChange = (newFilters) => {
-        // useCallback এখান থেকে সরিয়ে দেওয়া হয়েছে, কারণ এটি আর প্রয়োজন নেই
-        setFilters(newFilters);
-    };
 
     const handleViewModeChange = (mode) => {
         setFilters(prev => ({ ...prev, viewMode: mode }));
     };
     
     const canAddBusiness = user && (user.roles.includes('employer') || user.roles.includes('business') || user.roles.includes('administrator'));
-     if (authLoading || loading) {
-        return <div className="p-5 text-center">Loading...</div>;
+    
+    if (authLoading) {
+        return <div className="p-5 text-center">Authenticating...</div>;
     }
+
+    const handleBusinessUnsave = (businessId) => {
+    // BusinessDirectory পেজে আনসেভ করলে لیست থেকে আইটেম সরানোর দরকার নেই,
+    // কিন্তু আমরা চাইলে লিস্টের আইটেমটির is_saved স্ট্যাটাস আপডেট করতে পারি
+    setBusinesses(prev => prev.map(b => 
+        b.id === businessId ? { ...b, is_saved: false } : b
+    ));
+};
+
     return (
         <div className="main-dir">
             <div className="i-card-md radius-30 card-bg-two">
                 <div className="card-body">
                     <div className="description-container">
-                        {/* Bootstrap গ্রিড বাদ দিয়ে সরাসরি Flexbox ব্যবহার করা হলো */}
-                        <div className="d-flex gap-4">
-                            <FilterPanel 
-                                onFilterChange={handleFilterChange} 
+                        <div className="d-flex gap-4 flex-grow-1">
+                            <BusinessFilterPanel 
                                 filters={filters}
+                                setFilters={setFilters}
                                 filterCounts={filterCounts}
+                                loadingCounts={loadingCounts}
                             />
                             <div className="descrition-content flex-grow-1">
                                 <div className="d-flex justify-content-between flex-wrap gap-3 align-items-center mb-4 mt-3">
-                                    <h3>All Business</h3>
+                                    <h3>All Businesses</h3>
                                     <div className="flex-grow-1" role="group">
                                         <button type="button" className={`i-btn btn--lg ${filters.viewMode === 'all' ? 'btn--primary-dark active' : 'btn--outline'}`} onClick={() => handleViewModeChange('all')}>All</button>
                                         <button type="button" className={`i-btn btn--lg ${filters.viewMode === 'my_listing' ? 'btn--primary-dark active' : 'btn--outline'}`} onClick={() => handleViewModeChange('my_listing')}>My Listing</button>
@@ -117,7 +126,7 @@ const BusinessDirectoryPage = () => {
 
                                 <div className="row g-3 mt-4">
                                     <div className="col-xxl-4">
-                                        {loading ? <div className="p-5 text-center">Loading...</div> : 
+                                        {loading ? <div className="p-5 text-center">Loading Businesses...</div> : 
                                             <BusinessList 
                                                 businesses={businesses} 
                                                 onSelectBusiness={setSelectedBusiness}
@@ -126,9 +135,7 @@ const BusinessDirectoryPage = () => {
                                         }
                                     </div>
                                     <div className="col-xxl-8">
-                                        {loading ? <div className="p-5 text-center">Loading...</div> :
-                                            <BusinessDetails business={selectedBusiness} />
-                                        }
+                                        <BusinessDetails business={selectedBusiness} onUnsave={handleBusinessUnsave} onUpdateOrDelete={fetchBusinesses}/>
                                     </div>
                                 </div>
                             </div>
@@ -139,4 +146,5 @@ const BusinessDirectoryPage = () => {
         </div>
     );
 };
+
 export default BusinessDirectoryPage;

@@ -23,6 +23,7 @@ function DashboardLayout() {
                 <main className="main-content" data-simplebar>
                     <Outlet />
                 </main>
+                {/* <div className="overlay-bg"></div> */}
             </div>
         </>
     );

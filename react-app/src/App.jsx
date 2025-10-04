@@ -17,11 +17,13 @@ import UpdateOpportunityPage from './pages/dashboard/UpdateOpportunityPage';
 import CandidateDetailsPage from './pages/dashboard/employer/CandidateDetailsPage';
 import AddBusiness from './pages/dashboard/business/AddBusinessPage';
 import BusinessDirectory from './pages/dashboard/business/BusinessDirectoryPage';
+import EditBusinessPage from './pages/dashboard/business/EditBusinessPage';
 import Community from './pages/dashboard/CommunityPage';
 import Event from './pages/dashboard/EventsPage';
 import EventDetailsPage from './pages/dashboard/EventDetailsPage';
 import InboxPage from './pages/dashboard/InboxPage';
 import SavedItemsPage from './pages/dashboard/SavedItemsPage';
+import SelectRolePage from './pages/SelectRolePage';
 import 'leaflet/dist/leaflet.css';
 // This is your ROUTER. It decides which page to show based on the URL.
 function App() {
@@ -31,6 +33,7 @@ function App() {
     <BrowserRouter basename={`/${basename}`}>
       <Routes>
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/select-role" element={<SelectRolePage />} />
         {/* <Route path="/signup" element={<SignupPage />} /> */}
          <Route path="/signup/:role" element={<SignupPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
@@ -51,6 +54,7 @@ function App() {
 
            <Route path="add-business" element={<AddBusiness />} />
           <Route path="business-directory" element={<BusinessDirectory />} handle={{ title: 'Directory' }}/>
+            <Route path="edit-business/:id" element={<EditBusinessPage />} handle={{ title: 'Edit Business' }} />
           <Route path="community" element={<Community />} handle={{ title: 'Community' }}/>
           <Route path="event" element={<Event />} handle={{ title: 'Event' }}/>
           <Route path="/dashboard/event-details/:eventId" element={<EventDetailsPage />} />

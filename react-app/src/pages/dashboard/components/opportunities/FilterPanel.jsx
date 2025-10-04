@@ -46,100 +46,64 @@ const FilterPanel = ({ filters, setFilters }) => {
     
     
     useEffect(() => {
-        const priceHistogramCanvas = priceHistogramCanvasRef.current;
         const priceSlider = priceSliderRef.current;
         const minPriceInput = minPriceInputRef.current;
         const maxPriceInput = maxPriceInputRef.current;
 
-        if (!priceSlider || typeof noUiSlider === 'undefined' || !priceHistogramCanvas) {
+        // noUiSlider লোড হয়েছে কিনা এবং ref গুলো আছে কিনা তা চেক করা
+        if (!priceSlider || typeof noUiSlider === 'undefined') {
             return;
         }
 
+        // যদি আগে থেকে স্লাইডার তৈরি করা থাকে, তাহলে সেটি destroy করা
         if (priceSlider.noUiSlider) {
             priceSlider.noUiSlider.destroy();
         }
         
+        // নতুন স্লাইডার তৈরি করা
         noUiSlider.create(priceSlider, {
-            start: [100, 500],
+            start: [filters.minSalary || 1000, filters.maxSalary || 5000], // state থেকে প্রাথমিক মান নেওয়া
             connect: true,
-            range: { 'min': 100, 'max': 500 },
-            step: 1,
+            range: { 'min': 0, 'max': 10000 }, // আপনার প্রয়োজন অনুযায়ী রেঞ্জ পরিবর্তন করুন
+            step: 100,
+            format: {
+                to: value => Math.round(value),
+                from: value => Number(value)
+            }
         });
 
-        const ctx = priceHistogramCanvas.getContext('2d');
-        if (!ctx) return;
+        // স্লাইডার পরিবর্তনের সময় state আপডেট করা
+        priceSlider.noUiSlider.on('update', (values, handle) => {
+            const [min, max] = values;
+            minPriceInput.value = min;
+            maxPriceInput.value = max;
+        });
 
-        // Histogram and slider logic from your original HTML file
-        function generateNormalData(count, mean, stdDev, minValue, maxValue) {
-            const data = [];
-            for (let i = 0; i < count; i++) {
-                let value;
-                do {
-                    const u1 = Math.random(); const u2 = Math.random();
-                    const z = Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
-                    value = mean + z * stdDev;
-                } while (value < minValue || value > maxValue);
-                data.push(value);
-            }
-            return data;
-        }
+        // স্লাইডার মুভ করা শেষ হলে প্যারেন্ট কম্পোনেন্টের filters state আপডেট করা
+        priceSlider.noUiSlider.on('change', (values, handle) => {
+            setFilters(prev => ({
+                ...prev,
+                minSalary: values[0],
+                maxSalary: values[1]
+            }));
+        });
+        
+        // ইনপুট ফিল্ড থেকে পরিবর্তনের জন্য হ্যান্ডলার
+        const minChangeHandler = () => priceSlider.noUiSlider.set([minPriceInput.value, null]);
+        const maxChangeHandler = () => priceSlider.noUiSlider.set([null, maxPriceInput.value]);
 
-        const binCount = 42, minValue = 100, maxValue = 500;
-        const binWidth = (maxValue - minValue) / binCount;
-        const histogramData = Array(binCount).fill(0);
-        const rawData = generateNormalData(1000, 300, 80, minValue, maxValue);
-        for (let i = 0; i < rawData.length; i++) {
-            const binIndex = Math.floor((rawData[i] - minValue) / binWidth);
-            histogramData[Math.min(binIndex, binCount - 1)]++;
-        }
-
-        function drawAreaChart(minPrice, maxPrice) {
-            ctx.clearRect(0, 0, priceHistogramCanvas.width, priceHistogramCanvas.height);
-            const pointSpacing = priceHistogramCanvas.width / (binCount - 1);
-            const maxY = Math.max(...histogramData);
-            const minBinIndex = Math.max(0, Math.floor((minPrice - minValue) / binWidth));
-            const maxBinIndex = Math.min(binCount - 1, Math.floor((maxPrice - minValue) / binWidth));
-
-            ctx.beginPath();
-            ctx.moveTo(0, priceHistogramCanvas.height);
-            for (let i = 0; i < histogramData.length; i++) { ctx.lineTo(i * pointSpacing, priceHistogramCanvas.height - (histogramData[i] / maxY) * priceHistogramCanvas.height); }
-            ctx.lineTo(priceHistogramCanvas.width, priceHistogramCanvas.height);
-            ctx.closePath();
-            const bgGradient = ctx.createLinearGradient(0, 0, 0, priceHistogramCanvas.height);
-            bgGradient.addColorStop(0, 'rgba(41, 44, 45, 0.3)'); bgGradient.addColorStop(1, 'rgba(41, 44, 45, 0)');
-            ctx.fillStyle = bgGradient; ctx.fill();
-
-            ctx.beginPath();
-            ctx.moveTo(minBinIndex * pointSpacing, priceHistogramCanvas.height);
-            for (let i = minBinIndex; i <= maxBinIndex; i++) { ctx.lineTo(i * pointSpacing, priceHistogramCanvas.height - (histogramData[i] / maxY) * priceHistogramCanvas.height); }
-            ctx.lineTo(maxBinIndex * pointSpacing, priceHistogramCanvas.height);
-            ctx.closePath();
-            const fgGradient = ctx.createLinearGradient(0, 0, 0, priceHistogramCanvas.height);
-            fgGradient.addColorStop(0, '#86562B'); fgGradient.addColorStop(1, '#86562B');
-            ctx.fillStyle = fgGradient; ctx.fill();
-        }
-
-        function updateOnSliderMove() {
-            const [minPrice, maxPrice] = priceSlider.noUiSlider.get().map(Number);
-            minPriceInput.value = Math.round(minPrice);
-            maxPriceInput.value = Math.round(maxPrice);
-            drawAreaChart(minPrice, maxPrice);
-        }
-
-        priceSlider.noUiSlider.on('update', updateOnSliderMove);
-        const minChangeHandler = function () { priceSlider.noUiSlider.set([this.value, null]); };
-        const maxChangeHandler = function () { priceSlider.noUiSlider.set([null, this.value]); };
         minPriceInput.addEventListener('change', minChangeHandler);
         maxPriceInput.addEventListener('change', maxChangeHandler);
-        
-        updateOnSliderMove();
 
+        // ক্লিন-আপ ফাংশন
         return () => {
-            if (priceSlider.noUiSlider) { priceSlider.noUiSlider.destroy(); }
+            if (priceSlider.noUiSlider) {
+                priceSlider.noUiSlider.destroy();
+            }
             minPriceInput.removeEventListener('change', minChangeHandler);
             maxPriceInput.removeEventListener('change', maxChangeHandler);
         };
-    }, []);
+    }, []); // খালি dependency array, শুধুমাত্র একবার রান হবে
     
 
     return (
@@ -395,14 +359,25 @@ const FilterPanel = ({ filters, setFilters }) => {
                     </div>
                 </div>
                 {/* Salary Range */}
-                <div className="accordion-item border-0 mb-40">
-                    <h2 className="accordion-header" id="headingSalary"><button className="accordion-button fw-semibold px-0 bg-transparent shadow-none collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSalary" aria-expanded="false"><span>Salary Range</span><span><i className="ri-arrow-down-s-line"></i></span></button></h2>
+               <div className="accordion-item border-0 mb-40">
+                    <h2 className="accordion-header" id="headingSalary">
+                        <button className="accordion-button fw-semibold px-0 bg-transparent shadow-none collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSalary">
+                            <span>Salary Range</span><span><i className="ri-arrow-down-s-line"></i></span>
+                        </button>
+                    </h2>
                     <div id="collapseSalary" className="accordion-collapse collapse" data-bs-parent="#filterAccordion">
+                        {/* ================== মূল পরিবর্তন এখানে (JSX) ================== */}
                         <div className="accordion-body px-0 pt-2 pb-0">
-                            <div className="histogram-container"><canvas ref={priceHistogramCanvasRef} id="priceHistogram"></canvas></div>
-                            <div className="slider-container"><div ref={priceSliderRef} id="priceSlider"></div></div>
-                            <div className="input-container"><input ref={minPriceInputRef} type="number" id="minPriceInput" /><input ref={maxPriceInputRef} type="number" id="maxPriceInput" /></div>
+                            {/* Histogram ক্যানভাসটি মুছে ফেলা হয়েছে */}
+                            <div className="slider-container mt-4">
+                                <div ref={priceSliderRef} id="priceSlider"></div>
+                            </div>
+                            <div className="input-container">
+                                <input ref={minPriceInputRef} type="number" id="minPriceInput" />
+                                <input ref={maxPriceInputRef} type="number" id="maxPriceInput" />
+                            </div>
                         </div>
+                        {/* ============================================================= */}
                     </div>
                 </div>
                 {/* Experience */}

@@ -5,17 +5,27 @@ import axios from 'axios';
 import { useAuth } from '../../../context/AuthContext';
 import LocationMapDisplay from './LocationMapDisplay';
 import StarRating from './StarRating';
+import { useNavigate } from 'react-router-dom';
 import ReviewSection from './ReviewSection';
+import { Link } from 'react-router-dom';
 
-const BusinessDetails = ({ business }) => {
-    const { user } = useAuth();
+
+
+const BusinessDetails = ({ business,onUnsave ,onUpdateOrDelete  }) => {
+    const { user,token  } = useAuth();
+     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState('desc');
     const [reviewCount, setReviewCount] = useState(0);
      const { api_base_url } = window.jpbd_object || {};
+     const [isSaved, setIsSaved] = useState(business?.is_saved || false);
+    const [saving, setSaving] = useState(false);
+
+    const isOwner = user && business && parseInt(user.id, 10) === parseInt(business.user_id, 10);
 
     useEffect(() => {
         if (business?.id) {
             setActiveTab('desc'); // ডিফল্ট ট্যাবে ফেরা
+            setIsSaved(business.is_saved || false);
 
             const fetchReviewCount = async () => {
                 try {
@@ -38,6 +48,20 @@ const BusinessDetails = ({ business }) => {
             </div>
         );
     }
+
+     const handleDelete = async () => {
+        if (window.confirm("Are you sure you want to delete this business listing?")) {
+            try {
+                await axios.delete(`${api_base_url}businesses/${business.id}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                alert('Business deleted successfully!');
+                if (onUpdateOrDelete) onUpdateOrDelete(); // প্যারেন্টকে জানানো
+            } catch (error) {
+                alert(error.response?.data?.message || "Failed to delete business.");
+            }
+        }
+    };
     
     // ডেটা পার্সিং এবং ডিফল্ট ভ্যালু সেট করা
     const businessHours = business.business_hours ? JSON.parse(business.business_hours) : [];
@@ -45,6 +69,27 @@ const BusinessDetails = ({ business }) => {
     const certifications = business.certifications ? business.certifications.split(',').map(c => c.trim()).filter(Boolean) : [];
     const mapLocation = business.map_location ? JSON.parse(business.map_location) : null;
     const ratingSummary = { score: 4.8 }; // এটি পরে API থেকে ডাইনামিক করা হবে
+
+    const handleToggleSave = async () => {
+        setSaving(true);
+        try {
+            const response = await axios.post(`${api_base_url}saved-items/toggle`, {
+                item_id: business.id,
+                item_type: 'business',
+            }, { headers: { 'Authorization': `Bearer ${token}` } });
+            
+            setIsSaved(response.data.status === 'saved');
+
+            // যদি Saved পেজে থাকি এবং আনসেভ করা হয়, তাহলে প্যারেন্টকে জানানো
+            if (response.data.status === 'unsaved' && onUnsave) {
+                onUnsave(business.id);
+            }
+        } catch (error) {
+            alert("Could not update save status.");
+        } finally {
+            setSaving(false);
+        }
+    };
 
     return (
         <div className="dir-card-details">
@@ -57,9 +102,26 @@ const BusinessDetails = ({ business }) => {
                     <div className="dir-card-details__badge">
                         <span className="status-dot"></span> {business.status || 'Status not available'}
                     </div>
-                    <div>
-                        <h3 className="company-name">{business.title}</h3>
-                        <p className="company-type">{business.tagline}</p>
+                    <div className="d-flex justify-content-start align-items-center gap-2">
+                        <div>
+                            <h3 className="company-name">{business.title}</h3>
+                            <p className="company-type">{business.tagline}</p>
+                        </div>
+                        {isOwner && (
+                                <div className="dropdown ms-auto me-0">
+                                    <button className="icon-btn-xl" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i className="ri-more-2-fill"></i>
+                                    </button>
+                                    <ul className="dropdown-menu dropdown-menu-end">
+                                        <li>
+                                             <Link className="dropdown-item" to={`/dashboard/edit-business/${business.id}`}>
+                                                Edit
+                                            </Link>
+                                            </li>
+                                        <li><a className="dropdown-item text-danger" href="#" onClick={(e) => { e.preventDefault(); handleDelete(); }}>Delete</a></li>
+                                    </ul>
+                                </div>
+                            )}
                     </div>
                 </div>
             </div>
@@ -80,8 +142,12 @@ const BusinessDetails = ({ business }) => {
             <div className="dir-card-details__actions">
                 <button className="i-btn btn--dark btn--xl">Get in touch</button>
                 <a href={business.website_url} target="_blank" rel="noopener noreferrer" className="i-btn btn--outline btn--xl">Visit Website</a>
-                <button className="icon-btn-xl ms-auto me-0">
-                    <i className="ri-save-line"></i>
+                <button 
+                    className="icon-btn-xl ms-auto me-0"
+                    onClick={handleToggleSave}
+                    disabled={saving}
+                >
+                    <i className={isSaved ? "ri-bookmark-fill text-primary" : "ri-bookmark-line"}></i>
                 </button>
             </div>
             
@@ -155,7 +221,10 @@ const BusinessDetails = ({ business }) => {
                     )}
                 </div>
             </div>
+
+           
         </div>
+        
     );
 };
 

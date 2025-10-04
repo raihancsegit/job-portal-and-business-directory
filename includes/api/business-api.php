@@ -57,8 +57,121 @@ function jpbd_register_business_api_routes()
         'callback' => 'jpbd_api_get_business_review_count',
         'permission_callback' => '__return_true',
     ]);
+
+    register_rest_route('jpbd/v1', '/businesses/(?P<id>\d+)', [
+        'methods'  => 'POST', // আপডেটের জন্য POST ব্যবহার
+        'callback' => 'jpbd_api_update_business',
+        'permission_callback' => 'is_user_logged_in',
+    ]);
+
+    // একটি business ডিলেট করার জন্য
+    register_rest_route('jpbd/v1', '/businesses/(?P<id>\d+)', [
+        'methods'  => 'DELETE',
+        'callback' => 'jpbd_api_delete_business',
+        'permission_callback' => 'is_user_logged_in',
+    ]);
+
+    register_rest_route('jpbd/v1', '/businesses/(?P<id>\d+)', [
+        'methods'  => 'GET',
+        'callback' => 'jpbd_api_get_single_business',
+        'permission_callback' => '__return_true',
+    ]);
 }
 add_action('rest_api_init', 'jpbd_register_business_api_routes');
+
+function jpbd_api_get_single_business(WP_REST_Request $request)
+{
+    global $wpdb;
+    $business_id = (int)$request['id'];
+    $table_name = $wpdb->prefix . 'jpbd_businesses';
+
+    $business = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table_name WHERE id = %d", $business_id), ARRAY_A);
+
+    if (empty($business)) {
+        return new WP_Error('not_found', 'Business not found.', ['status' => 404]);
+    }
+
+    // JSON फ़ील्ड्स को डीकोड करें
+    $business['businessHours'] = json_decode($business['business_hours'], true);
+    $business['socialProfiles'] = json_decode($business['social_profiles'], true);
+    $business['mapLocation'] = json_decode($business['map_location'], true);
+
+    return new WP_REST_Response($business, 200);
+}
+
+function jpbd_api_update_business(WP_REST_Request $request)
+{
+    global $wpdb;
+    $business_id = (int)$request['id'];
+    $user_id = get_current_user_id();
+    $table_name = $wpdb->prefix . 'jpbd_businesses';
+
+    // ওনারশিপ ভেরিফাই করা
+    $owner_id = (int)$wpdb->get_var($wpdb->prepare("SELECT user_id FROM $table_name WHERE id = %d", $business_id));
+    if (!$owner_id || $owner_id !== $user_id) {
+        return new WP_Error('forbidden', 'You do not have permission to edit this business.', ['status' => 403]);
+    }
+
+    $params = $request->get_json_params();
+    $data = []; // শুধুমাত্র পাঠানো ডেটা আপডেট করা হবে
+
+    // ================== মূল এবং সম্পূর্ণ কোড এখানে ==================
+    // সব ফিল্ডের জন্য চেক এবং sanitize করা
+    if (isset($params['title'])) $data['title'] = sanitize_text_field($params['title']);
+    if (isset($params['tagline'])) $data['tagline'] = sanitize_text_field($params['tagline']);
+    if (isset($params['industry'])) $data['industry'] = sanitize_text_field($params['industry']);
+    if (isset($params['category'])) $data['category'] = sanitize_text_field($params['category']);
+    if (isset($params['status'])) $data['status'] = sanitize_text_field($params['status']);
+    if (isset($params['details'])) $data['details'] = sanitize_textarea_field($params['details']);
+    if (isset($params['countryCode'])) $data['country_code'] = sanitize_text_field($params['countryCode']);
+    if (isset($params['city'])) $data['city'] = sanitize_text_field($params['city']);
+    if (isset($params['address'])) $data['address'] = sanitize_text_field($params['address']);
+    if (isset($params['zipCode'])) $data['zip_code'] = sanitize_text_field($params['zipCode']);
+    if (isset($params['websiteUrl'])) $data['website_url'] = esc_url_raw($params['websiteUrl']);
+    if (isset($params['phoneCode'])) $data['phone_code'] = sanitize_text_field($params['phoneCode']);
+    if (isset($params['phoneNumber'])) $data['phone_number'] = sanitize_text_field($params['phoneNumber']);
+    if (isset($params['foundedYear'])) $data['founded_year'] = sanitize_text_field($params['foundedYear']);
+    if (isset($params['certifications'])) $data['certifications'] = sanitize_text_field($params['certifications']);
+    if (isset($params['services'])) $data['services'] = sanitize_textarea_field($params['services']);
+
+    // JSON ফিল্ডগুলোর জন্য
+    if (isset($params['businessHours'])) $data['business_hours'] = wp_json_encode($params['businessHours']);
+    if (isset($params['socialProfiles'])) $data['social_profiles'] = wp_json_encode($params['socialProfiles']);
+    if (isset($params['mapLocation'])) $data['map_location'] = wp_json_encode($params['mapLocation']);
+
+    // Logo URL-ও এখান থেকে আপডেট করা যেতে পারে যদি পাঠানো হয়
+    if (isset($params['logoUrl'])) $data['logo_url'] = esc_url_raw($params['logoUrl']);
+    // =============================================================
+
+    if (empty($data)) {
+        return new WP_Error('bad_request', 'No data provided for update.', ['status' => 400]);
+    }
+
+    $result = $wpdb->update($table_name, $data, ['id' => $business_id]);
+
+    if ($result === false) {
+        return new WP_Error('db_error', 'Could not update the business profile.', ['status' => 500]);
+    }
+
+    return new WP_REST_Response(['success' => true, 'message' => 'Business updated successfully.'], 200);
+}
+
+function jpbd_api_delete_business(WP_REST_Request $request)
+{
+    global $wpdb;
+    $business_id = (int)$request['id'];
+    $user_id = get_current_user_id();
+    $table_name = $wpdb->prefix . 'jpbd_businesses';
+
+    // ওনারশিপ ভেরিফাই করা
+    $owner_id = (int)$wpdb->get_var($wpdb->prepare("SELECT user_id FROM $table_name WHERE id = %d", $business_id));
+    if (!$owner_id || $owner_id !== $user_id) {
+        return new WP_Error('forbidden', 'You do not have permission to delete this business.', ['status' => 403]);
+    }
+
+    $wpdb->delete($table_name, ['id' => $business_id]);
+    return new WP_REST_Response(['success' => true, 'message' => 'Business deleted successfully.'], 200);
+}
 
 function jpbd_api_get_business_review_count(WP_REST_Request $request)
 {
@@ -253,6 +366,22 @@ function jpbd_api_get_all_businesses(WP_REST_Request $request)
 
     $query = $wpdb->prepare($sql, $params);
     $results = $wpdb->get_results($query, ARRAY_A);
+
+    $user_id = get_current_user_id();
+    if ($user_id > 0 && !empty($results)) {
+        $saved_table = $wpdb->prefix . 'jpbd_saved_items';
+        $business_ids = wp_list_pluck($results, 'id');
+
+        $saved_ids_query = $wpdb->prepare(
+            "SELECT item_id FROM $saved_table WHERE user_id = %d AND item_type = 'business' AND item_id IN (" . implode(',', $business_ids) . ")",
+            $user_id
+        );
+        $saved_ids = $wpdb->get_col($saved_ids_query);
+
+        foreach ($results as &$business) {
+            $business['is_saved'] = in_array($business['id'], $saved_ids);
+        }
+    }
 
     if (is_null($results)) {
         return new WP_Error('db_error', 'Could not retrieve businesses.', ['status' => 500]);

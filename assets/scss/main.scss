@@ -136,6 +136,10 @@
     display: flex;
     align-items: center;
     gap: 6px;
+
+    @include lg-down-device{
+      font-size: 14px;
+    }
   }
 
   .dot {
@@ -158,6 +162,14 @@
     font-weight: 600;
     color: $text-primary;
     line-height: 1;
+
+  @include lg-device{
+    font-size: 36px;
+  }
+
+  @include lg-down-device{
+    font-size: 28px;
+  }
   }
 
   .divider {
@@ -250,6 +262,10 @@
   padding: 20px;
   transition: all 0.4s ease;
 
+  @include lg-down-device{
+    padding: 15px;
+  }
+
   &.active,
   &:hover {
     background-color: $text-primary;
@@ -319,6 +335,10 @@
   h4 {
     font-size: 20px;
     margin-bottom: 2px;
+
+    @include lg-down-device{
+      font-size: 18px;
+    }
   }
 
   p {
@@ -326,6 +346,9 @@
     font-weight: 500;
     color: $text-accent;
     margin-bottom: 12px;
+    @include lg-down-device{
+      font-size: 15px;
+    }
   }
 
   .job-meta {
@@ -356,6 +379,9 @@
         &:nth-child(2) {
           font-size: 20px;
           color: $text-primary;
+          @include md-down-device{
+            font-size: 16px;
+          }
         }
       }
     }
@@ -365,6 +391,10 @@
     p {
       font-size: 24px;
       font-weight: 600;
+
+      @include lg-down-device{
+        font-size: 20px;
+      }
     }
 
     span {
@@ -372,6 +402,9 @@
       font-size: 18px;
       font-weight: 600;
       color: $text-icon;
+      @include lg-down-device{
+        font-size: 16px;
+      }
     }
   }
 
@@ -413,6 +446,12 @@
     border-radius: 50%;
     background: #b87333;
     flex-shrink: 0;
+
+    img {
+    width: 72px !important;
+    height: 72px !important;
+    object-fit: cover !important;
+}
   }
 
   &__badge {
@@ -569,6 +608,10 @@
   z-index: 1;
   overflow: hidden;
 
+  @include lg-down-device{
+    padding: 120px 10px 24px;
+  }
+
   &::before {
     content: '';
     position: absolute;
@@ -596,6 +639,14 @@
     background: #b87333;
     flex-shrink: 0;
     border: 5px solid $color-white;
+    overflow: hidden;
+    box-shadow: 0px 0px 10px 5px rgba(0,0,0,0.05);
+
+    img{
+      width: 100%;
+      height: 100%;
+      object-fit: cover ;
+    }
   }
 
   &__badge {
@@ -720,6 +771,10 @@
     padding: 20px;
     background: #fff;
 
+    @include lg-down-device{
+      padding: 0px;
+    }
+
     p {
       font-size: 18px;
       color: #444;
@@ -791,6 +846,8 @@
 
       .accordion-body {
         padding: 12px 16px;
+
+    
 
         ul {
           margin: 0;
@@ -1016,13 +1073,19 @@
   .icon {
     min-width: 48px;
     max-width: 48px;
-    display: block;
     height: 48px;
+    display: block;
     border-radius: 50%;
     background-color: $site-bg;
     display: flex;
     justify-content: center;
     align-items: center;
+
+    @include lg-down-device{
+      min-width: 36px;
+      max-width: 36px;
+      height: 36px;
+    }
 
     i {
       color: $text-accent;
@@ -1112,6 +1175,7 @@
   background-color: $site-bg;
   border-radius: 24px;
   text-align: left;
+  min-height: 125px;
 
   p {
     font-size: 16px;
@@ -1133,6 +1197,10 @@
 
 .desc-text {
   font-size: 18px;
+
+  @include lg-down-device{
+      font-size: 15px;
+    }
 }
 
 .desc-title {
@@ -1174,6 +1242,10 @@
     margin-bottom: 6px;
     color: $text-icon;
     font-size: 18px;
+
+    @include lg-down-device{
+      font-size: 16px;
+    }
   }
 }
 
@@ -1181,6 +1253,7 @@
   padding-top: 16px;
   height: 1020px;
   overflow-y: auto;
+  padding-right: 16px;
 
   h2 {
     font-size: 18px;
@@ -1258,6 +1331,10 @@
   height: 100%;
   max-height: 1020px;
   overflow: auto;
+
+  @include lg-down-device{
+    padding: 5px;
+  }
 }
 
 
@@ -2274,6 +2351,11 @@
             gap: 15px;
             max-width: 75%;
 
+            @include lg-down-device{
+              max-width: 90%;
+              gap: 5px;
+            }
+
             &.right {
               margin-left: auto;
               flex-direction: row-reverse;
@@ -2473,9 +2555,15 @@
   .employ-tab-btn {
     background: #f2f1ef;
     border: 1px solid $color-border;
-    border-radius: 20px;
-    padding: 8px 16px;
+    border-radius: 30px;
+    padding: 8px 18px;
+    height: 56px;
     cursor: pointer;
+    font-size: 16px;
+    @include lg-down-device{
+      font-size: 14px;
+      height: 42px;
+    }
 
     &.active {
       background: #8b5e3c;
@@ -2618,14 +2706,19 @@
 
 .employ-tab-prev,
 .employ-tab-next {
-  width: 42px;
-  height: 42px;
+  width: 56px;
+  height: 56px;
   display: flex;
   justify-content: center;
   align-items: center;
   background-color: $color-white;
   border-radius: 50%;
   z-index: 99;
+
+  @include lg-down-device{
+    width: 42px;
+    height: 42px;
+  }
 }
 
 .employ-tab-prev {
@@ -2649,15 +2742,23 @@
   background-color: $color-white;
   border-radius: 50%;
   z-index: 99;
+  position: absolute;
+  top: 6px;
+
+  @include lg-down-device{
+    top: 0px;
+  }
+
+  i{
+    font-size: 20px;
+  }
 }
 
 .event-tab-prev {
-  position: absolute;
   left: -20px !important;
 }
 
 .event-tab-next {
-  position: absolute;
   right: -20px !important;
 }
 
@@ -2814,7 +2915,7 @@
 }
 
 .beige-map {
-  filter: sepia(60%) saturate(70%) brightness(105%) !important;
+  filter: sepia(60%) saturate(70%) brightness(90%) !important;
 }
 
 .category-slider-wrapper {
@@ -2839,6 +2940,7 @@
     img {
       width: 36px;
       height: 36px;
+      border-radius: 0px;
       margin-bottom: 8px;
     }
 
@@ -2883,6 +2985,10 @@
     align-items: center;
     justify-content: center;
 
+    i{
+      font-size: 20px;
+    }
+
     &::after {
       font-size: 16px;
       font-weight: bold;
@@ -2898,6 +3004,17 @@
     font-size: 14px;
     background: #f9f9f9;
     border: 1px solid #ddd;
+  }
+  .dropdown-toggle::after {
+    display: inline-block;
+    margin-left: 0.35em;
+    vertical-align: middle;
+    content: "\ea4e";
+    font-family: "remixicon" !important;
+    font-style: normal;
+    font-weight: normal;
+    font-size: 1rem; 
+    border: none !important;
   }
 
   .btn-dark {
@@ -2982,6 +3099,11 @@
 
   .card-body {
     padding: 16px;
+
+    .d-flex{
+      flex-wrap: wrap;
+      gap: 8px;
+    }
 
     h6 {
       font-size: 16px;

@@ -34,7 +34,7 @@ const TopFilterBar = ({ filters, setFilters }) => {
                             value={filters.experience || ''} // state থেকে মান দেখানো হচ্ছে
                             onChange={handleChange}     // state পরিবর্তন করার জন্য হ্যান্ডলার
                         >
-                            <option value="">Experience level</option>
+                            <option value="" disabled>Experience level</option>
                             <option value="fresh">No experience required</option>
                             <option value="2-years">2 years</option>
                             <option value="3-years">3 years</option>

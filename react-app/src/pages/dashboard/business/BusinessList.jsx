@@ -1,9 +1,43 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { useAuth } from '../../../context/AuthContext';
+import axios from 'axios';
 
-const BusinessCard = ({ business, onSelect, isActive }) => {
+const BusinessCard = ({ business, onSelect, isActive,onUnsave  }) => {
     // এই ডেটাগুলো ডাইনামিকভাবে আসবে, আপাতত ডেমো হিসেবে দেওয়া হলো
+    const { token } = useAuth();
+    const { api_base_url } = window.jpbd_object || {};
+
     const rating = business.rating || { score: 4.6, reviews: 56 };
     const status = business.status || 'Open to contracts';
+
+    const [isSaved, setIsSaved] = useState(business.is_saved || false);
+    const [saving, setSaving] = useState(false);
+
+     useEffect(() => {
+        setIsSaved(business.is_saved || false);
+    }, [business.is_saved]);
+
+    const handleToggleSave = async (e) => {
+        e.stopPropagation();
+        setSaving(true);
+        try {
+            const response = await axios.post(`${api_base_url}saved-items/toggle`, {
+                item_id: business.id,
+                item_type: 'business', // <-- আইটেম টাইপ 'business'
+            }, { headers: { 'Authorization': `Bearer ${token}` } });
+            
+            setIsSaved(response.data.status === 'saved');
+            
+            // যদি Saved পেজে থাকি এবং আনসেভ করা হয়, তাহলে প্যারেন্টকে জানানো
+            if (response.data.status === 'unsaved' && onUnsave) {
+                onUnsave(business.id);
+            }
+        } catch (error) {
+            alert("Could not update save status.");
+        } finally {
+            setSaving(false);
+        }
+    };
 
     return (
         <div className="col-lg-12 col-sm-6" onClick={() => onSelect(business)}>
@@ -41,19 +75,16 @@ const BusinessCard = ({ business, onSelect, isActive }) => {
                 <p className="company-location">{business.city}, {business.country_code}</p>
 
                 {/* Save Button */}
-                <button className="save-btn" onClick={(e) => {
-                    e.stopPropagation(); // কার্ডে ক্লিক হওয়া থেকে আটকানোর জন্য
-                    console.log('Save button clicked for:', business.title);
-                    // এখানে সেভ করার লজিক যোগ করা হবে
-                }}>
-                    <i className="ri-bookmark-line"></i>
+               <button className="save-btn" onClick={handleToggleSave} disabled={saving}>
+                    {/* আইকনটি এখন ডাইনামিক */}
+                    <i className={isSaved ? "ri-bookmark-fill text-primary" : "ri-bookmark-line"}></i>
                 </button>
             </div>
         </div>
     );
 };
 
-const BusinessList = ({ businesses, onSelectBusiness, selectedBusiness }) => {
+const BusinessList = ({ businesses, onSelectBusiness, selectedBusiness,onUnsave  }) => {
     if (!businesses || businesses.length === 0) {
         return (
             <div className="text-center p-5">
@@ -72,6 +103,7 @@ const BusinessList = ({ businesses, onSelectBusiness, selectedBusiness }) => {
                         business={business} 
                         onSelect={onSelectBusiness}
                         isActive={selectedBusiness?.id === business.id}
+                        onUnsave={onUnsave}
                     />
                 ))}
             </div>

@@ -127,7 +127,14 @@ const ShortlistedTable = () => {
                           <table>
                                <thead><tr><th>Applicant</th><th>For Opportunity</th><th>Status</th><th>Options</th></tr></thead>
                                <tbody>
-                                    {loading ? (<tr><td colSpan="4" className="text-center p-4">Loading...</td></tr>) : filteredApplicants.length > 0 ? (filteredApplicants.map(app => ( <tr key={app.application_id}> <td>{app.applicant_name}</td> <td className="text-muted">{app.job_title}</td> <td><div className="status"><span className={`status-dot ${getEmpStatusClass(app.status)}`}></span><span>{app.status.charAt(0).toUpperCase() + app.status.slice(1)}</span></div></td> <td><div className="dropdown"><button className="options-btn" type="button" data-bs-toggle="dropdown"><i className="ri-more-2-fill"></i></button><ul className="dropdown-menu dropdown-menu-end"><li><a className="dropdown-item" href="#">View Profile</a></li></ul></div></td> </tr> ))) : (<tr><td colSpan="4" className="text-center p-4">No shortlisted applicants found.</td></tr>)}
+                                    {loading ? (<tr><td colSpan="4" className="text-center p-4">Loading...</td></tr>) : filteredApplicants.length > 0 ? (filteredApplicants.map(app => ( <tr key={app.application_id}> <td>{app.applicant_name}</td> <td className="text-muted">{app.job_title}</td> <td><div className="status"><span className={`status-dot ${getEmpStatusClass(app.status)}`}></span><span>{app.status.charAt(0).toUpperCase() + app.status.slice(1)}</span></div></td> <td><div className="dropdown"><button className="options-btn" type="button" data-bs-toggle="dropdown"><i className="ri-more-2-fill"></i></button><ul className="dropdown-menu dropdown-menu-end"><li>
+                                        <Link 
+                                                                    className="dropdown-item" 
+                                                                    to={`/dashboard/candidate/${app.candidate_user_id}`}
+                                                                >
+                                                                    View Profile
+                                                                </Link>
+                                        </li></ul></div></td> </tr> ))) : (<tr><td colSpan="4" className="text-center p-4">No shortlisted applicants found.</td></tr>)}
                                </tbody>
                           </table>
                      </div>

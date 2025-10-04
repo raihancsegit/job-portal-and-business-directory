@@ -81,8 +81,19 @@ const UpdateOpportunityPage = () => {
     return (
         <div className="i-card-md radius-30">
             <div className="card-body">
+                <div className="d-flex align-items-center gap-2 mb-5"> 
+                    {/* Back বাটনটিকে কার্যকরী করা হলো */}
+                    <button className="icon-btn-lg" type="button" onClick={() => navigate(-1)}>
+                        <i className="ri-arrow-left-s-line"></i>
+                    </button>
+                    
+                    <div className="update-tile">
+                        {/* Job Title-কে ডাইনামিক করা হলো */}
+                        <h3><span>Update</span> {formData.jobTitle}</h3>
+                    </div>
+                </div>
                 <div className="multiFormContainer py-5">
-                    <h2 className="mb-4">Update Opportunity</h2>
+                    
 
                     <form id="updateOpportunityForm" onSubmit={handleSubmit}>
                         <div className="form-section active">

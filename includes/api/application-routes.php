@@ -199,17 +199,31 @@ function jpbd_api_update_application_status(WP_REST_Request $request)
     $application_id = (int) $request['app_id'];
     $params = $request->get_json_params();
     $new_status = isset($params['status']) ? sanitize_text_field($params['status']) : '';
+    $employer_user = wp_get_current_user();
 
     $allowed_statuses = ['new', 'shortlisted', 'hired'];
     if (!in_array($new_status, $allowed_statuses)) {
         return new WP_Error('invalid_status', 'Invalid status provided.', ['status' => 400]);
     }
 
-    $table_name = $wpdb->prefix . 'jpbd_applications';
+    $app_table = $wpdb->prefix . 'jpbd_applications';
+    $opp_table = $wpdb->prefix . 'jpbd_opportunities';
+
+    $application_data = $wpdb->get_row($wpdb->prepare(
+        "SELECT app.candidate_id, opp.job_title, opp.id as opportunity_id
+         FROM $app_table as app
+         JOIN $opp_table as opp ON app.opportunity_id = opp.id
+         WHERE app.id = %d",
+        $application_id
+    ));
+
+    if (!$application_data) {
+        return new WP_Error('not_found', 'Application not found.', ['status' => 404]);
+    }
 
     // ডাটাবেস আপডেট করা
     $result = $wpdb->update(
-        $table_name,
+        $app_table,
         ['status' => $new_status], // SET status = 'new_status'
         ['id' => $application_id]  // WHERE id = application_id
     );
@@ -226,6 +240,32 @@ function jpbd_api_update_application_status(WP_REST_Request $request)
         return new WP_Error('not_found', 'Application with the given ID was not found. No changes were made.', ['status' => 404]);
     }
     // =================== FIX ENDS HERE ===================
+
+    $candidate_user = get_userdata($application_data->candidate_id);
+    if ($candidate_user) {
+        // --- ১. ইমেল নোটিফিকেশন পাঠানো ---
+        $to = $candidate_user->user_email;
+        $subject = 'Update on your application for "' . $application_data->job_title . '"';
+
+        $email_body = "Hello " . $candidate_user->display_name . ",\n\n";
+        $email_body .= "There is an update on your job application for the position of '" . $application_data->job_title . "'.\n\n";
+        $email_body .= "Your new application status is: " . ucfirst($new_status) . "\n\n";
+        $email_body .= "You can view the opportunity here: " . home_url('/job-portal/dashboard/opportunities') . "\n\n"; // লিঙ্কটি আপনার রাউট অনুযায়ী পরিবর্তন করতে পারেন
+        $email_body .= "Best regards,\n";
+        $email_body .= $employer_user->display_name;
+
+        $headers = ['Content-Type: text/plain; charset=UTF-8'];
+        wp_mail($to, $subject, $email_body, $headers);
+
+        // --- ২. প্ল্যাটফর্ম নোটিফিকেশন তৈরি করা ---
+        if (function_exists('jpbd_create_notification')) {
+            $notification_message = 'Your application for "' . wp_trim_words($application_data->job_title, 5, '...') . '" has been updated to ' . ucfirst($new_status) . '.';
+            $notification_link = '/dashboard/opportunities?activeTab=applied'; // আবেদন করা জবের ট্যাবে নিয়ে যাওয়া
+
+            // jpbd_create_notification($user_id, $sender_id, $type, $message, $link)
+            jpbd_create_notification($candidate_user->ID, $employer_user->ID, 'application_status_update', $notification_message, $notification_link);
+        }
+    }
 
     // যদি $result > 0 হয়, তার মানে সফলভাবে আপডেট হয়েছে
     return new WP_REST_Response(['success' => true, 'message' => 'Status updated successfully.'], 200);

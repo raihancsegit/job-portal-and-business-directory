@@ -90,7 +90,7 @@ const JobCard = ({ job, selectedOpportunityId, onSelectOpportunity, activeTab, o
             <div className="d-flex justify-content-start align-items-center">
                 {isEmployer ? (
                     <Link to={`/dashboard/opportunities/${job.id}`} className="i-btn btn--lg btn--primary w-100">
-                        View Applicants
+                        View Details
                     </Link>
                 ) : (
                     activeTab === 'applied' ? (

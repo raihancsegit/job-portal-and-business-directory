@@ -44,33 +44,33 @@ const CreatePostModal = ({ onClose, onPostCreated }) => {
     
     return (
         <div className="modal fade show" style={{ display: 'block', backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1050 }}>
-            <div className="modal-dialog modal-dialog-centered">
-                <div className="modal-content">
-                    <div className="modal-header">
-                        <h5 className="modal-title">Create a Post</h5>
+            <div className="modal-dialog modal-dialog-centered modal-md">
+                <div className="modal-content rounded-4 border-0 p-2">
+                    <div className="modal-header border-0">
+                        <h5 className="modal-title fw-semibold">Create a Post</h5>
                         <button type="button" className="btn-close" onClick={onClose}></button>
                     </div>
                     <form onSubmit={handleSubmit}>
-                        <div className="modal-body">
+                        <div className="modal-body pb-0">
                             <div className="mb-3">
                                 <label htmlFor="postTitle" className="form-label">Title</label>
-                                <input type="text" id="postTitle" className="form-control" value={title} onChange={e => setTitle(e.target.value)} required />
+                                <input type="text" id="postTitle" placeholder="Enter Event Title" className="form-control bg-white" value={title} onChange={e => setTitle(e.target.value)} required />
                             </div>
                             <div className="mb-3">
-                                <label htmlFor="postCategory" className="form-label">Category</label>
-                                <select id="postCategory" className="form-select" value={category} onChange={e => setCategory(e.target.value)} required>
+                                <label htmlFor="eventCategory" className="form-label">Category</label>
+                                <select id="eventCategory" className="form-select" value={category} onChange={e => setCategory(e.target.value)} required>
                                     <option value="">Select category</option>
                                     {categories.map(c => <option key={c} value={c}>{c}</option>)}
                                 </select>
                             </div>
                             <div className="mb-3">
-                                <label htmlFor="postContent" className="form-label">Content</label>
-                                <textarea id="postContent" className="form-control" rows="5" value={content} onChange={e => setContent(e.target.value)} required></textarea>
+                                <label htmlFor="eventDescription" className="form-label">Content</label>
+                                <textarea id="eventDescription" placeholder="Write some text" className="form-control bg-white" rows="3" value={content} onChange={e => setContent(e.target.value)} required></textarea>
                             </div>
                         </div>
-                        <div className="modal-footer">
-                            <button type="button" className="i-btn btn--outline" onClick={onClose}>Cancel</button>
-                            <button type="submit" className="i-btn btn--primary" disabled={loading}>{loading ? 'Posting...' : 'Create Post'}</button>
+                        <div className="modal-footer border-0 d-flex justify-content-center">
+                            <button type="button" className="i-btn btn--outline btn--lg rounded-pill px-4" onClick={onClose}>Cancel</button>
+                            <button type="submit" className="i-btn btn--primary btn--lg text-white rounded-pill px-4" disabled={loading}>{loading ? 'Posting...' : 'Create Post'}</button>
                         </div>
                     </form>
                 </div>
