@@ -399,151 +399,52 @@ if (chartEl) {
 
     // Opportunity Js
     document.addEventListener("DOMContentLoaded", () => {
-        const priceHistogramCanvas = document.getElementById('priceHistogram');
-        if (!priceHistogramCanvas) return; // exit if canvas not found
+  const priceSlider = document.getElementById('priceSlider');
+  const minInput = document.getElementById('minPriceInput');
+  const maxInput = document.getElementById('maxPriceInput');
 
-        const ctx = priceHistogramCanvas.getContext('2d');
-        if (!ctx) {
-            console.error('Canvas context not supported');
-            return;
-        }
+  noUiSlider.create(priceSlider, {
+    start: [100, 500],
+    connect: true,
+    range: {
+      'min': 100,
+      'max': 500
+    },
+    step: 1,
+    tooltips: false,
+  });
 
-        // Initialize the slider
-        const priceSlider = document.getElementById('priceSlider');
-        noUiSlider.create(priceSlider, {
-            start: [100, 500],
-            connect: true,
-            range: {
-                'min': 100,
-                'max': 500
-            },
-            step: 1,
-            tooltips: false,
-        });
+  priceSlider.noUiSlider.on('update', (values) => {
+    const [min, max] = values.map(Number);
+    minInput.value = Math.round(min);
+    maxInput.value = Math.round(max);
+  });
 
-        // Generate data with a normal distribution
-        function generateNormalData(count, mean, stdDev, minValue, maxValue) {
-            const data = [];
-            for (let i = 0; i < count; i++) {
-                let value;
-                do {
-                    const u1 = Math.random();
-                    const u2 = Math.random();
-                    const z = Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
-                    value = mean + z * stdDev;
-                } while (value < minValue || value > maxValue);
-                data.push(value);
-            }
-            return data;
-        }
+  minInput.addEventListener('change', () => {
+    let minVal = parseInt(minInput.value);
+    let maxVal = parseInt(maxInput.value);
 
-        const binCount = 42;
-        const minValue = 100;
-        const maxValue = 500;
-        const mean = 300;
-        const stdDev = 80;
+    if (isNaN(minVal) || minVal < 100) minVal = 100;
+    if (minVal >= maxVal) minVal = maxVal - 1;
+    if (minVal > 500) minVal = 499;
 
-        const rawData = generateNormalData(1000, mean, stdDev, minValue, maxValue);
-        const histogramData = Array(binCount).fill(0);
-        const binWidth = (maxValue - minValue) / binCount;
+    minInput.value = minVal;
+    priceSlider.noUiSlider.set([minVal, null]);
+  });
 
-        for (let i = 0; i < rawData.length; i++) {
-            const value = rawData[i];
-            const binIndex = Math.floor((value - minValue) / binWidth);
-            histogramData[Math.min(binIndex, binCount - 1)]++;
-        }
+  maxInput.addEventListener('change', () => {
+    let maxVal = parseInt(maxInput.value);
+    let minVal = parseInt(minInput.value);
 
-        // Draw Area Chart
-        function drawAreaChart(minPrice, maxPrice) {
-            ctx.clearRect(0, 0, priceHistogramCanvas.width, priceHistogramCanvas.height);
+    if (isNaN(maxVal) || maxVal > 500) maxVal = 500;
+    if (maxVal <= minVal) maxVal = minVal + 1;
+    if (maxVal < 100) maxVal = 101;
 
-            const pointSpacing = priceHistogramCanvas.width / (binCount - 1);
-            const maxY = Math.max(...histogramData);
+    maxInput.value = maxVal;
+    priceSlider.noUiSlider.set([null, maxVal]);
+  });
+});
 
-            const minBinIndex = Math.max(0, Math.floor((minPrice - minValue) / binWidth));
-            const maxBinIndex = Math.min(binCount - 1, Math.floor((maxPrice - minValue) / binWidth));
-
-            // Background histogram
-            ctx.beginPath();
-            ctx.moveTo(0, priceHistogramCanvas.height);
-            for (let i = 0; i < histogramData.length; i++) {
-                const x = i * pointSpacing;
-                const y = priceHistogramCanvas.height - (histogramData[i] / maxY) * priceHistogramCanvas.height;
-                ctx.lineTo(x, y);
-            }
-            ctx.lineTo(priceHistogramCanvas.width, priceHistogramCanvas.height);
-            ctx.closePath();
-
-            const bgGradient = ctx.createLinearGradient(0, 0, 0, priceHistogramCanvas.height);
-            bgGradient.addColorStop(0, 'rgba(41, 44, 45, 0.3)');
-            bgGradient.addColorStop(1, 'rgba(41, 44, 45, 0)');
-            ctx.fillStyle = bgGradient;
-            ctx.fill();
-
-            // Selected range
-            ctx.beginPath();
-            ctx.moveTo(minBinIndex * pointSpacing, priceHistogramCanvas.height);
-            for (let i = minBinIndex; i <= maxBinIndex; i++) {
-                const x = i * pointSpacing;
-                const y = priceHistogramCanvas.height - (histogramData[i] / maxY) * priceHistogramCanvas.height;
-                ctx.lineTo(x, y);
-            }
-            ctx.lineTo(maxBinIndex * pointSpacing, priceHistogramCanvas.height);
-            ctx.closePath();
-
-            const fgGradient = ctx.createLinearGradient(0, 0, 0, priceHistogramCanvas.height);
-            fgGradient.addColorStop(0, '#86562B');
-            fgGradient.addColorStop(1, '#86562B');
-            ctx.fillStyle = fgGradient;
-            ctx.fill();
-
-            ctx.beginPath();
-            for (let i = minBinIndex; i <= maxBinIndex; i++) {
-                const x = i * pointSpacing;
-                const y = priceHistogramCanvas.height - (histogramData[i] / maxY) * priceHistogramCanvas.height;
-                if (i === minBinIndex) ctx.moveTo(x, y);
-                else ctx.lineTo(x, y);
-            }
-            ctx.strokeStyle = '#86562B';
-            ctx.lineWidth = 2;
-            ctx.stroke();
-        }
-
-        function updateChart() {
-            const [minPrice, maxPrice] = priceSlider.noUiSlider.get().map(Number);
-            document.getElementById('minPriceInput').value = Math.round(minPrice);
-            document.getElementById('maxPriceInput').value = Math.round(maxPrice);
-            drawAreaChart(minPrice, maxPrice);
-        }
-
-        priceSlider.noUiSlider.on('update', updateChart);
-
-        document.getElementById('minPriceInput').addEventListener('change', function () {
-            let minPrice = parseInt(this.value);
-            const maxPrice = parseInt(document.getElementById('maxPriceInput').value);
-
-            if (isNaN(minPrice) || minPrice < 100) minPrice = 100;
-            if (minPrice >= maxPrice) minPrice = maxPrice - 1;
-            if (minPrice > 500) minPrice = 499;
-
-            this.value = minPrice;
-            priceSlider.noUiSlider.set([minPrice, null]);
-        });
-
-        document.getElementById('maxPriceInput').addEventListener('change', function () {
-            let maxPrice = parseInt(this.value);
-            const minPrice = parseInt(document.getElementById('minPriceInput').value);
-
-            if (isNaN(maxPrice) || maxPrice > 500) maxPrice = 500;
-            if (maxPrice <= minPrice) maxPrice = minPrice + 1;
-            if (maxPrice < 100) maxPrice = 101;
-
-            this.value = maxPrice;
-            priceSlider.noUiSlider.set([null, maxPrice]);
-        });
-
-        updateChart();
-    });
 
 
 
@@ -569,43 +470,178 @@ if (chartEl) {
 
 
     // step form
-    let currentStep = 0;
-    const formSections = document.querySelectorAll(".form-section");
-    const steps = document.querySelectorAll(".step");
 
-    function showStep(index) {
-        formSections.forEach((section, i) => {
-            section.classList.toggle("active", i === index);
-            if (steps[i]) {
-                steps[i].classList.toggle("active", i <= index);
-                steps[i].classList.toggle("completed", i < index);
-            }
-        });
-        currentStep = index;
-    }
+
+    // ======= MULTI-ENTRY HANDLER (FINAL STABLE VERSION) =======
+(function () {
+  function run() {
+    const sections = (typeof formSections !== "undefined")
+      ? formSections
+      : document.querySelectorAll(".form-section");
+
+    if (!sections || sections.length === 0) return;
+
+    // Multi-step navigation
+    const stepEls = document.querySelectorAll('.step');
+    const sectionEls = document.querySelectorAll('.form-section');
 
     function nextStep() {
-        if (currentStep < formSections.length - 1) {
-            showStep(currentStep + 1);
-        }
+      const currentSection = document.querySelector('.form-section.active');
+      const currentStepEl = document.querySelector('.step.active');
+      if (!currentSection || !currentStepEl) return;
+
+      const nextSection = currentSection.nextElementSibling;
+      const nextStepEl = currentStepEl.nextElementSibling;
+
+      if (nextSection && nextStepEl) {
+        currentSection.classList.remove('active');
+        currentStepEl.classList.remove('active');
+        nextSection.classList.add('active');
+        nextStepEl.classList.add('active');
+      }
     }
 
     function prevStep() {
-        if (currentStep > 0) {
-            showStep(currentStep - 1);
-        }
+      const currentSection = document.querySelector('.form-section.active');
+      const currentStepEl = document.querySelector('.step.active');
+      if (!currentSection || !currentStepEl) return;
+
+      const prevSection = currentSection.previousElementSibling;
+      const prevStepEl = currentStepEl.previousElementSibling;
+
+      if (prevSection && prevStepEl) {
+        currentSection.classList.remove('active');
+        currentStepEl.classList.remove('active');
+        prevSection.classList.add('active');
+        prevStepEl.classList.add('active');
+      }
     }
 
-    document.querySelectorAll(".nextBtn").forEach(btn => {
-        btn.addEventListener("click", nextStep);
+    // Navigation button handlers
+    document.querySelectorAll('.nextBtn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        const btnText = btn.textContent.trim().toLowerCase();
+        if (btnText === 'next') {
+          nextStep();
+        }
+        // Cancel does nothing for now
+      });
     });
 
-    document.querySelectorAll(".prevBtn").forEach(btn => {
-        btn.addEventListener("click", prevStep);
+    document.querySelectorAll('.prevBtn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        prevStep();
+      });
     });
 
+    sections.forEach(section => {
+      // pick only buttons that:
+      // - contain <i class="ri-add-line">
+      // - or contain the words "add another"
+      // and do NOT contain the word "next", "cancel", "back", or "update"
+      const addBtns = Array.from(section.querySelectorAll("button")).filter(btn => {
+        const hasAddIcon = !!btn.querySelector(".ri-add-line");
+        const text = (btn.textContent || "").toLowerCase();
+        const isAddBtn = hasAddIcon || text.includes("add another");
+        const isNavBtn = /(next|cancel|back|update)/i.test(text);
+        return isAddBtn && !isNavBtn;
+      });
 
-    showStep(currentStep);
+      addBtns.forEach(addBtn => {
+        addBtn.addEventListener("click", (ev) => {
+          ev.stopPropagation(); // don't block other handlers
+          ev.preventDefault();
+
+          // Collect all fields inside this step
+          const rawFields = Array.from(section.querySelectorAll("input, select, textarea"))
+            .filter(el => !["button", "submit", "reset"].includes(el.type));
+
+          const entries = [];
+          rawFields.forEach(el => {
+            let value = "";
+            if (el.tagName === "SELECT") {
+              const opt = el.options[el.selectedIndex];
+              value = opt ? opt.text.trim() : "";
+              if (/^select/i.test(value)) value = "";
+            } else value = el.value.trim();
+
+            if (!value) return;
+            const labelEl = el.closest(".col-12, .col-6, .col-lg-5, .col-lg-7")?.querySelector("label.form-label");
+            const label = labelEl ? labelEl.textContent.trim() : "";
+            entries.push({ label, value });
+          });
+
+          if (entries.length === 0) {
+            alert("Please fill out the fields before adding.");
+            return;
+          }
+
+          // Format summary nicely
+          const start = entries.find(e => /start/i.test(e.label));
+          const end = entries.find(e => /end/i.test(e.label));
+          let summary = "";
+          if (start && end) {
+            const others = entries.filter(e => e !== start && e !== end).map(e => e.value);
+            summary = others.concat(`${start.value} - ${end.value}`).join(", ");
+          } else {
+            summary = entries.map(e => e.value).join(", ");
+          }
+
+          // Create summary box
+          const box = document.createElement("div");
+          box.className = "input-data-box";
+          box.innerHTML = `
+            <p>${escapeHtml(summary)}</p>
+            <button type="button"><i class="ri-close-large-line"></i></button>
+          `;
+
+          const deleteBtn = box.querySelector("button");
+          let toRemove = box;
+
+          const displayRow = section.querySelector(".row.mb-4, .row.g-3.mb-4");
+          if (displayRow) {
+            const colWrapper = document.createElement("div");
+            const colClass = displayRow.classList.contains("g-3") ? "col-md-6 col-12" : "col-12";
+            colWrapper.className = colClass;
+            colWrapper.appendChild(box);
+            toRemove = colWrapper;
+            displayRow.appendChild(colWrapper);
+          } else {
+            // Insert before form fields
+            const insertTarget = section.querySelector(".row.align-items-start");
+            if (insertTarget && insertTarget.parentNode) {
+              insertTarget.parentNode.insertBefore(box, insertTarget);
+            } else {
+              section.insertBefore(box, section.firstChild);
+            }
+          }
+
+          // Delete handler
+          deleteBtn.addEventListener("click", () => toRemove.remove());
+
+          // Clear fields
+          rawFields.forEach(el => {
+            if (el.tagName === "SELECT") el.selectedIndex = 0;
+            else el.value = "";
+          });
+        });
+      });
+    });
+  }
+
+  function escapeHtml(str) {
+    return String(str).replace(/[&<>"']/g, m =>
+      ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[m]
+    );
+  }
+
+  if (document.readyState === "loading")
+    document.addEventListener("DOMContentLoaded", run);
+  else run();
+})();
+
 
 
  document.addEventListener('DOMContentLoaded', function () {
@@ -935,8 +971,28 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     });
   });
-
 });
+
+
+  const select = document.getElementById('countryPhoneSelect');
+  const flag = document.getElementById('flagIcon');
+
+  select.addEventListener('change', function() {
+    const selected = select.options[select.selectedIndex];
+    const flagSrc = selected.getAttribute('data-flag');
+    flag.src = flagSrc;
+  });
+
+  // country flag
+    const countrySelect = document.getElementById('countrySelect');
+  const countryFlag = document.getElementById('countryFlag');
+
+  countrySelect.addEventListener('change', () => {
+    const selected = countrySelect.options[countrySelect.selectedIndex];
+    const flagSrc = selected.getAttribute('data-flag');
+    countryFlag.src = flagSrc;
+  });
+
 
 
 }())

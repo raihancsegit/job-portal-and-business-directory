@@ -950,16 +950,10 @@
 
 // slider with range
 
-.histogram-container {
-  max-width: 250px;
-  margin: 0 auto;
-  padding-top: 30px;
-}
-
 .slider-container {
   width: 100%;
-  max-width: 250px;
-  margin: -4px auto 0;
+  max-width: 190px;
+  margin: 20px auto;
 }
 
 .noUi-target {
@@ -2497,6 +2491,7 @@
   border-radius: 10px;
   padding: 16px;
   background-color: $site-bg;
+  margin-bottom: 16px;
 
   p {
     margin-bottom: 0;
@@ -3258,4 +3253,55 @@
     padding-bottom: 30px;
     margin-bottom: 30px;
 }
+
+.dropdown-menu  li a {
+  color: $text-accent;
+}
+
+
+.shortlisted-table {
+  height: 100%;
+  max-height: 250px;
+  overflow-y: auto;
+}
+
+
+table{
+  input[type="checkbox"] {
+    -webkit-appearance: none; 
+    -moz-appearance: none;    
+    appearance: none;         
+    width: 24px;
+    height: 24px !important;
+    border-radius: 50% !important;
+    border: 1px solid $color-border;
+    cursor: pointer;
+    display: inline-block;
+    position: relative;
+    outline: none;
+  }
+
+  input[type="checkbox"]:checked {
+    background-color: $color-primary;
+    border-color: $color-primary;
+    border-radius: 50%;
+  }
+
+  input[type="checkbox"]:checked::after {
+    content: "";
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 16px;
+    height: 16px;
+    background: white;
+    border-radius: 50%;
+  }
+}
+
+.form-select {
+    padding: 0.80rem 2.2rem 0.80rem 1rem;
+}
+
+
 

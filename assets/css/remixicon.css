@@ -1757,7 +1757,7 @@
 .ri-save-3-fill:before { content: "\f0b0"; }
 .ri-save-3-line:before { content: "\f0b1"; }
 .ri-save-fill:before { content: "\f0b2"; }
-.ri-save-line:before { content: "\f0b3"; }
+.ri-bookmark-line:before { content: "\f0b3"; }
 .ri-scales-2-fill:before { content: "\f0b4"; }
 .ri-scales-2-line:before { content: "\f0b5"; }
 .ri-scales-3-fill:before { content: "\f0b6"; }
