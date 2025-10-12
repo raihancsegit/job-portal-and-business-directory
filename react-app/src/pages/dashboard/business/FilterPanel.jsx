@@ -1,6 +1,4 @@
-// src/pages/dashboard/components/business/FilterPanel.jsx
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { businessCategories } from '../../../data/businessCategories';
 import { businessStatuses } from '../../../data/businessStatuses';
 
@@ -22,12 +20,17 @@ const FilterListItem = ({ name, value, label, count, selectedValue, onChange }) 
     </li>
 );
 
-// Main FilterPanel Component (পুনরায় ব্যবহারযোগ্য সংস্করণ)
-const BusinessFilterPanel = ({ filters, setFilters, filterCounts, loadingCounts,hideTopSearch = false }) => {
+// Main FilterPanel Component
+const BusinessFilterPanel = ({ filters, setFilters, filterCounts, loadingCounts, hideTopSearch = false }) => {
     
-    // টেক্সট ইনপুটের জন্য লোকাল state
     const [searchTitle, setSearchTitle] = useState(filters.title || '');
     const [searchLocation, setSearchLocation] = useState(filters.location || '');
+
+    // filters prop পরিবর্তন হলে লোকাল state আপডেট করা
+    useEffect(() => {
+        setSearchTitle(filters.title || '');
+        setSearchLocation(filters.location || '');
+    }, [filters.title, filters.location]);
 
     const handleFilterChange = (filterType, value) => {
         const newValue = value === 'all' ? '' : value;
@@ -41,14 +44,30 @@ const BusinessFilterPanel = ({ filters, setFilters, filterCounts, loadingCounts,
         setFilters(prev => ({ ...prev, title: searchTitle, location: searchLocation }));
     };
 
+    // ================== নতুন সংযোজন: Clear All ফাংশন ==================
+    const handleClearFilters = () => {
+        // টপ সার্চ ফিল্ডগুলো খালি করা
+        setSearchTitle('');
+        setSearchLocation('');
+        
+        // প্যারেন্ট কম্পোনেন্টের সব ফিল্টার রিসেট করা
+        setFilters({
+            title: '',
+            location: '',
+            category: '',
+            status: '',
+            certification: ''
+        });
+    };
+    // ====================================================================
+
     const selectedCategory = filters.category || 'all';
     const selectedStatus = filters.status || 'all';
     const selectedCertification = filters.certification || 'all';
 
     return (
          <div className="filter-panel" id="filterPanel">
-            {/* Top Search Section (title, location) */}
-              {!hideTopSearch && (
+            {!hideTopSearch && (
                 <div className="top-filter mb-4">
                     <div className="row g-3 d-flex align-items-center">
                         <div className="col-md-12"><div className="top-filter-item style-2"><div className="icon"><i className="ri-briefcase-line"></i></div><input type="text" placeholder="Business name" className="form-control" value={searchTitle} onChange={e => setSearchTitle(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleTextSearch()} /></div></div>
@@ -58,7 +77,18 @@ const BusinessFilterPanel = ({ filters, setFilters, filterCounts, loadingCounts,
                 </div>
             )}
 
-            <div className="d-flex flex-row justify-content-between align-items-center mb-3"><h2 className="mb-0">Filters</h2></div>
+            {/* ================== নতুন সংযোজন: Clear All বাটন ================== */}
+            <div className="d-flex flex-row justify-content-between align-items-center mb-3">
+                <h2 className="mb-0">Filters</h2>
+                <button 
+                    type="button" 
+                    className="btn btn-link text-secondary text-decoration-none p-0" 
+                    onClick={handleClearFilters}
+                >
+                    Clear All
+                </button>
+            </div>
+            {/* ==================================================================== */}
             
             <div className="accordion mb-4" id="filterAccordion">
                 {/* Business Status Filter */}

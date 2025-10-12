@@ -240,50 +240,45 @@ const AddBusinessPage = () => {
                     </div>
                 </div>
 
-                {/* Business Hour Section */}
-                <div className="i-card-md radius-30 mb-3">
+               <div className="i-card-md radius-30 mb-3">
                     <div className="card-body">
-                         <h3 className="mb-4">Business Hour</h3>
-                         <div className="business-hour mb-4">
-                            {formData.businessHours.map((hour, index) => (
-                                <div key={index} className="repeater-item-box mb-2">
-                                    <div className="d-flex justify-content-between align-items-center">
-                                        <span><strong>{hour.day}:</strong> {hour.fullDay ? 'Open 24 Hours' : `${hour.startTime} - ${hour.endTime}`}</span>
-                                        <button type="button" className="btn-icon-danger" onClick={() => handleRemoveHour(index)}><i className="ri-delete-bin-line"></i></button>
+                         <h3 className="mb-4">Social Profiles</h3>
+                         <div id="socialProfileList" className="mb-4">
+                            {formData.socialProfiles?.map((profile, index) => (
+                                <div key={index} className="list-item row align-items-center g-3">
+                                    <div className="col-lg-2 col-12 social-name">{profile.platform}</div>
+                                    <div className="col-lg-10 col-12 d-flex align-items-center gap-2">
+                                        <input 
+                                            type="url" // URL-এর জন্য type="url" ব্যবহার করা ভালো
+                                            placeholder={`Enter ${profile.platform} URL`} 
+                                            className="form-control bg-transparent" 
+                                            value={profile.url} 
+                                            onChange={e => handleSocialUrlChange(index, e.target.value)} 
+                                        />
+                                        <button 
+                                            type="button" 
+                                            className="remove-btn" 
+                                            onClick={() => handleRemoveSocial(profile.platform)}
+                                        >
+                                            ×
+                                        </button>
                                     </div>
                                 </div>
                             ))}
                          </div>
                          <div className="row align-items-center g-3">
-                              <div className="col-lg-2 col-12"><select className="form-select bg-transparent" value={currentHour.day} onChange={e => setCurrentHour({...currentHour, day: e.target.value})}><option value="">Select day</option><option>Sunday</option><option>Monday</option><option>Tuesday</option><option>Wednesday</option><option>Thursday</option><option>Friday</option><option>Saturday</option></select></div>
-                              <div className="col-lg-2 col-6"><input type="time" className="form-control bg-transparent" value={currentHour.startTime} onChange={e => setCurrentHour({...currentHour, startTime: e.target.value})} disabled={currentHour.fullDay} /></div>
-                              <div className="col-lg-2 col-6"><input type="time" className="form-control bg-transparent" value={currentHour.endTime} onChange={e => setCurrentHour({...currentHour, endTime: e.target.value})} disabled={currentHour.fullDay} /></div>
-                              <div className="col-lg-3 col-6 d-flex align-items-center"><div className="form-check d-flex align-items-center gap-1"><input className="form-check-input" type="checkbox" id="fullDayCheckbox" checked={currentHour.fullDay} onChange={e => setCurrentHour({...currentHour, fullDay: e.target.checked})} /><label className="form-check-label fs-18 mb-0" htmlFor="fullDayCheckbox">Open 24 Hours</label></div></div>
-                              <div className="col-lg-3 col-6"><button type="button" className="i-btn btn--xl btn--dark rounded-pill px-4" onClick={handleAddHour}><i className="ri-add-circle-line me-2 fs-18"></i>Add Hour</button></div>
-                         </div>
-                    </div>
-                </div>
-
-                {/* Social Profiles Section */}
-                <div className="i-card-md radius-30 mb-3">
-                    <div className="card-body">
-                         <h3 className="mb-4">Social Profiles</h3>
-                         <div className="mb-4">
-                             {formData.socialProfiles.map((profile, index) => (
-                                <div key={index} className="repeater-item-box mb-3">
-                                    <div className="d-flex align-items-center gap-3">
-                                        <div className="flex-shrink-0 fw-bold">{profile.platform}</div>
-                                        <div className="flex-grow-1"><input type="url" className="form-control" placeholder={`Enter ${profile.platform} URL`} value={profile.url} onChange={e => handleSocialUrlChange(index, e.target.value)} /></div>
-                                        <button type="button" className="btn-icon-danger" onClick={() => handleRemoveSocial(profile.platform)}><i className="ri-delete-bin-line"></i></button>
-                                    </div>
-                                </div>
-                             ))}
-                         </div>
-                         <div className="row align-items-center g-3">
-                              <div className="col-lg-2"><h6>Add Profile</h6></div>
-                              <div className="col-lg-10">
-                                   <select className="form-select bg-transparent" onChange={e => handleAddSocial(e.target.value)} value="">
-                                        <option value="">Select a social media</option>
+                              <div className="col-lg-2 col-6"><h6>Select Another</h6></div>
+                              <div className="col-lg-10 col-12">
+                                   <select 
+                                        id="socialSelect" 
+                                        className="form-select bg-transparent" 
+                                        onChange={e => { 
+                                            handleAddSocial(e.target.value); 
+                                            e.target.value = ''; // সিলেক্ট করার পর রিসেট হয়ে যাবে
+                                        }} 
+                                        value="" // সব সময় ডিফল্ট অপশন দেখাবে
+                                   >
+                                        <option value="">Please Select A Social Media</option>
                                         <option value="Instagram">Instagram</option>
                                         <option value="Facebook">Facebook</option>
                                         <option value="Twitter">Twitter</option>

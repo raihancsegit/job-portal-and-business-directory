@@ -196,36 +196,94 @@ const EditBusinessPage = () => {
                 </div>
 
                 {/* Business Hour Section */}
+                {/* ================== Business Hour Section (for Edit Page) ================== */}
                 <div className="i-card-md radius-30 mb-3">
                     <div className="card-body">
-                         <h3>Business Hour</h3>
-                         <div className="business-hour mb-4">
-                            {formData.businessHours?.map((hour, index) => (
-                                <div key={index} className="repeater-item-box"><span><strong>{hour.day}:</strong> {hour.fullDay ? 'Open 24 Hours' : `${hour.startTime} - ${hour.endTime}`}</span><button type="button" onClick={() => handleRemoveHour(index)}>Remove</button></div>
-                            ))}
+                         <h3 className="mb-4">Business Hour</h3>
+                         <div className="business-hour">
+                              <div id="businessHourList" className="mb-4">
+                                {formData.businessHours?.map((hour, index) => (
+                                    <div key={index} className="list-item">
+                                        <div className="day-name">{hour.day}</div>
+                                        <div className="time-text">{hour.fullDay ? 'Open 24 Hours' : `${hour.startTime || 'N/A'} - ${hour.endTime || 'N/A'}`}</div>
+                                        <button type="button" className="remove-btn" onClick={() => handleRemoveHour(index)}>×</button>
+                                    </div>
+                                ))}
+                              </div>
                          </div>
                          <div className="row align-items-center g-3">
-                              <div className="col-lg-2"><select className="form-select" value={currentHour.day} onChange={e => setCurrentHour({...currentHour, day: e.target.value})}><option value="">Select day</option><option>Sunday</option><option>Monday</option><option>Tuesday</option><option>Wednesday</option><option>Thursday</option><option>Friday</option><option>Saturday</option></select></div>
-                              <div className="col-lg-2"><input type="time" className="form-control" value={currentHour.startTime} onChange={e => setCurrentHour({...currentHour, startTime: e.target.value})} disabled={currentHour.fullDay} /></div>
-                              <div className="col-lg-2"><input type="time" className="form-control" value={currentHour.endTime} onChange={e => setCurrentHour({...currentHour, endTime: e.target.value})} disabled={currentHour.fullDay} /></div>
-                              <div className="col-lg-3"><input type="checkbox" id="fullDayCheckbox" checked={currentHour.fullDay} onChange={e => setCurrentHour({...currentHour, fullDay: e.target.checked})} /><label htmlFor="fullDayCheckbox">Open 24 Hours</label></div>
-                              <div className="col-lg-3"><button type="button" className="i-btn btn--dark" onClick={handleAddHour}>Add Hour</button></div>
+                              <div className="col-lg-2 col-6"><h6>Select</h6></div>
+                              <div className="col-lg-2 col-12">
+                                   <select id="daySelect" className="form-select bg-transparent" value={currentHour.day} onChange={e => setCurrentHour({...currentHour, day: e.target.value})}>
+                                        <option value="">Select day</option>
+                                        <option>Sunday</option><option>Monday</option><option>Tuesday</option>
+                                        <option>Wednesday</option><option>Thursday</option><option>Friday</option><option>Saturday</option>
+                                   </select>
+                              </div>
+                              <div className="col-lg-2 col-6"><input type="time" id="startTime" className="form-control bg-transparent" value={currentHour.startTime} onChange={e => setCurrentHour({...currentHour, startTime: e.target.value})} disabled={currentHour.fullDay} /></div>
+                              <div className="col-lg-2 col-6"><input type="time" id="endTime" className="form-control bg-transparent" value={currentHour.endTime} onChange={e => setCurrentHour({...currentHour, endTime: e.target.value})} disabled={currentHour.fullDay} /></div>
+                              <div className="col-lg-2 col-6 d-flex align-items-center">
+                                   <div className="form-check d-flex align-items-center gap-1">
+                                        <input className="form-check-input" type="checkbox" id="editFullDay" checked={currentHour.fullDay} onChange={e => setCurrentHour({...currentHour, fullDay: e.target.checked})} />
+                                        <label className="form-check-label fs-18 mb-0" htmlFor="editFullDay">Full Day</label>
+                                   </div>
+                              </div>
+                              <div className="col-lg-2 col-6">
+                                   <button id="addHour" type="button" className="i-btn btn--xl btn--dark rounded-pill px-4" onClick={handleAddHour}>
+                                        <i className="ri-add-circle-line me-2 fs-18"></i>Add Another
+                                   </button>
+                              </div>
                          </div>
                     </div>
                 </div>
 
-                {/* Social Profiles Section */}
+                {/* ================== Social Profiles Section (for Edit Page) ================== */}
                 <div className="i-card-md radius-30 mb-3">
                     <div className="card-body">
-                         <h3>Social Profiles</h3>
-                         <div className="mb-4">
-                             {formData.socialProfiles?.map((profile, index) => (
-                                <div key={index} className="repeater-item-box d-flex gap-3"><strong>{profile.platform}</strong><input type="url" className="form-control" value={profile.url} onChange={e => handleSocialUrlChange(index, e.target.value)} /><button type="button" onClick={() => handleRemoveSocial(profile.platform)}>Remove</button></div>
-                             ))}
+                         <h3 className="mb-4">Social Profiles</h3>
+                         <div id="socialProfileList" className="mb-4">
+                            {formData.socialProfiles?.map((profile, index) => (
+                                <div key={index} className="list-item row align-items-center g-3">
+                                    <div className="col-lg-2 col-12 social-name">{profile.platform}</div>
+                                    <div className="col-lg-10 col-12 d-flex align-items-center gap-2">
+                                        <input 
+                                            type="url"
+                                            placeholder={`Enter ${profile.platform} URL`} 
+                                            className="form-control bg-transparent" 
+                                            value={profile.url} 
+                                            onChange={e => handleSocialUrlChange(index, e.target.value)} 
+                                        />
+                                        <button 
+                                            type="button" 
+                                            className="remove-btn" 
+                                            onClick={() => handleRemoveSocial(profile.platform)}
+                                        >
+                                            ×
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
                          </div>
                          <div className="row align-items-center g-3">
-                              <div className="col-lg-2"><h6>Add Profile</h6></div>
-                              <div className="col-lg-10"><select className="form-select" onChange={e => { handleAddSocial(e.target.value); e.target.value = ''; }}><option value="">Select a social media</option><option>Instagram</option><option>Facebook</option><option>Twitter</option><option>LinkedIn</option><option>YouTube</option></select></div>
+                              <div className="col-lg-2 col-6"><h6>Select Another</h6></div>
+                              <div className="col-lg-10 col-12">
+                                   <select 
+                                        id="socialSelect" 
+                                        className="form-select bg-transparent" 
+                                        onChange={e => { 
+                                            handleAddSocial(e.target.value); 
+                                            e.target.value = '';
+                                        }} 
+                                        value=""
+                                   >
+                                        <option value="">Please Select A Social Media</option>
+                                        <option value="Instagram">Instagram</option>
+                                        <option value="Facebook">Facebook</option>
+                                        <option value="Twitter">Twitter</option>
+                                        <option value="LinkedIn">LinkedIn</option>
+                                        <option value="YouTube">YouTube</option>
+                                   </select>
+                              </div>
                          </div>
                     </div>
                 </div>

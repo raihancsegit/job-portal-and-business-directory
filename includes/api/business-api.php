@@ -83,18 +83,50 @@ function jpbd_api_get_single_business(WP_REST_Request $request)
 {
     global $wpdb;
     $business_id = (int)$request['id'];
-    $table_name = $wpdb->prefix . 'jpbd_businesses';
+    $user_id = get_current_user_id();
+    $business_table = $wpdb->prefix . 'jpbd_businesses';
+    $reviews_table = $wpdb->prefix . 'jpbd_business_reviews';
 
-    $business = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table_name WHERE id = %d", $business_id), ARRAY_A);
+    // মূল কোয়েরি যা রিভিউ ডেটাও (গড় রেটিং এবং মোট সংখ্যা) নিয়ে আসবে
+    $business_query = $wpdb->prepare(
+        "SELECT b.*, 
+                AVG(r.rating) as average_rating, 
+                COUNT(r.id) as review_count
+         FROM $business_table as b
+         LEFT JOIN $reviews_table as r ON b.id = r.business_id
+         WHERE b.id = %d
+         GROUP BY b.id",
+        $business_id
+    );
+
+    $business = $wpdb->get_row($business_query, ARRAY_A);
 
     if (empty($business)) {
         return new WP_Error('not_found', 'Business not found.', ['status' => 404]);
     }
 
-    // JSON फ़ील्ड्स को डीकोड करें
+    // --- রেটিং এবং is_saved স্ট্যাটাস ফরম্যাট করা ---
+    $business['average_rating'] = $business['average_rating'] ? round((float)$business['average_rating'], 1) : 0;
+    $business['review_count'] = (int)$business['review_count'];
+    $business['is_saved'] = false; // ডিফল্ট ভ্যালু
+
+    if ($user_id > 0) {
+        $saved_table = $wpdb->prefix . 'jpbd_saved_items';
+        $is_saved = $wpdb->get_var($wpdb->prepare(
+            "SELECT COUNT(*) FROM $saved_table WHERE user_id = %d AND item_type = 'business' AND item_id = %d",
+            $user_id,
+            $business_id
+        ));
+        $business['is_saved'] = (bool)$is_saved;
+    }
+
+    // JSON ফিল্ডগুলো ডিকোড করা
     $business['businessHours'] = json_decode($business['business_hours'], true);
     $business['socialProfiles'] = json_decode($business['social_profiles'], true);
     $business['mapLocation'] = json_decode($business['map_location'], true);
+
+    // অপ্রয়োজনীয় raw JSON ফিল্ডগুলো বাদ দেওয়া
+    unset($business['business_hours'], $business['social_profiles'], $business['map_location']);
 
     return new WP_REST_Response($business, 200);
 }
@@ -316,75 +348,87 @@ function jpbd_api_upload_business_logo(WP_REST_Request $request)
 function jpbd_api_get_all_businesses(WP_REST_Request $request)
 {
     global $wpdb;
-    $table_name = $wpdb->prefix . 'jpbd_businesses';
+    $business_table = $wpdb->prefix . 'jpbd_businesses';
+    $reviews_table = $wpdb->prefix . 'jpbd_business_reviews';
     $filters = $request->get_params();
+    $user_id = get_current_user_id();
 
-    $sql = "SELECT * FROM $table_name WHERE 1=1";
+    // SELECT অংশে রিভিউ ডেটা (গড় রেটিং এবং মোট সংখ্যা) যোগ করা হয়েছে
+    $sql = "SELECT b.*, 
+                   AVG(r.rating) as average_rating, 
+                   COUNT(DISTINCT r.id) as review_count
+            FROM $business_table as b
+            LEFT JOIN $reviews_table as r ON b.id = r.business_id
+            WHERE 1=1";
     $params = [];
 
+    // --- ফিল্টারিং লজিক ---
     if (isset($filters['viewMode']) && $filters['viewMode'] === 'my_listing') {
-        $user_id = get_current_user_id();
-        // নিশ্চিত করুন যে ব্যবহারকারী লগইন করা আছে
         if ($user_id > 0) {
-            $sql .= " AND user_id = %d";
+            $sql .= " AND b.user_id = %d";
             $params[] = $user_id;
         } else {
-            // যদি লগইন করা না থাকে, তাহলে কোনো রেজাল্ট পাঠাবে না
-            return new WP_REST_Response([], 200);
+            return new WP_REST_Response([], 200); // লগইন না থাকলে খালি ফলাফল
         }
     }
 
     if (!empty($filters['title'])) {
-        $sql .= " AND title LIKE %s";
+        $sql .= " AND b.title LIKE %s";
         $params[] = '%' . $wpdb->esc_like($filters['title']) . '%';
     }
+
     if (!empty($filters['location'])) {
-        $sql .= " AND (city LIKE %s OR address LIKE %s OR zip_code LIKE %s)";
+        $sql .= " AND (b.city LIKE %s OR b.address LIKE %s OR b.zip_code LIKE %s)";
         $params[] = '%' . $wpdb->esc_like($filters['location']) . '%';
         $params[] = '%' . $wpdb->esc_like($filters['location']) . '%';
         $params[] = '%' . $wpdb->esc_like($filters['location']) . '%';
     }
 
     if (!empty($filters['category']) && $filters['category'] !== 'all') {
-        $sql .= " AND category = %s";
+        $sql .= " AND b.category = %s";
         $params[] = $filters['category'];
     }
+
     if (!empty($filters['status']) && $filters['status'] !== 'all') {
-        $sql .= " AND status = %s";
+        $sql .= " AND b.status = %s";
         $params[] = $filters['status'];
     }
 
     if (!empty($filters['certification']) && $filters['certification'] !== 'all') {
-        // FIND_IN_SET ব্যবহার করা যায় না, কারণ আমাদের স্ট্রিং-এ স্পেস থাকতে পারে।
-        // তাই LIKE ব্যবহার করা হচ্ছে, যা সবচেয়ে সহজ এবং নির্ভরযোগ্য।
-        $sql .= " AND CONCAT(',', LTRIM(RTRIM(certifications)), ',') LIKE %s";
-        $params[] = '%,' . $wpdb->esc_like(trim($filters['certification'])) . ',%';
+        $sql .= " AND FIND_IN_SET(%s, b.certifications)";
+        $params[] = $filters['certification'];
     }
-    // ... আরও ফিল্টার যোগ করা যাবে (e.g., industry, certifications)
 
-    $sql .= " ORDER BY created_at DESC";
+    // GROUP BY এবং ORDER BY যোগ করা হয়েছে
+    $sql .= " GROUP BY b.id ORDER BY b.created_at DESC";
 
     $query = $wpdb->prepare($sql, $params);
     $results = $wpdb->get_results($query, ARRAY_A);
 
-    $user_id = get_current_user_id();
+    if (is_null($results)) {
+        return new WP_Error('db_error', 'Could not retrieve businesses.', ['status' => 500]);
+    }
+
+    // --- is_saved স্ট্যাটাস এবং রেটিং ফরম্যাট করা ---
+    $saved_ids = [];
     if ($user_id > 0 && !empty($results)) {
         $saved_table = $wpdb->prefix . 'jpbd_saved_items';
         $business_ids = wp_list_pluck($results, 'id');
 
+        // একটি মাত্র কোয়েরি দিয়ে সব সেভ করা আইটেমের ID নিয়ে আসা
         $saved_ids_query = $wpdb->prepare(
-            "SELECT item_id FROM $saved_table WHERE user_id = %d AND item_type = 'business' AND item_id IN (" . implode(',', $business_ids) . ")",
-            $user_id
+            "SELECT item_id FROM $saved_table WHERE user_id = %d AND item_type = 'business' AND item_id IN (" . implode(',', array_fill(0, count($business_ids), '%d')) . ")",
+            array_merge([$user_id], $business_ids)
         );
+        // get_col ব্যবহার করে শুধুমাত্র item_id কলামটি একটি ফ্ল্যাট অ্যারে হিসেবে আনা
         $saved_ids = $wpdb->get_col($saved_ids_query);
-
-        foreach ($results as &$business) {
-            $business['is_saved'] = in_array($business['id'], $saved_ids);
-        }
     }
 
-    if (is_null($results)) {
-        return new WP_Error('db_error', 'Could not retrieve businesses.', ['status' => 500]);
+    // প্রতিটি রেজাল্টের জন্য রেটিং ফরম্যাট করা এবং is_saved স্ট্যাটাস যোগ করা
+    foreach ($results as &$business) {
+        $business['average_rating'] = $business['average_rating'] ? round((float)$business['average_rating'], 1) : 0;
+        $business['review_count'] = (int)$business['review_count'];
+        $business['is_saved'] = in_array($business['id'], $saved_ids);
     }
 
     return new WP_REST_Response($results, 200);

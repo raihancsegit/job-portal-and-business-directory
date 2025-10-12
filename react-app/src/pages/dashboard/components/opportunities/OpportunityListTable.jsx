@@ -100,6 +100,28 @@ const OpportunityListTable = ({ opportunities, onDelete, setOpportunities }) => 
         }
     };
 
+     const canBulkDelete = useMemo(() => {
+        // যদি কোনো ইউজার লগইন করা না থাকে, তাহলে বাটন দেখানো হবে না
+        if (!user) {
+            return false;
+        }
+        // যদি কোনো আইটেম সিলেক্ট করা না থাকে, তাহলে বাটন দেখানো হবে না
+        if (selectedIds.length === 0) {
+            return false;
+        }
+
+        // সিলেক্ট করা অপরচুনিটিগুলোর সম্পূর্ণ ডেটা খুঁজে বের করা
+        const selectedOpportunities = opportunities.filter(job => selectedIds.includes(Number(job.id)));
+
+        // বর্তমান ইউজারের ID (নিরাপত্তার জন্য সংখ্যায় রূপান্তর করা)
+        const currentUserId = parseInt(user.id, 10);
+
+        // চেক করা হচ্ছে যে সিলেক্ট করা "প্রতিটি" অপরচুনিটির মালিক বর্তমান ইউজার কিনা
+        // Array.every() ফাংশনটি তখনই true রিটার্ন করে যখন অ্যারের সব উপাদান শর্ত পূরণ করে
+        return selectedOpportunities.every(job => parseInt(job.user_id, 10) === currentUserId);
+
+    }, [selectedIds, opportunities, user]);
+
     return (
         <div className="i-card-md bg--light">
             <div className="table-filter">
@@ -111,8 +133,10 @@ const OpportunityListTable = ({ opportunities, onDelete, setOpportunities }) => 
                             <li><a className="dropdown-item" href="#" onClick={(e) => {e.preventDefault(); handleExport('csv');}}>Export as CSV</a></li>
                         </ul>
                     </div>
-                    {selectedIds.length > 0 && (
-                        <button className="icon-btn-lg text-danger" onClick={handleBulkDelete}><i className="ri-delete-bin-6-line"></i></button>
+                    {canBulkDelete && (
+                        <button className="icon-btn-lg text-danger" onClick={handleBulkDelete} title="Delete Selected">
+                            <i className="ri-delete-bin-6-line"></i>
+                        </button>
                     )}
                 </div>
             </div>

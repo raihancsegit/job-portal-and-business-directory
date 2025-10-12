@@ -439,4 +439,11 @@ a, a:active, a:visited, a:link {
 .event-card .card-img-top {
   transition: transform 0.3s ease-in-out;
 }
+ #salaryAmount {
+    border-radius: 0 !important;
+} 
 
+.rounded-start-0 {
+    border-bottom-left-radius: 0 !important;
+    border-top-left-radius: 0 !important;
+}

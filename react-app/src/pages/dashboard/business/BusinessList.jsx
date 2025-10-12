@@ -1,39 +1,66 @@
+// src/pages/dashboard/components/business/BusinessList.jsx
+
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../../context/AuthContext';
 import axios from 'axios';
 
-const BusinessCard = ({ business, onSelect, isActive,onUnsave  }) => {
-    // এই ডেটাগুলো ডাইনামিকভাবে আসবে, আপাতত ডেমো হিসেবে দেওয়া হলো
+// ================== নতুন: স্টার রেন্ডারিং-এর জন্য Helper Component ==================
+/**
+ * Renders star icons based on a numeric score.
+ * @param {object} props - Component props.
+ * @param {number} props.score - The rating score (e.g., 4.5).
+ * @returns {JSX.Element} - A set of star icons.
+ */
+const RenderStars = ({ score }) => {
+    const totalStars = 5;
+    const fullStars = Math.floor(score);
+    const hasHalfStar = score % 1 >= 0.3; // 0.3 বা তার বেশি হলে হাফ স্টার দেখানো হবে
+    const emptyStars = totalStars - fullStars - (hasHalfStar ? 1 : 0);
+
+    return (
+        <>
+            {Array.from({ length: fullStars }, (_, i) => <i key={`full-${i}`} className="ri-star-fill"></i>)}
+            {hasHalfStar && <i key="half" className="ri-star-half-fill"></i>}
+            {Array.from({ length: emptyStars }, (_, i) => <i key={`empty-${i}`} className="ri-star-line"></i>)}
+        </>
+    );
+};
+// =================================================================================
+
+const BusinessCard = ({ business, onSelect, isActive, onUnsave }) => {
     const { token } = useAuth();
     const { api_base_url } = window.jpbd_object || {};
 
-    const rating = business.rating || { score: 4.6, reviews: 56 };
-    const status = business.status || 'Open to contracts';
+    // ================== হার্ডকোডেড ডেটার পরিবর্তে API থেকে আসা ডাইনামিক ডেটা ==================
+    const ratingScore = business.average_rating || 0;
+    const reviewCount = business.review_count || 0;
+    const status = business.status || 'Status Unavailable';
+    // =======================================================================================
 
     const [isSaved, setIsSaved] = useState(business.is_saved || false);
     const [saving, setSaving] = useState(false);
 
-     useEffect(() => {
+    // business prop পরিবর্তন হলে isSaved স্টেট আপডেট করা
+    useEffect(() => {
         setIsSaved(business.is_saved || false);
     }, [business.is_saved]);
 
     const handleToggleSave = async (e) => {
-        e.stopPropagation();
+        e.stopPropagation(); // Parent div-এর onClick ট্রিগার হওয়া থেকে বিরত রাখা
         setSaving(true);
         try {
             const response = await axios.post(`${api_base_url}saved-items/toggle`, {
                 item_id: business.id,
-                item_type: 'business', // <-- আইটেম টাইপ 'business'
+                item_type: 'business',
             }, { headers: { 'Authorization': `Bearer ${token}` } });
             
             setIsSaved(response.data.status === 'saved');
             
-            // যদি Saved পেজে থাকি এবং আনসেভ করা হয়, তাহলে প্যারেন্টকে জানানো
             if (response.data.status === 'unsaved' && onUnsave) {
                 onUnsave(business.id);
             }
         } catch (error) {
-            alert("Could not update save status.");
+            alert("Could not update save status. Please try again.");
         } finally {
             setSaving(false);
         }
@@ -45,8 +72,8 @@ const BusinessCard = ({ business, onSelect, isActive,onUnsave  }) => {
                 <div className="dir-card__header">
                     <div className="dir-card__logo">
                         {business.logo_url ? 
-                            <img src={business.logo_url} alt={business.title} style={{ width: '40px', height: '40px', objectFit: 'contain', borderRadius: '50%' }} /> :
-                            <div className="logo-placeholder"></div> // যদি লোগো না থাকে
+                            <img src={business.logo_url} alt={business.title} /> :
+                            <div className="logo-placeholder">{business.title?.charAt(0).toUpperCase()}</div>
                         }
                     </div>
                     <div className="dir-card__badge">
@@ -55,19 +82,15 @@ const BusinessCard = ({ business, onSelect, isActive,onUnsave  }) => {
                     </div>
                 </div>
 
-                {/* Rating */}
+                {/* ================== Rating সেকশন এখন সম্পূর্ণ ডাইনামিক ================== */}
                 <div className="dir-card__rating">
-                    <span className="rating-score">{rating.score}</span>
+                    <span className="rating-score">{ratingScore}</span>
                     <span className="stars">
-                        {/* ডাইনামিক স্টার রেন্ডারিং-এর জন্য একটি Helper ফাংশন ব্যবহার করা যেতে পারে */}
-                        <i className="ri-star-fill"></i>
-                        <i className="ri-star-fill"></i>
-                        <i className="ri-star-fill"></i>
-                        <i className="ri-star-fill"></i>
-                        <i className="ri-star-half-fill"></i>
+                        <RenderStars score={parseFloat(ratingScore)} />
                     </span>
-                    <span className="reviews">({rating.reviews} reviews)</span>
+                    <span className="reviews">({reviewCount} reviews)</span>
                 </div>
+                {/* ========================================================================= */}
 
                 {/* Company Info */}
                 <h4 className="company-name">{business.title}</h4>
@@ -76,7 +99,6 @@ const BusinessCard = ({ business, onSelect, isActive,onUnsave  }) => {
 
                 {/* Save Button */}
                <button className="save-btn" onClick={handleToggleSave} disabled={saving}>
-                    {/* আইকনটি এখন ডাইনামিক */}
                     <i className={isSaved ? "ri-bookmark-fill text-primary" : "ri-bookmark-line"}></i>
                 </button>
             </div>
@@ -84,7 +106,7 @@ const BusinessCard = ({ business, onSelect, isActive,onUnsave  }) => {
     );
 };
 
-const BusinessList = ({ businesses, onSelectBusiness, selectedBusiness,onUnsave  }) => {
+const BusinessList = ({ businesses, onSelectBusiness, selectedBusiness, onUnsave }) => {
     if (!businesses || businesses.length === 0) {
         return (
             <div className="text-center p-5">

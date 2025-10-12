@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../../../../context/AuthContext'; // নিশ্চিত করুন এই pathটি সঠিক
 import { Link } from 'react-router-dom';
+import PlainTextRenderer from '../../../../components/common/PlainTextRenderer';
 // ======================================================
 // ApplyModal Component
 // এই কম্পোনেন্টটি JobDetails ফাইলের ভেতরেই থাকবে।
@@ -362,16 +363,21 @@ const JobDetails = ({ opportunity, showNotice, activeTab,onApplySuccess,onWithdr
                 </div>
                 <div className="mb-4">
                     <p className="desc-subtitle mb-3">Description</p>
-                    <div className="desc-text" dangerouslySetInnerHTML={{ __html: opportunity.job_details }}></div>
+                    {/* Job Details এর জন্য PlainTextRenderer ব্যবহার করা হচ্ছে */}
+                    <PlainTextRenderer text={opportunity.job_details} />
                 </div>
-                <div className="mb-30">
-                    <h4 className="desc-title">Responsibilities</h4>
-                    <div className="desc-list" dangerouslySetInnerHTML={{ __html: opportunity.responsibilities }}></div>
-                </div>
-                <div className="mb-0">
-                    <h4 className="desc-title">Qualifications</h4>
-                    <div className="desc-list" dangerouslySetInnerHTML={{ __html: opportunity.qualifications }}></div>
-                </div>
+                
+                {/* Responsibilities এর জন্য PlainTextRenderer ব্যবহার করা হচ্ছে */}
+                <PlainTextRenderer 
+                    title="Responsibilities" 
+                    text={opportunity.responsibilities} 
+                />
+
+                {/* Qualifications এর জন্য PlainTextRenderer ব্যবহার করা হচ্ছে */}
+                <PlainTextRenderer 
+                    title="Qualifications" 
+                    text={opportunity.qualifications} 
+                />
             </div>
 
             {showApplyModal && (

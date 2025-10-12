@@ -3,11 +3,9 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import axios from 'axios';
 import { useAuth } from '../../../context/AuthContext';
-import StarRating from './StarRating'; // নিশ্চিত করুন এই পাথটি সঠিক
+import StarRating from './StarRating';
 
-// ======================================================
 // Helper Component: RatingInput
-// ======================================================
 const RatingInput = ({ rating, setRating }) => {
     return (
         <div className="d-flex justify-content-center mb-3 rating-input">
@@ -23,9 +21,7 @@ const RatingInput = ({ rating, setRating }) => {
     );
 };
 
-// ======================================================
 // Helper Component: ReviewModal
-// ======================================================
 const ReviewModal = ({ businessId, onClose, onReviewSubmit }) => {
     const [rating, setRating] = useState(0);
     const [reviewText, setReviewText] = useState('');
@@ -46,7 +42,7 @@ const ReviewModal = ({ businessId, onClose, onReviewSubmit }) => {
                 review_text: reviewText,
             }, { headers: { 'Authorization': `Bearer ${token}` } });
             
-            onReviewSubmit();
+            onReviewSubmit(); // প্যারেন্টকে জানানো যে রিভিউ সাবমিট হয়েছে
             onClose();
         } catch (error) {
             alert(error.response?.data?.message || "Failed to submit review.");
@@ -88,10 +84,8 @@ const ReviewModal = ({ businessId, onClose, onReviewSubmit }) => {
     );
 };
 
-// ======================================================
 // Main ReviewSection Component
-// ======================================================
-const ReviewSection = ({ businessId ,onReviewCountChange }) => {
+const ReviewSection = ({ businessId, onReviewSubmitted }) => {
     const { user } = useAuth();
     const { api_base_url } = window.jpbd_object || {};
     const [reviews, setReviews] = useState([]);
@@ -111,29 +105,56 @@ const ReviewSection = ({ businessId ,onReviewCountChange }) => {
         try {
             const response = await axios.get(`${api_base_url}businesses/${businessId}/reviews`);
             setReviews(response.data);
-            if (onReviewCountChange) {
-                onReviewCountChange(response.data.length);
-            }
-        } catch (error) { console.error("Failed to fetch reviews", error); }
+        } catch (error) { 
+            console.error("Failed to fetch reviews", error);
+            setReviews([]); // এরর হলে খালি অ্যারে সেট করা
+        }
         finally { setLoading(false); }
-    }, [businessId, api_base_url,onReviewCountChange]);
+    }, [businessId, api_base_url]);
     
     useEffect(() => {
         fetchReviews();
     }, [fetchReviews]);
     
+    const handleReviewSubmission = () => {
+        fetchReviews(); // রিভিউ তালিকা রিফ্রেশ করা
+        if (onReviewSubmitted) {
+            onReviewSubmitted(); // BusinessDetails কম্পোনেন্টকে জানানো
+        }
+    };
+
     const sortedReviews = useMemo(() => {
         let sorted = [...reviews];
         switch(sortBy) {
             case 'oldest': sorted.sort((a, b) => new Date(a.created_at) - new Date(b.created_at)); break;
             case 'highest': sorted.sort((a, b) => b.rating - a.rating); break;
             case 'lowest': sorted.sort((a, b) => a.rating - b.rating); break;
-            default: sorted.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)); break;
+            default: sorted.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)); break; // 'newest'
         }
         return sorted;
     }, [reviews, sortBy]);
     
-    const ratingSummary = { score: 4.8, count: 578, distribution: { '5': 344, '4': 44, '3': 11, '2': 0, '1': 0 } };
+    // ================== ডাইনামিক রেটিং সামারি গণনা ==================
+    const ratingSummary = useMemo(() => {
+        if (!reviews || reviews.length === 0) {
+            return { score: '0.0', count: 0, distribution: { '5': 0, '4': 0, '3': 0, '2': 0, '1': 0 } };
+        }
+        
+        const totalRating = reviews.reduce((sum, review) => sum + review.rating, 0);
+        const distribution = { '5': 0, '4': 0, '3': 0, '2': 0, '1': 0 };
+        reviews.forEach(review => {
+            if (distribution.hasOwnProperty(review.rating)) {
+                distribution[review.rating]++;
+            }
+        });
+
+        return {
+            score: (totalRating / reviews.length).toFixed(1),
+            count: reviews.length,
+            distribution
+        };
+    }, [reviews]);
+    // =================================================================
 
     return (
         <>
@@ -144,10 +165,11 @@ const ReviewSection = ({ businessId ,onReviewCountChange }) => {
                             {sortOptions[sortBy]}
                         </button>
                         <ul className="dropdown-menu">
-                            <li><a className="dropdown-item" href="#" onClick={(e) => { e.preventDefault(); setSortBy('newest'); }}>Newest review</a></li>
-                            <li><a className="dropdown-item" href="#" onClick={(e) => { e.preventDefault(); setSortBy('oldest'); }}>Oldest review</a></li>
-                            <li><a className="dropdown-item" href="#" onClick={(e) => { e.preventDefault(); setSortBy('highest'); }}>Highest rating</a></li>
-                            <li><a className="dropdown-item" href="#" onClick={(e) => { e.preventDefault(); setSortBy('lowest'); }}>Lowest rating</a></li>
+                            {Object.entries(sortOptions).map(([key, value]) => (
+                                <li key={key}>
+                                    <a className="dropdown-item" href="#" onClick={(e) => { e.preventDefault(); setSortBy(key); }}>{value}</a>
+                                </li>
+                            ))}
                         </ul>
                     </div>
                     {user && (
@@ -161,7 +183,7 @@ const ReviewSection = ({ businessId ,onReviewCountChange }) => {
                     <div className="d-flex align-items-center mb-2">
                         <div className="rating-value display-6 fw-bold me-3">{ratingSummary.score}</div>
                         <div>
-                            <StarRating rating={ratingSummary.score} />
+                            <StarRating rating={parseFloat(ratingSummary.score)} />
                             <small className="text-muted">({ratingSummary.count} Reviews)</small>
                         </div>
                     </div>
@@ -170,7 +192,7 @@ const ReviewSection = ({ businessId ,onReviewCountChange }) => {
                             <div key={star} className="d-flex align-items-center mb-1">
                                 <small style={{width: '50px'}}>{star} star</small>
                                 <div className="progress flex-grow-1 mx-2" style={{height:'6px'}}>
-                                    <div className="progress-bar bg-dark" style={{width: `${(count / ratingSummary.count) * 100}%`}}></div>
+                                    <div className="progress-bar bg-dark" style={{width: `${ratingSummary.count > 0 ? (count / ratingSummary.count) * 100 : 0}%`}}></div>
                                 </div>
                                 <small>{count}</small>
                             </div>
@@ -203,7 +225,7 @@ const ReviewSection = ({ businessId ,onReviewCountChange }) => {
                 <ReviewModal 
                     businessId={businessId} 
                     onClose={() => setShowReviewModal(false)}
-                    onReviewSubmit={fetchReviews}
+                    onReviewSubmit={handleReviewSubmission}
                 />
             )}
         </>
